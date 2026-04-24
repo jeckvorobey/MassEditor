@@ -40,3 +40,6 @@ desktop.ini
 # Вспомогательные файлы разработки
 ChatGPT*.html
 .codex/
+AGENTS.md
+specification_masseditor_codex.md
+.claude
