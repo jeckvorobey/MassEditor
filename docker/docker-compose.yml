@@ -1,0 +1,38 @@
+services:
+  php:
+    build: ./php
+    container_name: wa-php
+    working_dir: /webasyst
+    ports:
+      - "8080:8080"
+    volumes:
+      - webasyst:/webasyst
+      - ../wa-apps/shop/plugins/masseditor:/webasyst/wa-apps/shop/plugins/masseditor
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - WA_DB_HOST=db
+      - WA_DB_NAME=webasyst
+      - WA_DB_USER=webasyst
+      - WA_DB_PASSWORD=secret
+
+  db:
+    image: mariadb:10.11
+    container_name: wa-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootsecret
+      MYSQL_DATABASE: webasyst
+      MYSQL_USER: webasyst
+      MYSQL_PASSWORD: secret
+    volumes:
+      - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+
+volumes:
+  webasyst:
+  dbdata:

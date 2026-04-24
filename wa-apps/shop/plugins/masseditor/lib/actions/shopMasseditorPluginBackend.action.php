@@ -61,9 +61,6 @@ class shopMasseditorPluginBackendAction extends waViewAction
             }
         }
 
-        $plugin->addCss('css/masseditor.css');
-        $plugin->addJs('js/masseditor.js');
-
         $this->view->assign(array(
             'page_title' => $plugin->getName(),
             'plugin_id' => $plugin->getId(),
