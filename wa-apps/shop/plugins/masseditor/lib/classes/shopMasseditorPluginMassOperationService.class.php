@@ -379,7 +379,7 @@ class shopMasseditorPluginMassOperationService
     {
         $summary = 'Товаров в операции: ' . (int) $count . '. ';
 
-        if (in_array($request['operation'], array('price', 'compare_price'), true)) {
+        if (in_array($request['operation'], self::PRICE_OPERATIONS, true)) {
             $summary .= $request['mode'] === 'percent'
                 ? 'Режим: изменение на процент.'
                 : 'Режим: установка фиксированного значения.';
@@ -394,7 +394,7 @@ class shopMasseditorPluginMassOperationService
 
     private function buildDescription(array $request, $count)
     {
-        if ($request['operation'] === 'price' || $request['operation'] === 'compare_price') {
+        if (in_array($request['operation'], self::PRICE_OPERATIONS, true)) {
             return sprintf(
                 '%s: %s %s для %d товаров',
                 $this->getOperationLabel($request['operation']),
