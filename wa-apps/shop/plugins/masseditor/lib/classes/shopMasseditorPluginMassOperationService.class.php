@@ -4,6 +4,9 @@ class shopMasseditorPluginMassOperationService
 {
     const PREVIEW_LIMIT = 100;
     const APPLY_BATCH_SIZE = 20;
+    const SKU_OPERATIONS = array('price', 'compare_price', 'availability');
+    const PRICE_OPERATIONS = array('price', 'compare_price');
+    const ALL_OPERATIONS = array('price', 'compare_price', 'visibility', 'availability');
 
     /**
      * @var shopMasseditorPluginProductSelectionService
@@ -51,7 +54,7 @@ class shopMasseditorPluginMassOperationService
         $products = $this->selection_service->getByIds($request['product_ids']);
         $this->assertSelectedProductsLoaded($products, $request['product_ids']);
         $skus_by_product = $this->resolveSkusByProducts($products, $request['operation']);
-        $rows = $this->buildPreviewRows($products, $request, $skus_by_product);
+        $count = count($products);
 
         // Оборачиваем пакетное изменение в транзакцию, чтобы не оставлять частично примененный результат.
         $this->model->exec('START TRANSACTION');
@@ -68,8 +71,8 @@ class shopMasseditorPluginMassOperationService
 
             $this->log_service->log(
                 $request['operation'],
-                count($products),
-                $this->buildDescription($request, count($products))
+                $count,
+                $this->buildDescription($request, $count)
             );
 
             $this->model->exec('COMMIT');
@@ -80,8 +83,7 @@ class shopMasseditorPluginMassOperationService
 
         return array(
             'request' => $request,
-            'rows' => $rows,
-            'summary' => $this->buildSummary($request, count($rows)),
+            'summary' => $this->buildSummary($request, $count),
             'message' => 'Операция успешно применена.',
         );
     }
@@ -109,7 +111,7 @@ class shopMasseditorPluginMassOperationService
         }
 
         $operation = isset($raw_request['operation']) ? (string) $raw_request['operation'] : '';
-        if (!in_array($operation, array('price', 'compare_price', 'visibility', 'availability'), true)) {
+        if (!in_array($operation, self::ALL_OPERATIONS, true)) {
             throw new InvalidArgumentException('Неизвестная массовая операция.');
         }
 
@@ -122,7 +124,7 @@ class shopMasseditorPluginMassOperationService
             'availability_value' => null,
         );
 
-        if (in_array($operation, array('price', 'compare_price'), true)) {
+        if (in_array($operation, self::PRICE_OPERATIONS, true)) {
             $mode = isset($raw_request['mode']) ? (string) $raw_request['mode'] : 'set';
             if (!in_array($mode, array('set', 'percent'), true)) {
                 throw new InvalidArgumentException('Неизвестный режим изменения цены.');
@@ -164,7 +166,7 @@ class shopMasseditorPluginMassOperationService
             throw new InvalidArgumentException('Выбранные товары не найдены.');
         }
 
-        $needs_skus = in_array($request['operation'], array('price', 'compare_price', 'availability'), true);
+        $needs_skus = in_array($request['operation'], self::SKU_OPERATIONS, true);
         $rows = array();
 
         foreach ($products as $product_data) {
@@ -216,7 +218,7 @@ class shopMasseditorPluginMassOperationService
 
     private function resolveSkusByProducts(array $products, $operation)
     {
-        if (in_array($operation, array('price', 'compare_price', 'availability'), true)) {
+        if (in_array($operation, self::SKU_OPERATIONS, true)) {
             return $this->loadSkusByProducts($products);
         }
 
