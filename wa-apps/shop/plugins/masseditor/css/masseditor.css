@@ -1,0 +1,120 @@
+.masseditor-page {
+    padding: 24px;
+}
+
+.masseditor-page__header {
+    margin-bottom: 24px;
+}
+
+.masseditor-page__lead {
+    margin: 8px 0 0;
+    color: #666;
+}
+
+.masseditor-section {
+    margin-bottom: 16px;
+    padding: 16px;
+    border: 1px solid #d9d9d9;
+    background: #fff;
+}
+
+.masseditor-section h2 {
+    margin: 0 0 8px;
+    font-size: 18px;
+}
+
+.masseditor-page__footer {
+    margin-top: 24px;
+    color: #888;
+}
+
+.masseditor-filters {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.masseditor-filters__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 220px;
+}
+
+.masseditor-filters__field input,
+.masseditor-filters__field select {
+    min-height: 36px;
+    padding: 6px 10px;
+    border: 1px solid #cfcfcf;
+    box-sizing: border-box;
+}
+
+.masseditor-filters__actions button {
+    min-height: 36px;
+    padding: 6px 14px;
+    border: 1px solid #888;
+    background: #f5f5f5;
+    cursor: pointer;
+}
+
+.masseditor-meta {
+    margin: 0 0 12px;
+    color: #666;
+}
+
+.masseditor-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.masseditor-table th,
+.masseditor-table td {
+    padding: 10px 12px;
+    border: 1px solid #e1e1e1;
+    text-align: left;
+    vertical-align: top;
+}
+
+.masseditor-table th {
+    background: #f7f7f7;
+}
+
+.masseditor-pagination {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.masseditor-operation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.masseditor-form-actions {
+    margin-top: 16px;
+}
+
+.masseditor-notice {
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    border: 1px solid #ccc;
+}
+
+.masseditor-notice_error {
+    border-color: #d66;
+    background: #fff5f5;
+}
+
+.masseditor-notice_success {
+    border-color: #78a978;
+    background: #f2fff2;
+}
+
+.masseditor-confirm {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 16px;
+}

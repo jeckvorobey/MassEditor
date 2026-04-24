@@ -1,0 +1,42 @@
+# Зависимости
+/vendor/
+/node_modules/
+
+# Composer
+composer.lock
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Логи и временные файлы
+*.log
+*.cache
+*.tmp
+*.swp
+*.swo
+*~
+
+# Конфиги с секретами
+.env
+.env.local
+.env.*.local
+
+# PHP
+*.phar
+
+# Сборка
+/dist/
+/build/
+
+# Вспомогательные файлы разработки
+ChatGPT*.html
+.codex/

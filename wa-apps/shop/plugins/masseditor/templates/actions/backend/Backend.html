@@ -1,0 +1,243 @@
+<div class="masseditor-page">
+    <header class="masseditor-page__header">
+        <h1>{$page_title|escape}</h1>
+        <p class="masseditor-page__lead">
+            Плагин {$plugin_id|escape} загружает товары из каталога с базовой фильтрацией и пагинацией.
+        </p>
+    </header>
+
+    {if $errors}
+        <div class="masseditor-notice masseditor-notice_error">
+            {foreach $errors as $error}
+                <p>{$error|escape}</p>
+            {/foreach}
+        </div>
+    {/if}
+
+    {if $result_message}
+        <div class="masseditor-notice masseditor-notice_success">
+            <p>{$result_message|escape}</p>
+        </div>
+    {/if}
+
+    <section class="masseditor-section">
+        <h2>Фильтры</h2>
+        <form method="get" class="masseditor-filters">
+            <input type="hidden" name="plugin" value="{$plugin_id|escape}">
+
+            <div class="masseditor-filters__field">
+                <label for="masseditor-query">Название</label>
+                <input id="masseditor-query" type="text" name="query" value="{$filters.query|escape}">
+            </div>
+
+            <div class="masseditor-filters__field">
+                <label for="masseditor-status">Статус</label>
+                <select id="masseditor-status" name="status">
+                    <option value="all"{if $filters.status === 'all'} selected{/if}>Все</option>
+                    <option value="published"{if $filters.status === 'published'} selected{/if}>Опубликованные</option>
+                    <option value="hidden"{if $filters.status === 'hidden'} selected{/if}>Скрытые</option>
+                    <option value="unpublished"{if $filters.status === 'unpublished'} selected{/if}>Неопубликованные</option>
+                </select>
+            </div>
+
+            <div class="masseditor-filters__actions">
+                <button type="submit">Применить</button>
+            </div>
+        </form>
+    </section>
+
+    <form method="post" action="?plugin={$plugin_id|escape}&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&page={$pagination.page|escape:'url'}">
+        {$wa->csrf()}
+        <section class="masseditor-section">
+            <h2>Массовые действия</h2>
+            <div class="masseditor-operation-grid">
+                <div class="masseditor-filters__field">
+                    <label for="masseditor-operation">Операция</label>
+                    <select id="masseditor-operation" name="operation">
+                        <option value="price"{if $operation_form.operation === 'price'} selected{/if}>Изменить цену</option>
+                        <option value="compare_price"{if $operation_form.operation === 'compare_price'} selected{/if}>Изменить compare price</option>
+                        <option value="visibility"{if $operation_form.operation === 'visibility'} selected{/if}>Изменить видимость</option>
+                        <option value="availability"{if $operation_form.operation === 'availability'} selected{/if}>Изменить доступность</option>
+                    </select>
+                </div>
+
+                <div class="masseditor-filters__field">
+                    <label for="masseditor-mode">Режим для цены</label>
+                    <select id="masseditor-mode" name="mode">
+                        <option value="set"{if $operation_form.mode === 'set'} selected{/if}>Установить значение</option>
+                        <option value="percent"{if $operation_form.mode === 'percent'} selected{/if}>Изменить на %</option>
+                    </select>
+                </div>
+
+                <div class="masseditor-filters__field">
+                    <label for="masseditor-numeric-value">Числовое значение</label>
+                    <input id="masseditor-numeric-value" type="text" name="numeric_value" value="{$operation_form.numeric_value|escape}">
+                </div>
+
+                <div class="masseditor-filters__field">
+                    <label for="masseditor-visibility-status">Видимость</label>
+                    <select id="masseditor-visibility-status" name="visibility_status">
+                        <option value="1"{if $operation_form.visibility_status === 1} selected{/if}>Опубликован</option>
+                        <option value="0"{if $operation_form.visibility_status === 0} selected{/if}>Скрыт</option>
+                        <option value="-1"{if $operation_form.visibility_status === -1} selected{/if}>Неопубликован</option>
+                    </select>
+                </div>
+
+                <div class="masseditor-filters__field">
+                    <label for="masseditor-availability-value">Доступность</label>
+                    <select id="masseditor-availability-value" name="availability_value">
+                        <option value="1"{if $operation_form.availability_value === 1} selected{/if}>Доступен</option>
+                        <option value="0"{if $operation_form.availability_value === 0} selected{/if}>Недоступен</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="masseditor-form-actions">
+                <button type="submit" name="do_preview" value="1">Предпросмотр</button>
+            </div>
+        </section>
+
+        <section class="masseditor-section">
+            <h2>Список товаров</h2>
+            <p class="masseditor-meta">
+                Найдено товаров: {$pagination.total|escape}. Страница {$pagination.page|escape} из {$pagination.pages|escape}.
+            </p>
+
+            {if $products}
+                <table class="masseditor-table">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" data-role="select-all"></th>
+                            <th>ID</th>
+                            <th>Название</th>
+                            <th>Статус</th>
+                            <th>Цена</th>
+                            <th>Compare price</th>
+                            <th>Остаток</th>
+                            <th>Изменен</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {foreach $products as $product}
+                            <tr>
+                                <td><input type="checkbox" name="product_ids[]" value="{$product.id|escape}"></td>
+                                <td>{$product.id|escape}</td>
+                                <td>{$product.name|escape}</td>
+                                <td>
+                                    {if $product.status == 1}
+                                        Опубликован
+                                    {elseif $product.status == 0}
+                                        Скрыт
+                                    {elseif $product.status == -1}
+                                        Неопубликован
+                                    {else}
+                                        {$product.status|escape}
+                                    {/if}
+                                </td>
+                                <td>{$product.price|escape}</td>
+                                <td>{$product.compare_price|escape}</td>
+                                <td>{if $product.count === null}Без ограничений{else}{$product.count|escape}{/if}</td>
+                                <td>{$product.edit_datetime|default:''|escape}</td>
+                            </tr>
+                        {/foreach}
+                    </tbody>
+                </table>
+            {else}
+                <p>По текущему фильтру товары не найдены.</p>
+            {/if}
+
+            <div class="masseditor-pagination">
+                {if $pagination.page > 1}
+                    {assign var=prev_page value=$pagination.page-1}
+                    <a href="?plugin={$plugin_id|escape}&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&page={$prev_page|escape:'url'}">Назад</a>
+                {/if}
+
+                {if $pagination.page < $pagination.pages}
+                    {assign var=next_page value=$pagination.page+1}
+                    <a href="?plugin={$plugin_id|escape}&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&page={$next_page|escape:'url'}">Вперед</a>
+                {/if}
+            </div>
+        </section>
+
+        {if $preview}
+            <section class="masseditor-section">
+                <h2>Предпросмотр</h2>
+                <p class="masseditor-meta">{$preview.summary|escape}</p>
+
+                <table class="masseditor-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Название</th>
+                            <th>Операция</th>
+                            <th>Текущее значение</th>
+                            <th>Новое значение</th>
+                            <th>Комментарий</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {foreach $preview.rows as $row}
+                            <tr>
+                                <td>{$row.id|escape}</td>
+                                <td>{$row.name|escape}</td>
+                                <td>{$row.operation_label|escape}</td>
+                                <td>{$row.old_value|escape}</td>
+                                <td>{$row.new_value|escape}</td>
+                                <td>{$row.details|escape}</td>
+                            </tr>
+                        {/foreach}
+                    </tbody>
+                </table>
+
+                {foreach $preview.rows as $row}
+                    <input type="hidden" name="product_ids[]" value="{$row.id|escape}">
+                {/foreach}
+
+                <label class="masseditor-confirm">
+                    <input type="checkbox" name="confirm_apply" value="1">
+                    Подтверждаю применение изменений
+                </label>
+
+                <div class="masseditor-form-actions">
+                    <button type="submit" name="do_apply" value="1">Применить изменения</button>
+                </div>
+            </section>
+        {/if}
+    </form>
+
+    <section class="masseditor-section">
+        <h2>Последние операции</h2>
+        {if $recent_logs}
+            <table class="masseditor-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Дата</th>
+                        <th>Операция</th>
+                        <th>Кол-во</th>
+                        <th>Описание</th>
+                        <th>Пользователь</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {foreach $recent_logs as $log}
+                        <tr>
+                            <td>{$log.id|escape}</td>
+                            <td>{$log.created_at|escape}</td>
+                            <td>{$log.action_type|escape}</td>
+                            <td>{$log.entity_count|escape}</td>
+                            <td>{$log.description|escape}</td>
+                            <td>{$log.user_id|default:'-'|escape}</td>
+                        </tr>
+                    {/foreach}
+                </tbody>
+            </table>
+        {else}
+            <p>Лог операций пока пуст.</p>
+        {/if}
+    </section>
+
+    <footer class="masseditor-page__footer">
+        <small>Static URL: {$plugin_static_url|escape}</small>
+    </footer>
+</div>
