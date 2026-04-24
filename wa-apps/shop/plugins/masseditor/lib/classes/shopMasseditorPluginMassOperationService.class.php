@@ -47,19 +47,23 @@ class shopMasseditorPluginMassOperationService
     public function apply(array $raw_request)
     {
         $request = $this->normalizeRequest($raw_request, true);
-        $products = $this->selection_service->getByIds($request['product_ids'], self::PREVIEW_LIMIT);
+        $products = $this->selection_service->getByIds($request['product_ids']);
         $this->assertSelectedProductsLoaded($products, $request['product_ids']);
         $rows = $this->buildPreviewRows($products, $request);
+
+        $needs_skus = in_array($request['operation'], array('price', 'compare_price', 'availability'), true);
+        $skus_by_product = $needs_skus ? $this->loadSkusByProducts($products) : array();
 
         // Оборачиваем пакетное изменение в транзакцию, чтобы не оставлять частично примененный результат.
         $this->model->exec('START TRANSACTION');
 
         try {
-            $chunks = array_chunk($products, self::APPLY_BATCH_SIZE);
+            $chunks = array_chunk($products, self::APPLY_BATCH_SIZE, true);
 
             foreach ($chunks as $chunk) {
                 foreach ($chunk as $product_data) {
-                    $this->applyToProduct($product_data, $request);
+                    $skus = isset($skus_by_product[$product_data['id']]) ? $skus_by_product[$product_data['id']] : array();
+                    $this->applyToProduct($product_data, $request, $skus);
                 }
             }
 
@@ -102,7 +106,7 @@ class shopMasseditorPluginMassOperationService
         }
 
         if (count($product_ids) > self::PREVIEW_LIMIT) {
-            throw new InvalidArgumentException('За одну операцию можно обработать не более 100 товаров.');
+            throw new InvalidArgumentException('За одну операцию можно обработать не более ' . self::PREVIEW_LIMIT . ' товаров.');
         }
 
         $operation = isset($raw_request['operation']) ? (string) $raw_request['operation'] : '';
@@ -161,6 +165,9 @@ class shopMasseditorPluginMassOperationService
             throw new InvalidArgumentException('Выбранные товары не найдены.');
         }
 
+        $needs_skus = in_array($request['operation'], array('price', 'compare_price', 'availability'), true);
+        $skus_by_product = $needs_skus ? $this->loadSkusByProducts($products) : array();
+
         $rows = array();
 
         foreach ($products as $product_data) {
@@ -173,9 +180,8 @@ class shopMasseditorPluginMassOperationService
                 'details' => '',
             );
 
-            if (in_array($request['operation'], array('price', 'compare_price', 'availability'), true)) {
-                $product = new shopProduct((int) $product_data['id']);
-                $skus = $product->getSkus();
+            if ($needs_skus) {
+                $skus = isset($skus_by_product[$product_data['id']]) ? $skus_by_product[$product_data['id']] : array();
                 $main_sku = $this->resolveMainSku($product_data, $skus);
 
                 if (!$main_sku) {
@@ -211,6 +217,31 @@ class shopMasseditorPluginMassOperationService
         return $rows;
     }
 
+    private function loadSkusByProducts(array $products)
+    {
+        if (!$products) {
+            return array();
+        }
+
+        $ids = array_map('intval', array_keys($products));
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $rows = $this->model
+            ->query(
+                'SELECT id, product_id, price, compare_price, available
+                 FROM shop_product_skus
+                 WHERE product_id IN (' . $placeholders . ')',
+                $ids
+            )
+            ->fetchAll();
+
+        $result = array();
+        foreach ($rows as $sku) {
+            $result[$sku['product_id']][$sku['id']] = $sku;
+        }
+
+        return $result;
+    }
+
     private function assertSelectedProductsLoaded(array $products, array $requested_ids)
     {
         // Перед применением работаем только с полностью подтвержденным набором товаров.
@@ -219,7 +250,7 @@ class shopMasseditorPluginMassOperationService
         }
     }
 
-    private function applyToProduct(array $product_data, array $request)
+    private function applyToProduct(array $product_data, array $request, array $skus = array())
     {
         if ($request['operation'] === 'visibility') {
             $this->model->exec(
@@ -236,21 +267,21 @@ class shopMasseditorPluginMassOperationService
             return;
         }
 
+        // Сохраняем через shopProduct, чтобы Shop-Script синхронизировал связанные данные.
         $product = new shopProduct((int) $product_data['id']);
-        $skus = $product->getSkus();
+        $product_skus = $skus ?: $product->getSkus();
 
-        foreach ($skus as $sku_id => $sku) {
+        foreach ($product_skus as $sku_id => $sku) {
             if ($request['operation'] === 'price') {
-                $skus[$sku_id]['price'] = $this->calculateNumericValue($sku['price'], $request['mode'], $request['numeric_value']);
+                $product_skus[$sku_id]['price'] = $this->calculateNumericValue($sku['price'], $request['mode'], $request['numeric_value']);
             } elseif ($request['operation'] === 'compare_price') {
-                $skus[$sku_id]['compare_price'] = $this->calculateNumericValue($sku['compare_price'], $request['mode'], $request['numeric_value']);
+                $product_skus[$sku_id]['compare_price'] = $this->calculateNumericValue($sku['compare_price'], $request['mode'], $request['numeric_value']);
             } elseif ($request['operation'] === 'availability') {
-                $skus[$sku_id]['available'] = $request['availability_value'];
+                $product_skus[$sku_id]['available'] = $request['availability_value'];
             }
         }
 
-        // Сохраняем массив SKU через shopProduct, чтобы Shop-Script сам синхронизировал связанные данные.
-        $product['skus'] = $skus;
+        $product['skus'] = $product_skus;
         $product->save();
     }
 

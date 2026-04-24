@@ -14,6 +14,25 @@ class shopMasseditorPluginProductSelectionService
         $this->product_model = $product_model ?: new shopMasseditorPluginProductModel();
     }
 
+    public function getByIds(array $ids, $limit = null)
+    {
+        if (!$ids) {
+            return array();
+        }
+
+        $ids = array_map('intval', $ids);
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $sql = 'SELECT p.id, p.name, p.status, p.price, p.compare_price, p.count, p.edit_datetime, p.sku_id
+                FROM shop_product p
+                WHERE p.id IN (' . $placeholders . ')';
+
+        if ($limit !== null) {
+            $sql .= ' LIMIT ' . (int) $limit;
+        }
+
+        return $this->product_model->query($sql, $ids)->fetchAll('id');
+    }
+
     public function getPage(array $raw_filters)
     {
         $filters = $this->normalizeFilters($raw_filters);
