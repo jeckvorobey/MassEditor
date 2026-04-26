@@ -21,9 +21,11 @@ class shopMasseditorPluginBackendAction extends waViewAction
         $filters = array(
             'query' => waRequest::get('query', '', waRequest::TYPE_STRING_TRIM),
             'status' => waRequest::get('status', 'all', waRequest::TYPE_STRING_TRIM),
+            'availability' => waRequest::get('availability', 'all', waRequest::TYPE_STRING_TRIM),
             'category_id' => waRequest::get('category_id', 0, waRequest::TYPE_INT),
             'page' => waRequest::get('page', 1, waRequest::TYPE_INT),
         );
+        $log_page = waRequest::get('log_page', 1, waRequest::TYPE_INT);
         $active_tab = waRequest::request('view', 'products', waRequest::TYPE_STRING_TRIM);
         if (!in_array($active_tab, array('products', 'log', 'settings'), true)) {
             $active_tab = 'products';
@@ -83,32 +85,146 @@ class shopMasseditorPluginBackendAction extends waViewAction
         }
 
         $categories = $selection_service->getCategories();
-        $recent_logs = $this->decorateLogs($log_service->getLatest(20));
-        $last_log = $recent_logs ? reset($recent_logs) : null;
+        $log_selection = $log_service->getPage($log_page, 20);
+        $recent_logs = $this->decorateLogs($log_selection['logs']);
+        $last_log = $this->decorateLogs($log_service->getLatest(1));
+        $last_log = $last_log ? reset($last_log) : null;
         $operations = $this->getOperationsLibrary($settings['show_soon_operations']);
 
         $this->view->assign(array(
             'page_title' => $plugin->getName(),
             'plugin_id' => $plugin->getId(),
             'plugin_static_url' => $plugin->getPluginStaticUrl(),
-            'products' => $selection['products'],
+            'products' => $this->decorateProducts($selection['products']),
             'categories' => $categories,
             'filters' => $selection['filters'],
             'pagination' => $selection['pagination'],
+            'pagination_ui' => $this->buildPaginationUi($selection['pagination']),
             'errors' => $errors,
             'result_message' => $result_message,
             'recent_logs' => $recent_logs,
-            'recent_logs_count' => count($recent_logs),
+            'recent_logs_count' => $log_selection['pagination']['total'],
+            'log_pagination' => $log_selection['pagination'],
+            'log_pagination_ui' => $this->buildPaginationUi($log_selection['pagination']),
             'last_log' => $last_log,
             'operation_form' => $operation_form,
             'operations' => $operations,
             'selected_product_ids_map' => array_fill_keys($selected_product_ids, true),
-            'has_active_filters' => $selection['filters']['query'] !== '' || $selection['filters']['status'] !== 'all' || !empty($selection['filters']['category_id']),
+            'has_active_filters' => $selection['filters']['query'] !== '' || $selection['filters']['status'] !== 'all' || $selection['filters']['availability'] !== 'all' || !empty($selection['filters']['category_id']),
             'filter_reset_url' => '?plugin=' . $plugin->getId() . '&view=products',
             'active_tab' => $active_tab,
             'settings' => $settings,
+            'date_format_options' => $this->getDateFormatOptions(),
             'theme_class' => $settings['theme_mode'] === 'dark' ? 'theme-dark' : '',
         ));
+    }
+
+    private function buildPaginationUi(array $pagination)
+    {
+        $page = isset($pagination['page']) ? max(1, (int) $pagination['page']) : 1;
+        $pages = isset($pagination['pages']) ? max(1, (int) $pagination['pages']) : 1;
+        $page_size = isset($pagination['page_size']) ? max(1, (int) $pagination['page_size']) : 1;
+        $total = isset($pagination['total']) ? max(0, (int) $pagination['total']) : 0;
+
+        $from = $total > 0 ? (($page - 1) * $page_size) + 1 : 0;
+        $to = $total > 0 ? min($total, $page * $page_size) : 0;
+
+        $start = max(1, $page - 2);
+        $end = min($pages, $page + 2);
+        if (($end - $start) < 4) {
+            if ($start === 1) {
+                $end = min($pages, $start + 4);
+            }
+            if ($end === $pages) {
+                $start = max(1, $end - 4);
+            }
+        }
+
+        $items = array();
+
+        if ($start > 1) {
+            $items[] = array('type' => 'page', 'value' => 1, 'active' => $page === 1);
+            if ($start > 2) {
+                $items[] = array('type' => 'ellipsis');
+            }
+        }
+
+        for ($i = $start; $i <= $end; $i++) {
+            $items[] = array('type' => 'page', 'value' => $i, 'active' => $page === $i);
+        }
+
+        if ($end < $pages) {
+            if ($end < $pages - 1) {
+                $items[] = array('type' => 'ellipsis');
+            }
+            $items[] = array('type' => 'page', 'value' => $pages, 'active' => $page === $pages);
+        }
+
+        return array(
+            'from' => $from,
+            'to' => $to,
+            'total' => $total,
+            'has_prev' => $page > 1,
+            'prev_page' => max(1, $page - 1),
+            'has_next' => $page < $pages,
+            'next_page' => min($pages, $page + 1),
+            'items' => $items,
+        );
+    }
+
+    private function decorateProducts(array $products)
+    {
+        foreach ($products as &$product) {
+            $product['price_view'] = $this->formatDecimalForView(isset($product['price']) ? $product['price'] : '');
+            $product['compare_price_view'] = $this->formatDecimalForView(isset($product['compare_price']) ? $product['compare_price'] : '');
+            $product['description_preview'] = $this->buildDescriptionPreview(isset($product['description']) ? $product['description'] : '');
+            $product['edit_datetime_view'] = $this->formatDateForView(
+                isset($product['edit_datetime']) ? $product['edit_datetime'] : '',
+                $this->getCurrentDateFormat()
+            );
+        }
+        unset($product);
+
+        return $products;
+    }
+
+    private function formatDecimalForView($value)
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        $value = trim((string) $value);
+        if ($value === '') {
+            return '';
+        }
+
+        if (strpos($value, '.') === false) {
+            return $value;
+        }
+
+        $value = rtrim($value, '0');
+        $value = rtrim($value, '.');
+
+        if ($value === '' || $value === '-0') {
+            return '0';
+        }
+
+        return $value;
+    }
+
+    private function buildDescriptionPreview($value)
+    {
+        $text = trim(preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags((string) $value), ENT_QUOTES, 'UTF-8')));
+        if ($text === '') {
+            return '';
+        }
+
+        if (function_exists('mb_strlen') && function_exists('mb_substr')) {
+            return mb_strlen($text, 'UTF-8') > 160 ? mb_substr($text, 0, 157, 'UTF-8') . '...' : $text;
+        }
+
+        return strlen($text) > 160 ? substr($text, 0, 157) . '...' : $text;
     }
 
     private function readOperationPayload()
@@ -138,11 +254,28 @@ class shopMasseditorPluginBackendAction extends waViewAction
     {
         foreach ($current_form as $key => $value) {
             if (array_key_exists($key, $payload)) {
-                $current_form[$key] = $payload[$key];
+                $current_form[$key] = $this->normalizeOperationFormValue($key, $payload[$key]);
             }
         }
 
         return $current_form;
+    }
+
+    private function normalizeOperationFormValue($key, $value)
+    {
+        if ($key === 'tags_value' && is_array($value)) {
+            $tags = array();
+            foreach ($value as $tag) {
+                $tag = trim((string) $tag);
+                if ($tag !== '') {
+                    $tags[] = $tag;
+                }
+            }
+
+            return implode(', ', array_values(array_unique($tags)));
+        }
+
+        return $value;
     }
 
     private function normalizeSelectedProductIds(array $raw_ids)
@@ -161,12 +294,51 @@ class shopMasseditorPluginBackendAction extends waViewAction
 
     private function decorateLogs(array $logs)
     {
+        $user_names = $this->resolveUserNames($logs);
+        $date_format = $this->getCurrentDateFormat();
+
         foreach ($logs as &$log) {
             $log['action_label'] = $this->getActionLabel(isset($log['action_type']) ? $log['action_type'] : '');
+            $user_id = isset($log['user_id']) ? (int) $log['user_id'] : 0;
+            $log['user_name'] = isset($user_names[$user_id]) ? $user_names[$user_id] : null;
+            $log['created_at_view'] = $this->formatDateForView(
+                isset($log['created_at']) ? $log['created_at'] : '',
+                $date_format
+            );
         }
         unset($log);
 
         return $logs;
+    }
+
+    private function resolveUserNames(array $logs)
+    {
+        $user_ids = array();
+
+        foreach ($logs as $log) {
+            $user_id = isset($log['user_id']) ? (int) $log['user_id'] : 0;
+            if ($user_id > 0) {
+                $user_ids[$user_id] = $user_id;
+            }
+        }
+
+        if (!$user_ids) {
+            return array();
+        }
+
+        $names = array();
+        foreach ($user_ids as $user_id) {
+            try {
+                $contact = new waContact($user_id);
+                $name = trim($contact->getName());
+                if ($name !== '') {
+                    $names[$user_id] = $name;
+                }
+            } catch (Exception $e) {
+            }
+        }
+
+        return $names;
     }
 
     private function getActionLabel($action_type)
@@ -193,6 +365,7 @@ class shopMasseditorPluginBackendAction extends waViewAction
             'page_size' => $this->normalizeIntSetting($plugin->getSettings('page_size'), 50, 10, 200),
             'operation_limit' => $this->normalizeIntSetting($plugin->getSettings('operation_limit'), 100, 1, 1000),
             'log_retention_days' => $this->normalizeIntSetting($plugin->getSettings('log_retention_days'), 90, 1, 3650),
+            'date_format' => $this->normalizeDateFormat($plugin->getSettings('date_format')),
             'theme_mode' => $this->normalizeThemeMode($plugin->getSettings('theme_mode')),
             'show_soon_operations' => (int) !!$plugin->getSettings('show_soon_operations'),
         );
@@ -204,6 +377,7 @@ class shopMasseditorPluginBackendAction extends waViewAction
             'page_size' => $this->normalizeIntSetting(waRequest::post('page_size', $current_settings['page_size'], waRequest::TYPE_INT), 50, 10, 200),
             'operation_limit' => $this->normalizeIntSetting(waRequest::post('operation_limit', $current_settings['operation_limit'], waRequest::TYPE_INT), 100, 1, 1000),
             'log_retention_days' => $this->normalizeIntSetting(waRequest::post('log_retention_days', $current_settings['log_retention_days'], waRequest::TYPE_INT), 90, 1, 3650),
+            'date_format' => $this->normalizeDateFormat(waRequest::post('date_format', $current_settings['date_format'], waRequest::TYPE_STRING_TRIM)),
             'theme_mode' => $this->normalizeThemeMode(waRequest::post('theme_mode', $current_settings['theme_mode'], waRequest::TYPE_STRING_TRIM)),
             'show_soon_operations' => waRequest::post('show_soon_operations', 0, waRequest::TYPE_INT) ? 1 : 0,
         );
@@ -223,6 +397,14 @@ class shopMasseditorPluginBackendAction extends waViewAction
         return min($max, max($min, $value));
     }
 
+    private function normalizeDateFormat($value)
+    {
+        $value = (string) $value;
+        $options = $this->getDateFormatOptions();
+
+        return isset($options[$value]) ? $value : 'd.m.Y H:i';
+    }
+
     private function normalizeThemeMode($value)
     {
         $value = (string) $value;
@@ -231,6 +413,39 @@ class shopMasseditorPluginBackendAction extends waViewAction
         }
 
         return $value;
+    }
+
+    private function getCurrentDateFormat()
+    {
+        /** @var shopMasseditorPlugin $plugin */
+        $plugin = wa('shop')->getPlugin('masseditor');
+
+        return $this->normalizeDateFormat($plugin->getSettings('date_format'));
+    }
+
+    private function formatDateForView($value, $format)
+    {
+        $value = trim((string) $value);
+        if ($value === '') {
+            return '';
+        }
+
+        $timestamp = strtotime($value);
+        if ($timestamp === false) {
+            return $value;
+        }
+
+        return date($format, $timestamp);
+    }
+
+    private function getDateFormatOptions()
+    {
+        return array(
+            'd.m.Y H:i' => '26.04.2026 14:30',
+            'd.m.Y H:i:s' => '26.04.2026 14:30:45',
+            'Y-m-d H:i' => '2026-04-26 14:30',
+            'm/d/Y h:i A' => '04/26/2026 02:30 PM',
+        );
     }
 
     private function getOperationsLibrary($show_soon_operations)

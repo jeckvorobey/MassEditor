@@ -159,19 +159,19 @@ class shopMasseditorPluginMassOperationService
             $request['description_mode'] = $this->normalizeDescriptionMode(
                 isset($raw_request['description_mode']) ? $raw_request['description_mode'] : 'replace'
             );
-            $request['text_value'] = trim((string) ifset($raw_request['text_value'], ''));
+            $request['text_value'] = isset($raw_request['text_value']) ? trim((string) $raw_request['text_value']) : '';
             if ($request['text_value'] === '') {
                 throw new InvalidArgumentException('Введите текст для описания.');
             }
         } elseif ($operation === 'tags') {
             $request['tags_mode'] = $this->normalizeTagsMode(isset($raw_request['tags_mode']) ? $raw_request['tags_mode'] : 'add');
-            $request['tags_value'] = $this->normalizeTagList((string) ifset($raw_request['tags_value'], ''));
+            $request['tags_value'] = $this->normalizeTagList(isset($raw_request['tags_value']) ? (string) $raw_request['tags_value'] : '');
             if (!$request['tags_value']) {
                 throw new InvalidArgumentException('Укажите хотя бы один тег.');
             }
         } elseif ($operation === 'url') {
             $request['url_mode'] = $this->normalizeUrlMode(isset($raw_request['url_mode']) ? $raw_request['url_mode'] : 'regenerate');
-            $request['url_value'] = trim((string) ifset($raw_request['url_value'], ''));
+            $request['url_value'] = isset($raw_request['url_value']) ? trim((string) $raw_request['url_value']) : '';
             if ($request['url_mode'] === 'template' && $request['url_value'] === '') {
                 throw new InvalidArgumentException('Укажите шаблон или URL-значение.');
             }
@@ -250,8 +250,17 @@ class shopMasseditorPluginMassOperationService
         $product = new shopProduct((int) $product_data['id']);
 
         if ($request['operation'] === 'description') {
-            $product['description'] = $this->buildDescriptionValue((string) ifset($product['description'], ''), $request);
-            $product->save();
+            $current_description = isset($product['description']) ? (string) $product['description'] : '';
+            $this->model->exec(
+                'UPDATE shop_product
+                 SET description = s:description, edit_datetime = s:edited_at
+                 WHERE id = i:id',
+                array(
+                    'description' => $this->buildDescriptionValue($current_description, $request),
+                    'edited_at' => date('Y-m-d H:i:s'),
+                    'id' => (int) $product_data['id'],
+                )
+            );
             return;
         }
 
@@ -305,14 +314,25 @@ class shopMasseditorPluginMassOperationService
 
     private function buildDescriptionValue($current_value, array $request)
     {
+        $current_value = (string) $current_value;
+        $text_value = (string) $request['text_value'];
+
         if ($request['description_mode'] === 'prepend') {
-            return $request['text_value'] . $current_value;
+            if ($text_value === '' || $current_value === '') {
+                return $text_value . $current_value;
+            }
+
+            return rtrim($text_value) . ' ' . ltrim($current_value);
         }
         if ($request['description_mode'] === 'append') {
-            return $current_value . $request['text_value'];
+            if ($current_value === '' || $text_value === '') {
+                return $current_value . $text_value;
+            }
+
+            return rtrim($current_value) . ' ' . ltrim($text_value);
         }
 
-        return $request['text_value'];
+        return $text_value;
     }
 
     private function buildProductUrl(array $product_data, array $request)

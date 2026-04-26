@@ -1,7 +1,123 @@
 (function () {
     'use strict';
 
+    var soonOperationsToggle = document.querySelector('[data-role="soon-operations-toggle"]');
+    var soonOperationsToggleLabel = document.querySelector('[data-role="soon-operations-toggle-label"]');
     var workspaceForm = document.querySelector('[data-role="workspace-form"]');
+    var toastStack = document.querySelector('[data-role="toast-stack"]');
+    var toastSourceNotices = Array.prototype.slice.call(document.querySelectorAll('[data-toast-source="true"]'));
+
+    function updateSoonOperationsToggleLabel() {
+        if (!soonOperationsToggle || !soonOperationsToggleLabel) {
+            return;
+        }
+
+        soonOperationsToggleLabel.textContent = soonOperationsToggle.checked ? 'Включено' : 'Выключено';
+    }
+
+    if (soonOperationsToggle) {
+        soonOperationsToggle.addEventListener('change', updateSoonOperationsToggleLabel);
+        updateSoonOperationsToggleLabel();
+    }
+
+    function toastTitle(type) {
+        if (type === 'success') {
+            return 'Успешно';
+        }
+        if (type === 'error') {
+            return 'Ошибка';
+        }
+
+        return 'Сообщение';
+    }
+
+    function removeToast(toast) {
+        if (!toast || !toast.parentNode) {
+            return;
+        }
+
+        toast.parentNode.removeChild(toast);
+    }
+
+    function showToast(type, message, options) {
+        if (!toastStack || !message) {
+            return;
+        }
+
+        var settings = options || {};
+        var toastType = type || 'info';
+        var toast = document.createElement('section');
+        var body = document.createElement('div');
+        var title = document.createElement('strong');
+        var text = document.createElement('p');
+        var closeButton = document.createElement('button');
+        var timeout = 0;
+
+        toast.className = 'masseditor-toast masseditor-toast_' + toastType;
+        toast.setAttribute('role', toastType === 'error' ? 'alert' : 'status');
+
+        body.className = 'masseditor-toast__body';
+        title.className = 'masseditor-toast__title';
+        title.textContent = settings.title || toastTitle(toastType);
+
+        text.className = 'masseditor-toast__message';
+        text.textContent = message;
+
+        closeButton.type = 'button';
+        closeButton.className = 'masseditor-toast__close';
+        closeButton.setAttribute('aria-label', 'Закрыть уведомление');
+        closeButton.textContent = '×';
+        closeButton.addEventListener('click', function () {
+            removeToast(toast);
+        });
+
+        body.appendChild(title);
+        body.appendChild(text);
+        toast.appendChild(body);
+        toast.appendChild(closeButton);
+        toastStack.appendChild(toast);
+
+        timeout = typeof settings.timeout === 'number'
+            ? settings.timeout
+            : (toastType === 'success' ? 4000 : 0);
+
+        if (timeout > 0) {
+            window.setTimeout(function () {
+                removeToast(toast);
+            }, timeout);
+        }
+    }
+
+    function showErrorToast(message) {
+        showToast('error', message, { timeout: 0 });
+    }
+
+    function initToastSources() {
+        if (!toastStack || !toastSourceNotices.length) {
+            return;
+        }
+
+        toastSourceNotices.forEach(function (notice) {
+            var messages = Array.prototype.slice.call(notice.querySelectorAll('p')).map(function (node) {
+                return node.textContent ? node.textContent.trim() : '';
+            }).filter(function (message) {
+                return message !== '';
+            });
+            var type = notice.getAttribute('data-toast-type') || 'info';
+
+            if (!messages.length) {
+                return;
+            }
+
+            notice.classList.add('is-toast-hidden');
+
+            messages.forEach(function (message) {
+                showToast(type, message);
+            });
+        });
+    }
+
+    initToastSources();
 
     if (!workspaceForm) {
         return;
@@ -19,6 +135,9 @@
     var selectionCounterPill = document.querySelector('[data-role="selection-counter-pill"]');
     var readyCopy = document.querySelector('[data-role="ready-copy"]');
     var openConfirmButton = document.querySelector('[data-role="open-confirm"]');
+    var openConfirmMobileButton = document.querySelector('[data-role="open-confirm-mobile"]');
+    var mobileApplyCount = document.querySelector('[data-role="mobile-apply-count"]');
+    var mobileApplyOperation = document.querySelector('[data-role="mobile-apply-operation"]');
     var confirmApply = document.querySelector('[data-role="confirm-apply"]');
     var modal = document.querySelector('[data-role="confirm-modal"]');
     var closeModalButtons = Array.prototype.slice.call(document.querySelectorAll('[data-role="close-modal"]'));
@@ -26,6 +145,8 @@
     var modalOperation = document.querySelector('[data-role="modal-operation"]');
     var modalMode = document.querySelector('[data-role="modal-mode"]');
     var modalValue = document.querySelector('[data-role="modal-value"]');
+    var selectionStorageKey = buildSelectionStorageKey();
+    var selectedProductsMap = loadSelectedProductsMap();
 
     var operationLabels = {
         price: 'Изменить цену',
@@ -41,6 +162,137 @@
         return operationInput ? operationInput.value : 'price';
     }
 
+    function buildSelectionStorageKey() {
+        var pluginIdField = workspaceForm.querySelector('input[name="plugin"]');
+        var pluginId = pluginIdField ? pluginIdField.value : 'masseditor';
+        return 'masseditor:selected-products:' + pluginId;
+    }
+
+    function toProductId(value) {
+        var id = parseInt(value, 10);
+        return id > 0 ? id : 0;
+    }
+
+    function loadSelectedProductsMap() {
+        var map = {};
+        var raw = '';
+
+        try {
+            raw = window.localStorage.getItem(selectionStorageKey) || '';
+        } catch (e) {
+            raw = '';
+        }
+
+        if (!raw) {
+            return map;
+        }
+
+        try {
+            var ids = JSON.parse(raw);
+            if (!Array.isArray(ids)) {
+                return map;
+            }
+
+            ids.forEach(function (id) {
+                var productId = toProductId(id);
+                if (productId) {
+                    map[productId] = true;
+                }
+            });
+        } catch (e) {
+            return {};
+        }
+
+        return map;
+    }
+
+    function saveSelectedProductsMap() {
+        var ids = Object.keys(selectedProductsMap).map(function (key) {
+            return parseInt(key, 10);
+        }).filter(function (id) {
+            return id > 0;
+        });
+
+        try {
+            if (ids.length) {
+                window.localStorage.setItem(selectionStorageKey, JSON.stringify(ids));
+            } else {
+                window.localStorage.removeItem(selectionStorageKey);
+            }
+        } catch (e) {
+        }
+    }
+
+    function resetSelectionIfRequested() {
+        if (workspaceForm.getAttribute('data-selection-reset') !== '1') {
+            return;
+        }
+
+        selectedProductsMap = {};
+        saveSelectedProductsMap();
+    }
+
+    function selectedProductsCount() {
+        return Object.keys(selectedProductsMap).length;
+    }
+
+    function syncCheckboxesFromSelection() {
+        productCheckboxes.forEach(function (checkbox) {
+            var productId = toProductId(checkbox.value);
+            checkbox.checked = !!selectedProductsMap[productId];
+        });
+    }
+
+    function syncRowSelectionState() {
+        productCheckboxes.forEach(function (checkbox) {
+            if (!checkbox || !checkbox.closest) {
+                return;
+            }
+
+            var row = checkbox.closest('tr');
+            if (!row) {
+                return;
+            }
+
+            row.classList.toggle('is-selected', checkbox.checked);
+        });
+    }
+
+    function setProductSelection(productId, isSelected) {
+        if (!productId) {
+            return;
+        }
+
+        if (isSelected) {
+            selectedProductsMap[productId] = true;
+        } else {
+            delete selectedProductsMap[productId];
+        }
+    }
+
+    function appendPersistedProductInputs() {
+        var staleInputs = workspaceForm.querySelectorAll('input[data-role="persisted-product-id"]');
+        Array.prototype.slice.call(staleInputs).forEach(function (input) {
+            if (input && input.parentNode) {
+                input.parentNode.removeChild(input);
+            }
+        });
+
+        Object.keys(selectedProductsMap).forEach(function (key) {
+            var productId = toProductId(key);
+            if (!productId) {
+                return;
+            }
+
+            var input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'product_ids[]';
+            input.value = String(productId);
+            input.setAttribute('data-role', 'persisted-product-id');
+            workspaceForm.appendChild(input);
+        });
+    }
+
     function countCheckedProducts() {
         return productCheckboxes.filter(function (checkbox) {
             return checkbox.checked;
@@ -49,26 +301,33 @@
 
     function updateSelectionState() {
         var checkedCount = countCheckedProducts();
+        var totalSelected = selectedProductsCount();
+        var total = selectionCounterPill ? parseInt(selectionCounterPill.getAttribute('data-total') || '0', 10) : 0;
 
         if (selectedCount) {
-            selectedCount.textContent = checkedCount;
+            selectedCount.textContent = totalSelected;
         }
 
         if (selectionCounterPill) {
-            var total = selectionCounterPill.textContent.split('из').pop();
-            selectionCounterPill.textContent = checkedCount + ' из' + total;
+            selectionCounterPill.textContent = totalSelected + ' из ' + total;
         }
 
         if (readyCopy) {
-            readyCopy.textContent = checkedCount > 0
-                ? checkedCount + ' товара(ов) будут обработаны после подтверждения.'
-                : 'Выберите товары и подтвердите действие в модальном окне.';
+            readyCopy.textContent = totalSelected > 0
+                ? totalSelected + ' товара(ов) · действие будет записано в журнал'
+                : 'Выберите товары для обработки.';
         }
 
         if (selectAll) {
             selectAll.checked = checkedCount > 0 && checkedCount === productCheckboxes.length;
             selectAll.indeterminate = checkedCount > 0 && checkedCount < productCheckboxes.length;
         }
+
+        if (mobileApplyCount) {
+            mobileApplyCount.textContent = totalSelected + ' товара(ов)';
+        }
+
+        syncRowSelectionState();
     }
 
     function setOperation(operation) {
@@ -84,6 +343,10 @@
 
         if (operationTitle) {
             operationTitle.textContent = operationLabels[operation] || 'Параметры операции';
+        }
+
+        if (mobileApplyOperation) {
+            mobileApplyOperation.textContent = operationLabels[operation] || 'Параметры операции';
         }
 
         operationFieldGroups.forEach(function (field) {
@@ -167,26 +430,26 @@
     }
 
     function validateBeforeModal() {
-        var checkedCount = countCheckedProducts();
+        var checkedCount = selectedProductsCount();
         var operation = currentOperation();
 
         if (checkedCount === 0) {
-            window.alert('Выберите хотя бы один товар.');
+            showErrorToast('Выберите хотя бы один товар.');
             return false;
         }
 
         if ((operation === 'price' || operation === 'compare_price') && !document.getElementById('masseditor-numeric-value').value.trim()) {
-            window.alert('Укажите значение для массовой операции.');
+            showErrorToast('Укажите значение для массовой операции.');
             return false;
         }
 
         if (operation === 'description' && !document.getElementById('masseditor-text-value').value.trim()) {
-            window.alert('Введите текст для описания.');
+            showErrorToast('Введите текст для описания.');
             return false;
         }
 
         if (operation === 'tags' && !document.getElementById('masseditor-tags-value').value.trim()) {
-            window.alert('Укажите хотя бы один тег.');
+            showErrorToast('Укажите хотя бы один тег.');
             return false;
         }
 
@@ -194,7 +457,7 @@
             var mode = document.getElementById('masseditor-url-mode');
             var value = document.getElementById('masseditor-url-value');
             if (mode && mode.value === 'template' && value && !value.value.trim()) {
-                window.alert('Укажите шаблон URL.');
+                showErrorToast('Укажите шаблон URL.');
                 return false;
             }
         }
@@ -202,7 +465,7 @@
         if (operation === 'price' && comparePriceMode && comparePriceMode.value === 'coefficient') {
             var coefficient = document.getElementById('masseditor-compare-price-value');
             if (!coefficient || !coefficient.value.trim()) {
-                window.alert('Укажите коэффициент для compare price.');
+                showErrorToast('Укажите коэффициент для compare price.');
                 return false;
             }
         }
@@ -218,7 +481,7 @@
         }
 
         if (modalCount) {
-            modalCount.textContent = countCheckedProducts();
+            modalCount.textContent = selectedProductsCount();
         }
         if (modalOperation) {
             modalOperation.textContent = operationLabels[operation] || '—';
@@ -262,17 +525,27 @@
         selectAll.addEventListener('change', function () {
             productCheckboxes.forEach(function (checkbox) {
                 checkbox.checked = selectAll.checked;
+                setProductSelection(toProductId(checkbox.value), checkbox.checked);
             });
+            saveSelectedProductsMap();
             updateSelectionState();
         });
     }
 
     productCheckboxes.forEach(function (checkbox) {
-        checkbox.addEventListener('change', updateSelectionState);
+        checkbox.addEventListener('change', function () {
+            setProductSelection(toProductId(checkbox.value), checkbox.checked);
+            saveSelectedProductsMap();
+            updateSelectionState();
+        });
     });
 
     if (openConfirmButton) {
         openConfirmButton.addEventListener('click', openModal);
+    }
+
+    if (openConfirmMobileButton) {
+        openConfirmMobileButton.addEventListener('click', openModal);
     }
 
     closeModalButtons.forEach(function (button) {
@@ -287,10 +560,14 @@
                 closeModal();
                 return;
             }
+            appendPersistedProductInputs();
+            saveSelectedProductsMap();
             confirmApply.value = '1';
         }
     });
 
+    resetSelectionIfRequested();
+    syncCheckboxesFromSelection();
     setOperation(currentOperation());
     updateSelectionState();
 })();

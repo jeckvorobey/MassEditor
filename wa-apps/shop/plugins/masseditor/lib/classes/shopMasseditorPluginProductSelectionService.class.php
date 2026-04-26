@@ -52,10 +52,30 @@ class shopMasseditorPluginProductSelectionService
 
         $products = $this->product_model
             ->query(
-                'SELECT DISTINCT p.id, p.name, p.status, p.price, p.compare_price, p.count, p.edit_datetime, p.url, p.category_id,
-                        ms.sku AS main_sku
+                'SELECT p.id, p.name, p.status, p.price, p.compare_price, p.count, p.edit_datetime, p.url, p.description, p.category_id,
+                        ms.sku AS main_sku,
+                        CASE
+                            WHEN MAX(COALESCE(sku_all.available, 0)) = 1 THEN 1
+                            ELSE 0
+                        END AS availability,
+                        COALESCE(
+                            NULLIF(GROUP_CONCAT(DISTINCT c.name ORDER BY c.name SEPARATOR \', \'), \'\'),
+                            pc.name,
+                            \'-\'
+                        ) AS category_names,
+                        COALESCE(
+                            NULLIF(GROUP_CONCAT(DISTINCT t.name ORDER BY t.name SEPARATOR \', \'), \'\'),
+                            \'-\'
+                        ) AS tag_names
                  FROM shop_product p
-                 LEFT JOIN shop_product_skus ms ON ms.id = p.sku_id ' . $conditions['joins'] . ' ' . $conditions['sql'] . '
+                 LEFT JOIN shop_product_skus ms ON ms.id = p.sku_id
+                 LEFT JOIN shop_product_skus sku_all ON sku_all.product_id = p.id
+                 LEFT JOIN shop_category pc ON pc.id = p.category_id
+                 LEFT JOIN shop_category_products cp_all ON cp_all.product_id = p.id
+                 LEFT JOIN shop_category c ON c.id = cp_all.category_id
+                 LEFT JOIN shop_product_tags pt ON pt.product_id = p.id
+                 LEFT JOIN shop_tag t ON t.id = pt.tag_id ' . $conditions['joins'] . ' ' . $conditions['sql'] . '
+                 GROUP BY p.id, p.name, p.status, p.price, p.compare_price, p.count, p.edit_datetime, p.url, p.description, p.category_id, ms.sku, pc.name
                  ORDER BY p.id DESC
                  LIMIT ' . (int) $page_size . ' OFFSET ' . (int) $offset,
                 $conditions['params']
@@ -102,13 +122,23 @@ class shopMasseditorPluginProductSelectionService
             $category_id = max(0, (int) $raw_filters['category_id']);
         }
 
+        $availability = 'all';
+        if (isset($raw_filters['availability'])) {
+            $availability = (string) $raw_filters['availability'];
+        }
+
         if (!in_array($status, array('all', 'published', 'hidden', 'unpublished'), true)) {
             $status = 'all';
+        }
+
+        if (!in_array($availability, array('all', 'available', 'unavailable'), true)) {
+            $availability = 'all';
         }
 
         return array(
             'query' => $query,
             'status' => $status,
+            'availability' => $availability,
             'category_id' => $category_id,
         );
     }
@@ -156,11 +186,25 @@ class shopMasseditorPluginProductSelectionService
             $params['status'] = -1;
         }
 
+        if ($filters['availability'] === 'available') {
+            $where[] = 'EXISTS (
+                SELECT 1
+                FROM shop_product_skus sa
+                WHERE sa.product_id = p.id AND sa.available = 1
+            )';
+        } elseif ($filters['availability'] === 'unavailable') {
+            $where[] = 'NOT EXISTS (
+                SELECT 1
+                FROM shop_product_skus sa
+                WHERE sa.product_id = p.id AND sa.available = 1
+            )';
+        }
+
         if ($filters['category_id'] > 0) {
             $joins .= '
-                INNER JOIN shop_category_products cp ON cp.product_id = p.id
+                INNER JOIN shop_category_products cpf ON cpf.product_id = p.id
             ';
-            $where[] = 'cp.category_id = i:category_id';
+            $where[] = 'cpf.category_id = i:category_id';
             $params['category_id'] = $filters['category_id'];
         }
 

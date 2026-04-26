@@ -1,0 +1,103 @@
+<?php
+
+use PHPUnit\Framework\TestCase;
+
+require_once __DIR__ . '/TestHelpers.php';
+
+class BackendActionTest extends TestCase
+{
+    use InvokesPrivateMethods;
+
+    protected function setUp(): void
+    {
+        waContact::$names = array(5 => 'Alice Admin');
+        $plugin = new shopMasseditorPlugin(array(
+            'date_format' => 'd.m.Y H:i',
+            'page_size' => 50,
+            'operation_limit' => 100,
+            'log_retention_days' => 90,
+            'theme_mode' => 'auto',
+            'show_soon_operations' => 0,
+        ));
+        $GLOBALS['fake_wa_system'] = new FakeWaSystem();
+        $GLOBALS['fake_wa_system']->plugins['masseditor'] = $plugin;
+    }
+
+    public function testBuildPaginationUiCreatesEllipsisAndBounds(): void
+    {
+        $action = new shopMasseditorPluginBackendAction();
+        $ui = $this->invokePrivate($action, 'buildPaginationUi', array(array(
+            'page' => 5,
+            'pages' => 10,
+            'page_size' => 50,
+            'total' => 475,
+        )));
+
+        $this->assertSame(201, $ui['from']);
+        $this->assertSame(250, $ui['to']);
+        $this->assertTrue($ui['has_prev']);
+        $this->assertTrue($ui['has_next']);
+        $this->assertContains(array('type' => 'ellipsis'), $ui['items']);
+    }
+
+    public function testFormattingHelpersNormalizeValues(): void
+    {
+        $action = new shopMasseditorPluginBackendAction();
+
+        $this->assertSame('10.5', $this->invokePrivate($action, 'formatDecimalForView', array('10.5000')));
+        $this->assertSame('-0', $this->invokePrivate($action, 'formatDecimalForView', array('-0')));
+        $this->assertSame('26.04.2026 14:30', $this->invokePrivate($action, 'formatDateForView', array('2026-04-26 14:30:00', 'd.m.Y H:i')));
+    }
+
+    public function testSelectedIdsAndOperationFormMerge(): void
+    {
+        $action = new shopMasseditorPluginBackendAction();
+
+        $this->assertSame(array(2, 3), $this->invokePrivate($action, 'normalizeSelectedProductIds', array(array('2', '3', '0', '2'))));
+        $this->assertSame(array('operation' => 'tags', 'mode' => 'set'), $this->invokePrivate($action, 'mergeOperationForm', array(
+            array('operation' => 'price', 'mode' => 'set'),
+            array('operation' => 'tags', 'other' => 'ignored'),
+        )));
+    }
+
+    public function testDecorateLogsSettingsAndOperationsLibrary(): void
+    {
+        $action = new shopMasseditorPluginBackendAction();
+        $logs = $this->invokePrivate($action, 'decorateLogs', array(array(
+            array('action_type' => 'price', 'user_id' => 5, 'created_at' => '2026-04-26 14:30:00'),
+            array('action_type' => 'unknown', 'user_id' => 99, 'created_at' => 'broken'),
+        )));
+
+        $this->assertSame('Цена', $logs[0]['action_label']);
+        $this->assertSame('Alice Admin', $logs[0]['user_name']);
+        $this->assertSame('26.04.2026 14:30', $logs[0]['created_at_view']);
+        $this->assertNull($logs[1]['user_name']);
+        $this->assertSame('broken', $logs[1]['created_at_view']);
+
+        $options = $this->invokePrivate($action, 'getDateFormatOptions');
+        $this->assertArrayHasKey('Y-m-d H:i', $options);
+
+        $library = $this->invokePrivate($action, 'getOperationsLibrary', array(0));
+        $flat_ids = array();
+        foreach ($library as $group) {
+            foreach ($group['items'] as $item) {
+                $flat_ids[] = $item['id'];
+            }
+        }
+        $this->assertContains('price', $flat_ids);
+        $this->assertNotContains('sku_generator', $flat_ids);
+    }
+
+    public function testPluginSettingsNormalizationAndThemeMode(): void
+    {
+        $action = new shopMasseditorPluginBackendAction();
+        $plugin = $GLOBALS['fake_wa_system']->plugins['masseditor'];
+        $settings = $this->invokePrivate($action, 'getPluginSettings', array($plugin));
+
+        $this->assertSame(50, $settings['page_size']);
+        $this->assertSame('auto', $settings['theme_mode']);
+        $this->assertSame('auto', $this->invokePrivate($action, 'normalizeThemeMode', array('broken')));
+        $this->assertSame('d.m.Y H:i', $this->invokePrivate($action, 'normalizeDateFormat', array('wrong')));
+        $this->assertSame(200, $this->invokePrivate($action, 'normalizeIntSetting', array(999, 50, 10, 200)));
+    }
+}

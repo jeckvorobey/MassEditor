@@ -106,6 +106,31 @@ php -l wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginLogServic
 php -l wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginMassOperationService.class.php
 ```
 
+## Автотесты
+
+В репозитории есть два независимых набора тестов:
+
+- PHP: `tests/php/` через `PHPUnit PHAR`
+- JS: `tests/js/` через встроенный `node:test`
+
+Команды запуска из корня репозитория:
+
+```bash
+bash tests/run-js-tests.sh
+bash tests/run-php-tests.sh
+```
+
+Перед первым PHP-прогоном нужно один раз скачать `phpunit.phar`:
+
+```bash
+curl -L https://phar.phpunit.de/phpunit-10.phar -o tests/phpunit.phar
+```
+
+PHP-тесты используют локальный bootstrap с заглушками Webasyst/Shop-Script и
+проверяют сервисы плагина, helper-логику backend action и публичное меню
+плагина. JS-тесты покрывают `masseditor.js`: выбор товаров, localStorage,
+валидацию и confirm modal.
+
 ## Локальная проверка в Docker
 
 Для ручной проверки нужен отдельный стенд Webasyst + Shop-Script. В репозитории

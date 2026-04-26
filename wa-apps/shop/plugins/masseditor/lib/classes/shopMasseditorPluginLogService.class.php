@@ -46,6 +46,36 @@ class shopMasseditorPluginLogService
             ->fetchAll();
     }
 
+    public function getPage($page = 1, $page_size = 20)
+    {
+        $page_size = $this->normalizePageSize($page_size);
+        $total = (int) $this->log_model
+            ->query('SELECT COUNT(*) FROM shop_masseditor_log')
+            ->fetchField();
+
+        $page = $this->normalizePage($page, $total, $page_size);
+        $offset = ($page - 1) * $page_size;
+
+        $logs = $this->log_model
+            ->query(
+                'SELECT id, user_id, action_type, entity_count, description, created_at
+                 FROM shop_masseditor_log
+                 ORDER BY id DESC
+                 LIMIT ' . (int) $page_size . ' OFFSET ' . (int) $offset
+            )
+            ->fetchAll();
+
+        return array(
+            'logs' => $logs,
+            'pagination' => array(
+                'page' => $page,
+                'page_size' => $page_size,
+                'total' => $total,
+                'pages' => max(1, (int) ceil($total / $page_size)),
+            ),
+        );
+    }
+
     public function purgeOlderThanDays($days)
     {
         $days = (int) $days;
@@ -86,5 +116,23 @@ class shopMasseditorPluginLogService
         $description = trim((string) $description);
 
         return $description !== '' ? $description : null;
+    }
+
+    private function normalizePage($page, $total, $page_size)
+    {
+        $page = max(1, (int) $page);
+        $pages = max(1, (int) ceil($total / $page_size));
+
+        return min($page, $pages);
+    }
+
+    private function normalizePageSize($page_size)
+    {
+        $page_size = (int) $page_size;
+        if ($page_size <= 0) {
+            $page_size = 20;
+        }
+
+        return min(200, $page_size);
     }
 }
