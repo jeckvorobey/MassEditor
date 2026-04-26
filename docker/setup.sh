@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# Выставляет права после ручной распаковки Webasyst в volume
-WA_DIR="/var/www/webasyst"
+# Вспомогательный скрипт для ручной диагностики volume.
+# Обычный Docker-сценарий выполняет первичную подготовку в php/entrypoint.sh.
+WA_DIR="/webasyst"
 
 echo "==> Проверяем наличие Webasyst..."
 if [ ! -f "$WA_DIR/wa.php" ]; then
     echo "ОШИБКА: $WA_DIR/wa.php не найден."
-    echo "Скачайте Webasyst вручную с https://www.webasyst.ru/download/"
-    echo "и распакуйте в контейнер:"
-    echo "  docker cp webasyst.zip <php-container>:/tmp/webasyst.zip"
-    echo "  docker compose exec php sh -c 'unzip -q /tmp/webasyst.zip -d /tmp/wa && cp -r /tmp/wa/*/. $WA_DIR/'"
+    echo "Запустите обычную первичную подготовку:"
+    echo "  cd docker"
+    echo "  docker compose up -d --build"
     exit 1
 fi
 echo "    Webasyst найден."

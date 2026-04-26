@@ -46,6 +46,22 @@ class shopMasseditorPluginLogService
             ->fetchAll();
     }
 
+    public function purgeOlderThanDays($days)
+    {
+        $days = (int) $days;
+        if ($days <= 0) {
+            return 0;
+        }
+
+        return $this->log_model->exec(
+            'DELETE FROM shop_masseditor_log
+             WHERE created_at < s:threshold',
+            array(
+                'threshold' => date('Y-m-d H:i:s', strtotime('-' . $days . ' days')),
+            )
+        );
+    }
+
     private function normalizeUserId($user_id)
     {
         if ($user_id === null) {
