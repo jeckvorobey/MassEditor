@@ -156,6 +156,24 @@ class waViewAction
     }
 }
 
+class waLog
+{
+    public static $logs = array();
+
+    public static function reset()
+    {
+        self::$logs = array();
+    }
+
+    public static function log($message, $file = null)
+    {
+        self::$logs[] = array(
+            'message' => $message,
+            'file' => $file,
+        );
+    }
+}
+
 class waRequest
 {
     const TYPE_STRING_TRIM = 'string_trim';

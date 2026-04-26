@@ -10,6 +10,8 @@ class BackendActionTest extends TestCase
 
     protected function setUp(): void
     {
+        waRequest::reset();
+        waLog::reset();
         waContact::$names = array(5 => 'Alice Admin');
         $plugin = new shopMasseditorPlugin(array(
             'date_format' => 'd.m.Y H:i',
@@ -21,6 +23,48 @@ class BackendActionTest extends TestCase
         ));
         $GLOBALS['fake_wa_system'] = new FakeWaSystem();
         $GLOBALS['fake_wa_system']->plugins['masseditor'] = $plugin;
+    }
+
+    public function testExecuteRejectsNonAdminBeforeReadingBackendData(): void
+    {
+        $GLOBALS['fake_wa_system']->user = new FakeUser(9, false);
+        $action = new shopMasseditorPluginBackendAction();
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Недостаточно прав');
+
+        $action->execute();
+    }
+
+    public function testUnexpectedPostExceptionIsLoggedAndHiddenFromUi(): void
+    {
+        $GLOBALS['fake_wa_system']->plugins['masseditor'] = new ThrowingSettingsShopMasseditorPlugin(array(
+            'date_format' => 'd.m.Y H:i',
+            'page_size' => 50,
+            'operation_limit' => 100,
+            'log_retention_days' => 90,
+            'theme_mode' => 'auto',
+            'show_soon_operations' => 0,
+        ));
+        waRequest::$method = 'post';
+        waRequest::$post = array(
+            'save_settings' => 1,
+            'page_size' => 50,
+            'operation_limit' => 100,
+            'log_retention_days' => 90,
+            'date_format' => 'd.m.Y H:i',
+            'theme_mode' => 'auto',
+        );
+
+        $action = new shopMasseditorPluginBackendAction();
+        $action->execute();
+
+        $this->assertSame(array('Операцию не удалось выполнить. Повторите действие или проверьте журнал ошибок.'), $action->view->assigned['errors']);
+        $this->assertStringNotContainsString('SQLSTATE', $action->view->assigned['errors'][0]);
+        $this->assertSame('settings', $action->view->assigned['active_tab']);
+        $this->assertCount(1, waLog::$logs);
+        $this->assertStringContainsString('SQLSTATE', waLog::$logs[0]['message']);
+        $this->assertSame('shop/plugins/masseditor.log', waLog::$logs[0]['file']);
     }
 
     public function testBuildPaginationUiCreatesEllipsisAndBounds(): void
@@ -99,5 +143,13 @@ class BackendActionTest extends TestCase
         $this->assertSame('auto', $this->invokePrivate($action, 'normalizeThemeMode', array('broken')));
         $this->assertSame('d.m.Y H:i', $this->invokePrivate($action, 'normalizeDateFormat', array('wrong')));
         $this->assertSame(200, $this->invokePrivate($action, 'normalizeIntSetting', array(999, 50, 10, 200)));
+    }
+}
+
+class ThrowingSettingsShopMasseditorPlugin extends shopMasseditorPlugin
+{
+    public function saveSettings(array $settings)
+    {
+        throw new RuntimeException('SQLSTATE[42000]: leaked internal SQL error');
     }
 }

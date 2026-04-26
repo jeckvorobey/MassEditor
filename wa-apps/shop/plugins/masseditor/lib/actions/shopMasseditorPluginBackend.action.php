@@ -4,6 +4,8 @@ class shopMasseditorPluginBackendAction extends waViewAction
 {
     public function execute()
     {
+        $this->assertAdminRights();
+
         /** @var shopMasseditorPlugin $plugin */
         $plugin = wa('shop')->getPlugin('masseditor');
         $settings = $this->getPluginSettings($plugin);
@@ -71,16 +73,13 @@ class shopMasseditorPluginBackendAction extends waViewAction
                     $operation_form = $this->mergeOperationForm($operation_form, $result['request']);
                     $active_tab = 'products';
                 }
-            } catch (Exception $e) {
+            } catch (InvalidArgumentException $e) {
                 $errors[] = $e->getMessage();
-                if (waRequest::post('do_apply', 0, waRequest::TYPE_INT)) {
-                    $operation_payload = $this->readOperationPayload();
-                    $operation_form = $this->mergeOperationForm($operation_form, $operation_payload);
-                    $selected_product_ids = $this->normalizeSelectedProductIds($operation_payload['product_ids']);
-                    $active_tab = 'products';
-                } else {
-                    $active_tab = 'settings';
-                }
+                $this->restorePostStateAfterError($operation_form, $selected_product_ids, $active_tab);
+            } catch (Exception $e) {
+                $this->logUnexpectedException($e);
+                $errors[] = 'Операцию не удалось выполнить. Повторите действие или проверьте журнал ошибок.';
+                $this->restorePostStateAfterError($operation_form, $selected_product_ids, $active_tab);
             }
         }
 
@@ -292,6 +291,30 @@ class shopMasseditorPluginBackendAction extends waViewAction
         return array_values($product_ids);
     }
 
+    private function restorePostStateAfterError(array &$operation_form, array &$selected_product_ids, &$active_tab)
+    {
+        if (waRequest::post('do_apply', 0, waRequest::TYPE_INT)) {
+            $operation_payload = $this->readOperationPayload();
+            $operation_form = $this->mergeOperationForm($operation_form, $operation_payload);
+            $selected_product_ids = $this->normalizeSelectedProductIds($operation_payload['product_ids']);
+            $active_tab = 'products';
+            return;
+        }
+
+        $active_tab = 'settings';
+    }
+
+    private function logUnexpectedException(Exception $e)
+    {
+        $message = get_class($e) . ': ' . $e->getMessage();
+        if (class_exists('waLog')) {
+            waLog::log($message, 'shop/plugins/masseditor.log');
+            return;
+        }
+
+        error_log($message);
+    }
+
     private function decorateLogs(array $logs)
     {
         $user_names = $this->resolveUserNames($logs);
@@ -385,6 +408,13 @@ class shopMasseditorPluginBackendAction extends waViewAction
         $plugin->saveSettings($settings);
 
         return $settings;
+    }
+
+    private function assertAdminRights()
+    {
+        if (!wa()->getUser()->isAdmin('shop')) {
+            throw new RuntimeException('Недостаточно прав для управления Mass Editor.');
+        }
     }
 
     private function normalizeIntSetting($value, $default, $min, $max)
