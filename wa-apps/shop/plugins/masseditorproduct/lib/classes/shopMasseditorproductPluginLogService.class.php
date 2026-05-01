@@ -1,15 +1,15 @@
 <?php
 
-class shopMasseditorPluginLogService
+class shopMasseditorproductPluginLogService
 {
     /**
-     * @var shopMasseditorPluginLogModel
+     * @var shopMasseditorproductPluginLogModel
      */
     private $log_model;
 
-    public function __construct(shopMasseditorPluginLogModel $log_model = null)
+    public function __construct(shopMasseditorproductPluginLogModel $log_model = null)
     {
-        $this->log_model = $log_model ?: new shopMasseditorPluginLogModel();
+        $this->log_model = $log_model ?: new shopMasseditorproductPluginLogModel();
     }
 
     public function log($action_type, $entity_count, $description = null, $user_id = null)
@@ -39,7 +39,7 @@ class shopMasseditorPluginLogService
         return $this->log_model
             ->query(
                 'SELECT id, user_id, action_type, entity_count, description, created_at
-                 FROM shop_masseditor_log
+                 FROM shop_masseditorproduct_log
                  ORDER BY id DESC
                  LIMIT ' . $limit
             )
@@ -50,7 +50,7 @@ class shopMasseditorPluginLogService
     {
         $page_size = $this->normalizePageSize($page_size);
         $total = (int) $this->log_model
-            ->query('SELECT COUNT(*) FROM shop_masseditor_log')
+            ->query('SELECT COUNT(*) FROM shop_masseditorproduct_log')
             ->fetchField();
 
         $page = $this->normalizePage($page, $total, $page_size);
@@ -59,7 +59,7 @@ class shopMasseditorPluginLogService
         $logs = $this->log_model
             ->query(
                 'SELECT id, user_id, action_type, entity_count, description, created_at
-                 FROM shop_masseditor_log
+                 FROM shop_masseditorproduct_log
                  ORDER BY id DESC
                  LIMIT ' . (int) $page_size . ' OFFSET ' . (int) $offset
             )
@@ -84,7 +84,7 @@ class shopMasseditorPluginLogService
         }
 
         return $this->log_model->exec(
-            'DELETE FROM shop_masseditor_log
+            'DELETE FROM shop_masseditorproduct_log
              WHERE created_at < s:threshold',
             array(
                 'threshold' => date('Y-m-d H:i:s', strtotime('-' . $days . ' days')),

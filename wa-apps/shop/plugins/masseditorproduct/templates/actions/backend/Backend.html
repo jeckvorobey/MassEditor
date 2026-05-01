@@ -1,0 +1,464 @@
+<link rel="stylesheet" href="{$plugin_static_url}css/masseditorproduct.css">
+<script>window.masseditorproductI18n = {$js_i18n_json};</script>
+<script src="{$plugin_static_url}js/masseditorproduct.js" defer></script>
+
+<div class="masseditorproduct-viewport">
+<div class="masseditorproduct {$theme_class|escape}" data-active-tab="{$active_tab|escape}" data-theme-mode="{$settings.theme_mode|escape}">
+    <div class="masseditorproduct-toast-stack" data-role="toast-stack" aria-live="polite" aria-atomic="false"></div>
+
+    {if $errors}
+        <div class="errormsg masseditorproduct-notice masseditorproduct-notice_error" role="alert" data-toast-source="true" data-toast-type="error">
+            {foreach $errors as $error}
+                <p>{$error|escape}</p>
+            {/foreach}
+        </div>
+    {/if}
+
+    {if $result_message}
+        <div class="successmsg masseditorproduct-notice masseditorproduct-notice_success" role="status" data-toast-source="true" data-toast-type="success">
+            <p>{$result_message|escape}</p>
+        </div>
+    {/if}
+
+    <header class="masseditorproduct-header">
+        <div>
+            <h1>Mass Editor Product</h1>
+            <p class="masseditorproduct-subtitle">{$texts.subtitle|escape}</p>
+        </div>
+        <nav class="masseditorproduct-tabs" aria-label="Mass Editor Product">
+            <a class="masseditorproduct-tab{if $active_tab === 'products'} is-active{/if}" href="?plugin={$plugin_id|escape}&view=products&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&page={$pagination.page|escape:'url'}">{$texts.nav_products|escape}</a>
+            <a class="masseditorproduct-tab{if $active_tab === 'log'} is-active{/if}" href="?plugin={$plugin_id|escape}&view=log&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&page={$pagination.page|escape:'url'}&log_page={$log_pagination.page|escape:'url'}">{$texts.nav_log|escape}</a>
+            <a class="masseditorproduct-tab{if $active_tab === 'settings'} is-active{/if}" href="?plugin={$plugin_id|escape}&view=settings&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&page={$pagination.page|escape:'url'}&log_page={$log_pagination.page|escape:'url'}">{$texts.nav_settings|escape}</a>
+        </nav>
+    </header>
+
+    <section class="masseditorproduct-stats">
+        <article class="masseditorproduct-stat">
+            <span class="masseditorproduct-stat__label">{$texts.stats_found|escape}</span>
+            <strong class="masseditorproduct-stat__value">{$pagination.total|escape}</strong>
+        </article>
+        <article class="masseditorproduct-stat">
+            <span class="masseditorproduct-stat__label">{$texts.stats_selected|escape}</span>
+            <strong class="masseditorproduct-stat__value masseditorproduct-stat__value_primary" data-role="selected-count">0</strong>
+        </article>
+        <article class="masseditorproduct-stat">
+            <span class="masseditorproduct-stat__label">{$texts.stats_last_operation|escape}</span>
+            <strong class="masseditorproduct-stat__value masseditorproduct-stat__value_small">{if $last_log}{$last_log.action_label|escape}{else}{$texts.no_data|escape}{/if}</strong>
+            <span class="masseditorproduct-stat__meta">{if $last_log}{$last_log.created_at_view|escape} · {$last_log.entity_count|escape} {$texts.products_word|escape}{else}{$texts.log_empty_short|escape}{/if}</span>
+        </article>
+    </section>
+
+    {if $active_tab === 'products'}
+        <form method="post" action="?plugin={$plugin_id|escape}&view=products&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&page={$pagination.page|escape:'url'}" class="masseditorproduct-products-page" data-role="workspace-form" data-selection-reset="{if $result_message}1{else}0{/if}">
+            {$wa->csrf()}
+            <input type="hidden" name="view" value="products">
+            <input type="hidden" name="operation" value="{$operation_form.operation|escape}" data-role="operation-input">
+            <input type="hidden" name="confirm_apply" value="0" data-role="confirm-apply">
+
+            <section class="masseditorproduct-workspace">
+                <aside class="masseditorproduct-panel masseditorproduct-panel_filters">
+                    <div class="masseditorproduct-panel__head"><h2>{$texts.filters|escape}</h2></div>
+                    <div class="masseditorproduct-field-stack">
+                        <div class="masseditorproduct-field">
+                            <label for="masseditorproduct-query">{$texts.search|escape}</label>
+                            <input id="masseditorproduct-query" type="text" name="query" value="{$filters.query|escape}" form="masseditorproduct-filter-form" placeholder="{$texts.search_placeholder|escape}">
+                        </div>
+                        <div class="masseditorproduct-field">
+                            <label for="masseditorproduct-status">{$texts.status|escape}</label>
+                            <select id="masseditorproduct-status" name="status" form="masseditorproduct-filter-form">
+                                <option value="all"{if $filters.status === 'all'} selected{/if}>{$texts.all|escape}</option>
+                                <option value="published"{if $filters.status === 'published'} selected{/if}>{$texts.published_plural|escape}</option>
+                                <option value="hidden"{if $filters.status === 'hidden'} selected{/if}>{$texts.hidden_plural|escape}</option>
+                                <option value="unpublished"{if $filters.status === 'unpublished'} selected{/if}>{$texts.unpublished_plural|escape}</option>
+                            </select>
+                        </div>
+                        <div class="masseditorproduct-field">
+                            <label for="masseditorproduct-category">{$texts.category|escape}</label>
+                            <select id="masseditorproduct-category" name="category_id" form="masseditorproduct-filter-form">
+                                <option value="0"{if !$filters.category_id} selected{/if}>{$texts.all_categories|escape}</option>
+                                {foreach $categories as $category}
+                                    <option value="{$category.id|escape}"{if $filters.category_id == $category.id} selected{/if}>{$category.name|escape}</option>
+                                {/foreach}
+                            </select>
+                        </div>
+                        <div class="masseditorproduct-field">
+                            <label for="masseditorproduct-availability-filter">{$texts.availability|escape}</label>
+                            <select id="masseditorproduct-availability-filter" name="availability" form="masseditorproduct-filter-form">
+                                <option value="all"{if $filters.availability === 'all'} selected{/if}>{$texts.all|escape}</option>
+                                <option value="available"{if $filters.availability === 'available'} selected{/if}>{$texts.available|escape}</option>
+                                <option value="unavailable"{if $filters.availability === 'unavailable'} selected{/if}>{$texts.unavailable|escape}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="masseditorproduct-panel__actions">
+                        <button class="button masseditorproduct-button masseditorproduct-button_secondary" type="submit" form="masseditorproduct-filter-form">{$texts.apply|escape}</button>
+                        {if $has_active_filters}
+                            <a class="button masseditorproduct-button masseditorproduct-button_ghost" href="{$filter_reset_url|escape}">{$texts.reset|escape}</a>
+                        {/if}
+                    </div>
+                </aside>
+
+                <aside class="masseditorproduct-panel masseditorproduct-panel_library">
+                    <div class="masseditorproduct-panel__head"><h2>{$texts.operations|escape}</h2></div>
+                    {foreach $operations as $group}
+                        <section class="masseditorproduct-library-group">
+                            <h3>{$group.title|escape}</h3>
+                            <div class="masseditorproduct-library-list">
+                                {foreach $group.items as $item}
+                                    <button class="masseditorproduct-library-item{if $item.id === $operation_form.operation} is-active{/if}{if empty($item.enabled)} is-disabled{/if}" type="button" data-role="operation-trigger" data-operation="{$item.id|escape}" {if empty($item.enabled)}disabled{/if}>
+                                        <span>{$item.label|escape}</span>
+                                        {if empty($item.enabled)}<span class="masseditorproduct-soon">{$texts.soon|escape}</span>{/if}
+                                    </button>
+                                {/foreach}
+                            </div>
+                        </section>
+                    {/foreach}
+                </aside>
+
+                <section class="masseditorproduct-panel masseditorproduct-panel_params">
+                    <div class="masseditorproduct-panel__head">
+                        <h2 data-role="operation-title">{$texts.operation_parameters|escape}</h2>
+                        <p class="hint">{$texts.operation_hint|escape}</p>
+                    </div>
+
+                    <div class="masseditorproduct-field-stack">
+                        <div class="masseditorproduct-field" data-operation-fields="price,compare_price">
+                            <label for="masseditorproduct-mode">{$texts.mode|escape}</label>
+                            <select id="masseditorproduct-mode" name="mode">
+                                <option value="set"{if $operation_form.mode === 'set'} selected{/if}>{$texts.set_value|escape}</option>
+                                <option value="percent"{if $operation_form.mode === 'percent'} selected{/if}>{$texts.increase_percent|escape}</option>
+                            </select>
+                        </div>
+                        <div class="masseditorproduct-field" data-operation-fields="price,compare_price">
+                            <label for="masseditorproduct-numeric-value">{$texts.value|escape}</label>
+                            <input id="masseditorproduct-numeric-value" type="text" name="numeric_value" value="{$operation_form.numeric_value|escape}" inputmode="decimal">
+                        </div>
+                        <div class="masseditorproduct-field" data-operation-fields="price,compare_price">
+                            <label for="masseditorproduct-round-step">{$texts.rounding|escape}</label>
+                            <select id="masseditorproduct-round-step" name="round_step">
+                                <option value=""{if $operation_form.round_step === ''} selected{/if}>{$texts.no_rounding|escape}</option>
+                                <option value="1"{if $operation_form.round_step == '1'} selected{/if}>{$texts.round_to_1|escape}</option>
+                                <option value="10"{if $operation_form.round_step == '10'} selected{/if}>{$texts.round_to_10|escape}</option>
+                                <option value="100"{if $operation_form.round_step == '100'} selected{/if}>{$texts.round_to_100|escape}</option>
+                            </select>
+                        </div>
+                        <div class="masseditorproduct-field" data-operation-fields="price,compare_price">
+                            <label for="masseditorproduct-round-direction">{$texts.direction|escape}</label>
+                            <select id="masseditorproduct-round-direction" name="round_direction">
+                                <option value="nearest"{if $operation_form.round_direction === 'nearest'} selected{/if}>{$texts.round_nearest|escape}</option>
+                                <option value="up"{if $operation_form.round_direction === 'up'} selected{/if}>{$texts.round_up|escape}</option>
+                                <option value="down"{if $operation_form.round_direction === 'down'} selected{/if}>{$texts.round_down|escape}</option>
+                            </select>
+                        </div>
+                        <div class="masseditorproduct-field" data-operation-fields="price">
+                            <label for="masseditorproduct-compare-price-mode">Compare price</label>
+                            <select id="masseditorproduct-compare-price-mode" name="compare_price_mode">
+                                <option value="keep"{if $operation_form.compare_price_mode === 'keep'} selected{/if}>{$texts.keep_unchanged|escape}</option>
+                                <option value="set_old_price"{if $operation_form.compare_price_mode === 'set_old_price'} selected{/if}>{$texts.write_old_price|escape}</option>
+                                <option value="clear"{if $operation_form.compare_price_mode === 'clear'} selected{/if}>{$texts.clear|escape}</option>
+                                <option value="coefficient"{if $operation_form.compare_price_mode === 'coefficient'} selected{/if}>{$texts.multiply_coefficient|escape}</option>
+                            </select>
+                        </div>
+                        <div class="masseditorproduct-field" data-operation-fields="price" data-compare-mode-field>
+                            <label for="masseditorproduct-compare-price-value">{$texts.coefficient|escape}</label>
+                            <input id="masseditorproduct-compare-price-value" type="text" name="compare_price_value" value="{$operation_form.compare_price_value|escape}" inputmode="decimal">
+                        </div>
+                        <div class="masseditorproduct-field" data-operation-fields="visibility">
+                            <label for="masseditorproduct-visibility-status">{$texts.visibility|escape}</label>
+                            <select id="masseditorproduct-visibility-status" name="visibility_status">
+                                <option value="1"{if $operation_form.visibility_status == 1} selected{/if}>{$texts.published|escape}</option>
+                                <option value="0"{if $operation_form.visibility_status == 0} selected{/if}>{$texts.hidden|escape}</option>
+                                <option value="-1"{if $operation_form.visibility_status == -1} selected{/if}>{$texts.unpublished|escape}</option>
+                            </select>
+                        </div>
+                        <div class="masseditorproduct-field" data-operation-fields="availability">
+                            <label for="masseditorproduct-availability-value">{$texts.availability|escape}</label>
+                            <select id="masseditorproduct-availability-value" name="availability_value">
+                                <option value="1"{if $operation_form.availability_value == 1} selected{/if}>{$texts.available|escape}</option>
+                                <option value="0"{if $operation_form.availability_value == 0} selected{/if}>{$texts.unavailable|escape}</option>
+                            </select>
+                        </div>
+                        <div class="masseditorproduct-field" data-operation-fields="description">
+                            <label for="masseditorproduct-description-mode">{$texts.description_mode|escape}</label>
+                            <select id="masseditorproduct-description-mode" name="description_mode">
+                                <option value="replace"{if $operation_form.description_mode === 'replace'} selected{/if}>{$texts.replace|escape}</option>
+                                <option value="prepend"{if $operation_form.description_mode === 'prepend'} selected{/if}>{$texts.prepend|escape}</option>
+                                <option value="append"{if $operation_form.description_mode === 'append'} selected{/if}>{$texts.append|escape}</option>
+                            </select>
+                        </div>
+                        <div class="masseditorproduct-field masseditorproduct-field_textarea" data-operation-fields="description">
+                            <label for="masseditorproduct-text-value">{$texts.text|escape}</label>
+                            <textarea id="masseditorproduct-text-value" name="text_value" rows="6">{$operation_form.text_value|escape}</textarea>
+                        </div>
+                        <div class="masseditorproduct-field" data-operation-fields="tags">
+                            <label for="masseditorproduct-tags-mode">{$texts.tags_mode|escape}</label>
+                            <select id="masseditorproduct-tags-mode" name="tags_mode">
+                                <option value="add"{if $operation_form.tags_mode === 'add'} selected{/if}>{$texts.add|escape}</option>
+                                <option value="remove"{if $operation_form.tags_mode === 'remove'} selected{/if}>{$texts.remove|escape}</option>
+                                <option value="replace"{if $operation_form.tags_mode === 'replace'} selected{/if}>{$texts.replace|escape}</option>
+                            </select>
+                        </div>
+                        <div class="masseditorproduct-field masseditorproduct-field_textarea" data-operation-fields="tags">
+                            <label for="masseditorproduct-tags-value">{$texts.tags|escape}</label>
+                            <textarea id="masseditorproduct-tags-value" name="tags_value" rows="4" placeholder="{$texts.tags_placeholder|escape}">{$operation_form.tags_value|escape}</textarea>
+                        </div>
+                        <div class="masseditorproduct-field" data-operation-fields="url">
+                            <label for="masseditorproduct-url-mode">{$texts.url_mode|escape}</label>
+                            <select id="masseditorproduct-url-mode" name="url_mode">
+                                <option value="regenerate"{if $operation_form.url_mode === 'regenerate'} selected{/if}>{$texts.regenerate_from_name|escape}</option>
+                                <option value="template"{if $operation_form.url_mode === 'template'} selected{/if}>{$texts.template|escape}</option>
+                            </select>
+                        </div>
+                        <div class="masseditorproduct-field masseditorproduct-field_textarea" data-operation-fields="url">
+                            <label for="masseditorproduct-url-value">{$texts.url_template|escape}</label>
+                            <textarea id="masseditorproduct-url-value" name="url_value" rows="3" placeholder="&#123;name&#125;, &#123;id&#125;, &#123;current_url&#125;">{$operation_form.url_value|escape}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="masseditorproduct-ready">
+                        <span class="masseditorproduct-ready__icon" aria-hidden="true">i</span>
+                        <div class="masseditorproduct-ready__text">
+                            <strong>{$texts.ready_title|escape}</strong>
+                            <span data-role="ready-copy">{$texts.ready_empty|escape}</span>
+                        </div>
+                    </div>
+                    <button class="button masseditorproduct-button masseditorproduct-button_primary" type="button" data-role="open-confirm">{$texts.apply|escape}</button>
+                </section>
+            </section>
+
+            <section class="masseditorproduct-table-card">
+                <div class="masseditorproduct-table-card__head">
+                    <h2>{$texts.nav_products|escape}</h2>
+                    <span class="masseditorproduct-counter" data-role="selection-counter-pill" data-total="{$pagination.total|escape}">0 {$texts.selected_counter_separator|escape} {$pagination.total|escape}</span>
+                </div>
+                {if $products}
+                    <div class="masseditorproduct-table-wrap">
+                        <table class="masseditorproduct-table masseditorproduct-table_products">
+                            <thead>
+                                <tr>
+                                    <th class="masseditorproduct-table__check"><input type="checkbox" data-role="select-all" aria-label="{$texts.select_all_page|escape}"></th>
+                                    <th>{$texts.id|escape}</th>
+                                    <th>{$texts.name|escape}</th>
+                                    <th>{$texts.url|escape}</th>
+                                    <th>{$texts.description|escape}</th>
+                                    <th>{$texts.categories|escape}</th>
+                                    <th>{$texts.tags|escape}</th>
+                                    <th>{$texts.status|escape}</th>
+                                    <th>{$texts.availability|escape}</th>
+                                    <th>{$texts.price|escape}</th>
+                                    <th>Compare</th>
+                                    <th>{$texts.stock|escape}</th>
+                                    <th>{$texts.changed|escape}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {foreach $products as $product}
+                                    <tr class="{if !empty($selected_product_ids_map[$product.id])}is-selected{/if}">
+                                        <td class="masseditorproduct-table__check"><input type="checkbox" name="product_ids[]" value="{$product.id|escape}" data-role="product-checkbox"{if !empty($selected_product_ids_map[$product.id])} checked{/if}></td>
+                                        <td>{$product.id|escape}</td>
+                                        <td>
+                                            <div class="masseditorproduct-product-name">{$product.name|escape}</div>
+                                            <div class="masseditorproduct-product-meta">{if $product.main_sku}SKU: {$product.main_sku|escape}{else}{$texts.sku_missing|escape}{/if}</div>
+                                            <div class="masseditorproduct-product-meta">URL: {if $product.url !== ''}{$product.url|escape}{else}-{/if}</div>
+                                            <div class="masseditorproduct-product-mobile-details">
+                                                <div class="masseditorproduct-product-mobile-details__row"><span>{$texts.id|escape}</span><strong>{$product.id|escape}</strong></div>
+                                                <div class="masseditorproduct-product-mobile-details__row"><span>{$texts.url|escape}</span><strong>{if $product.url !== ''}{$product.url|escape}{else}-{/if}</strong></div>
+                                                <div class="masseditorproduct-product-mobile-details__row"><span>{$texts.description|escape}</span><strong>{if $product.description_preview !== ''}{$product.description_preview|escape}{else}-{/if}</strong></div>
+                                                <div class="masseditorproduct-product-mobile-details__row"><span>{$texts.categories|escape}</span><strong>{$product.category_names|default:'-'|escape}</strong></div>
+                                                <div class="masseditorproduct-product-mobile-details__row"><span>{$texts.tags|escape}</span><strong>{$product.tag_names|default:'-'|escape}</strong></div>
+                                                <div class="masseditorproduct-product-mobile-details__row"><span>{$texts.availability|escape}</span><strong>{if $product.availability == 1}{$texts.available|escape}{else}{$texts.unavailable|escape}{/if}</strong></div>
+                                                <div class="masseditorproduct-product-mobile-details__row"><span>{$texts.price|escape}</span><strong>{$product.price_view|escape}</strong></div>
+                                                <div class="masseditorproduct-product-mobile-details__row"><span>Compare</span><strong>{if $product.compare_price_view !== ''}{$product.compare_price_view|escape}{else}-{/if}</strong></div>
+                                                <div class="masseditorproduct-product-mobile-details__row"><span>{$texts.stock|escape}</span><strong>{if $product.count === null}∞{else}{$product.count|escape}{/if}</strong></div>
+                                                <div class="masseditorproduct-product-mobile-details__row"><span>{$texts.changed|escape}</span><strong>{$product.edit_datetime_view|escape}</strong></div>
+                                            </div>
+                                        </td>
+                                        <td>{if $product.url !== ''}{$product.url|escape}{else}-{/if}</td>
+                                        <td>
+                                            <div class="masseditorproduct-product-description">{if $product.description_preview !== ''}{$product.description_preview|escape}{else}-{/if}</div>
+                                        </td>
+                                        <td><span class="masseditorproduct-product-categories">{$product.category_names|default:'-'|escape}</span></td>
+                                        <td><span class="masseditorproduct-product-categories">{$product.tag_names|default:'-'|escape}</span></td>
+                                        <td>{if $product.status == 1}<span class="masseditorproduct-badge masseditorproduct-badge_success">{$texts.published|escape}</span>{elseif $product.status == 0}<span class="masseditorproduct-badge masseditorproduct-badge_warning">{$texts.hidden|escape}</span>{elseif $product.status == -1}<span class="masseditorproduct-badge">{$texts.unpublished|escape}</span>{/if}</td>
+                                        <td>{if $product.availability == 1}<span class="masseditorproduct-badge masseditorproduct-badge_success">{$texts.available|escape}</span>{else}<span class="masseditorproduct-badge masseditorproduct-badge_warning">{$texts.unavailable|escape}</span>{/if}</td>
+                                        <td>{$product.price_view|escape}</td>
+                                        <td>{if $product.compare_price_view !== ''}{$product.compare_price_view|escape}{else}-{/if}</td>
+                                        <td>{if $product.count === null}∞{else}{$product.count|escape}{/if}</td>
+                                        <td>{$product.edit_datetime_view|escape}</td>
+                                    </tr>
+                                {/foreach}
+                            </tbody>
+                        </table>
+                    </div>
+                {else}
+                    <div class="masseditorproduct-empty"><strong>{$texts.products_not_found|escape}</strong><p class="hint">{$texts.change_filter|escape}</p></div>
+                {/if}
+
+                <div class="paging masseditorproduct-pagination">
+                    <span class="masseditorproduct-page-info">{$texts.shown|escape} {$pagination_ui.to|escape} {$texts.selected_counter_separator|escape} {$pagination_ui.total|escape}</span>
+                    <div class="masseditorproduct-pager" aria-label="{$texts.pagination_products|escape}">
+                        {if $pagination_ui.has_prev}
+                            <a class="masseditorproduct-pager__item" href="?plugin={$plugin_id|escape}&view=products&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&page={$pagination_ui.prev_page|escape:'url'}" aria-label="{$texts.prev_page|escape}">‹</a>
+                        {else}
+                            <span class="masseditorproduct-pager__item is-disabled" aria-hidden="true">‹</span>
+                        {/if}
+
+                        {foreach $pagination_ui.items as $item}
+                            {if $item.type === 'ellipsis'}
+                                <span class="masseditorproduct-pager__ellipsis">…</span>
+                            {else}
+                                <a class="masseditorproduct-pager__item{if !empty($item.active)} is-active{/if}" href="?plugin={$plugin_id|escape}&view=products&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&page={$item.value|escape:'url'}">{$item.value|escape}</a>
+                            {/if}
+                        {/foreach}
+
+                        {if $pagination_ui.has_next}
+                            <a class="masseditorproduct-pager__item" href="?plugin={$plugin_id|escape}&view=products&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&page={$pagination_ui.next_page|escape:'url'}" aria-label="{$texts.next_page|escape}">›</a>
+                        {else}
+                            <span class="masseditorproduct-pager__item is-disabled" aria-hidden="true">›</span>
+                        {/if}
+                    </div>
+                </div>
+            </section>
+
+            <div class="masseditorproduct-mobile-apply" data-role="mobile-apply">
+                <div class="masseditorproduct-mobile-apply__meta">
+                    <strong data-role="mobile-apply-count">0 {$texts.products_word|escape}</strong>
+                    <span data-role="mobile-apply-operation">{$texts.mobile_default_operation|escape}</span>
+                </div>
+                <button class="button masseditorproduct-button masseditorproduct-button_primary" type="button" data-role="open-confirm-mobile">{$texts.apply|escape}</button>
+            </div>
+
+            <div class="masseditorproduct-modal" data-role="confirm-modal" hidden>
+                <div class="masseditorproduct-modal__backdrop" data-role="close-modal"></div>
+                <div class="masseditorproduct-modal__card" role="dialog" aria-modal="true" aria-labelledby="masseditorproduct-confirm-title">
+                    <div class="masseditorproduct-modal__head">
+                        <div>
+                            <h3 id="masseditorproduct-confirm-title">{$texts.confirm_title|escape}</h3>
+                            <p class="hint">{$texts.confirm_hint|escape}</p>
+                        </div>
+                        <button type="button" class="masseditorproduct-modal__close" data-role="close-modal" aria-label="{$texts.close|escape}">×</button>
+                    </div>
+                    <div class="masseditorproduct-modal__body">
+                        <div class="masseditorproduct-modal__summary">
+                            <div><span>{$texts.changed_products|escape}</span><strong data-role="modal-count">0</strong></div>
+                            <div><span>{$texts.operation|escape}</span><strong data-role="modal-operation">—</strong></div>
+                            <div><span>{$texts.mode|escape}</span><strong data-role="modal-mode">—</strong></div>
+                            <div><span>{$texts.value|escape}</span><strong data-role="modal-value">—</strong></div>
+                        </div>
+                        <div class="masseditorproduct-modal__warning">
+                            <strong>{$texts.confirm_warning_title|escape}</strong>
+                            <span>{$texts.confirm_warning_text|escape}</span>
+                        </div>
+                    </div>
+                    <div class="masseditorproduct-modal__footer">
+                        <button type="button" class="button masseditorproduct-button masseditorproduct-button_secondary" data-role="close-modal">{$texts.cancel|escape}</button>
+                        <button type="submit" class="button masseditorproduct-button masseditorproduct-button_danger" name="do_apply" value="1" data-role="confirm-submit">{$texts.apply_changes|escape}</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <form id="masseditorproduct-filter-form" method="get">
+            <input type="hidden" name="plugin" value="{$plugin_id|escape}">
+            <input type="hidden" name="view" value="products">
+            <input type="hidden" name="page" value="1">
+        </form>
+    {/if}
+
+    {if $active_tab === 'log'}
+        <section class="masseditorproduct-table-card">
+            <div class="masseditorproduct-table-card__head"><h2>{$texts.nav_log|escape}</h2><span class="masseditorproduct-counter">{$recent_logs_count|escape} {$texts.records_word|escape}</span></div>
+            {if $recent_logs}
+                <div class="masseditorproduct-table-wrap">
+                    <table class="masseditorproduct-table masseditorproduct-table_log">
+                        <thead><tr><th>{$texts.id|escape}</th><th>{$texts.date|escape}</th><th>{$texts.user|escape}</th><th>{$texts.operation|escape}</th><th>{$texts.count|escape}</th><th>{$texts.description|escape}</th></tr></thead>
+                        <tbody>
+                            {foreach $recent_logs as $log}
+                                <tr>
+                                    <td data-label="ID">{$log.id|escape}</td>
+                                    <td data-label="{$texts.date|escape}">{$log.created_at_view|escape}</td>
+                                    <td data-label="{$texts.user|escape}">{if !empty($log.user_name)}{$log.user_name|escape}{elseif !empty($log.user_id)}ID {$log.user_id|escape}{else}-{/if}</td>
+                                    <td data-label="{$texts.operation|escape}"><span class="masseditorproduct-badge masseditorproduct-badge_info">{$log.action_label|escape}</span></td>
+                                    <td data-label="{$texts.count|escape}">{$log.entity_count|escape}</td>
+                                    <td data-label="{$texts.description|escape}">{$log.description|escape}</td>
+                                </tr>
+                            {/foreach}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="masseditorproduct-pagination">
+                    <span class="masseditorproduct-page-info">{$texts.shown|escape} {$log_pagination_ui.to|escape} {$texts.selected_counter_separator|escape} {$log_pagination_ui.total|escape}</span>
+                    <div class="masseditorproduct-pager" aria-label="{$texts.pagination_log|escape}">
+                        {if $log_pagination_ui.has_prev}
+                            <a class="masseditorproduct-pager__item" href="?plugin={$plugin_id|escape}&view=log&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&page={$pagination.page|escape:'url'}&log_page={$log_pagination_ui.prev_page|escape:'url'}" aria-label="{$texts.prev_page|escape}">‹</a>
+                        {else}
+                            <span class="masseditorproduct-pager__item is-disabled" aria-hidden="true">‹</span>
+                        {/if}
+
+                        {foreach $log_pagination_ui.items as $item}
+                            {if $item.type === 'ellipsis'}
+                                <span class="masseditorproduct-pager__ellipsis">…</span>
+                            {else}
+                                <a class="masseditorproduct-pager__item{if !empty($item.active)} is-active{/if}" href="?plugin={$plugin_id|escape}&view=log&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&page={$pagination.page|escape:'url'}&log_page={$item.value|escape:'url'}">{$item.value|escape}</a>
+                            {/if}
+                        {/foreach}
+
+                        {if $log_pagination_ui.has_next}
+                            <a class="masseditorproduct-pager__item" href="?plugin={$plugin_id|escape}&view=log&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&page={$pagination.page|escape:'url'}&log_page={$log_pagination_ui.next_page|escape:'url'}" aria-label="{$texts.next_page|escape}">›</a>
+                        {else}
+                            <span class="masseditorproduct-pager__item is-disabled" aria-hidden="true">›</span>
+                        {/if}
+                    </div>
+                </div>
+            {else}
+                <div class="masseditorproduct-empty"><strong>{$texts.log_empty_title|escape}</strong><p class="hint">{$texts.log_empty_hint|escape}</p></div>
+            {/if}
+        </section>
+    {/if}
+
+    {if $active_tab === 'settings'}
+        <form method="post" action="?plugin={$plugin_id|escape}&view=settings" class="masseditorproduct-settings">
+            {$wa->csrf()}
+            <input type="hidden" name="save_settings" value="1">
+            <section class="masseditorproduct-settings-card">
+                <div class="masseditorproduct-settings-group">
+                    <h2>{$texts.settings_performance|escape}</h2>
+                    <div class="masseditorproduct-settings-row"><div><strong>{$texts.page_size|escape}</strong><p class="hint">{$texts.page_size_hint|escape}</p></div><input type="number" name="page_size" min="10" max="200" value="{$settings.page_size|escape}"></div>
+                    <div class="masseditorproduct-settings-row"><div><strong>{$texts.operation_limit|escape}</strong><p class="hint">{$texts.operation_limit_hint|escape}</p></div><input type="number" name="operation_limit" min="1" max="1000" value="{$settings.operation_limit|escape}"></div>
+                </div>
+                <div class="masseditorproduct-settings-group">
+                    <h2>{$texts.nav_log|escape}</h2>
+                    <div class="masseditorproduct-settings-row"><div><strong>{$texts.log_retention|escape}</strong><p class="hint">{$texts.log_retention_hint|escape}</p></div><input type="number" name="log_retention_days" min="1" max="3650" value="{$settings.log_retention_days|escape}"></div>
+                    <div class="masseditorproduct-settings-row">
+                        <div>
+                            <strong>{$texts.date_format|escape}</strong>
+                            <p class="hint">{$texts.date_format_hint|escape}</p>
+                        </div>
+                        <select name="date_format">
+                            {foreach $date_format_options as $format => $example}
+                                <option value="{$format|escape}"{if $settings.date_format === $format} selected{/if}>{$format|escape} ({$example|escape})</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                </div>
+                <div class="masseditorproduct-settings-group">
+                    <h2>{$texts.appearance|escape}</h2>
+                    <div class="masseditorproduct-settings-row"><div><strong>{$texts.theme_mode|escape}</strong><p class="hint">{$texts.theme_mode_hint|escape}</p></div><select name="theme_mode"><option value="auto"{if $settings.theme_mode === 'auto'} selected{/if}>Auto</option><option value="light"{if $settings.theme_mode === 'light'} selected{/if}>Light</option><option value="dark"{if $settings.theme_mode === 'dark'} selected{/if}>Dark</option></select></div>
+                    <div class="masseditorproduct-settings-row">
+                        <div>
+                            <strong>{$texts.interface_language|escape}</strong>
+                            <p class="hint">{$texts.interface_language_hint|escape}</p>
+                        </div>
+                        <select name="interface_language">
+                            {foreach $interface_language_options as $language_value => $language_title}
+                                <option value="{$language_value|escape}"{if $interface_language_setting === $language_value} selected{/if}>{$language_title|escape}</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                    <div class="masseditorproduct-settings-row"><div><strong>{$texts.show_soon_operations|escape}</strong><p class="hint">{$texts.show_soon_operations_hint|escape}</p></div><label class="masseditorproduct-toggle"><input type="checkbox" name="show_soon_operations" value="1"{if $settings.show_soon_operations} checked{/if} data-role="soon-operations-toggle"><span data-role="soon-operations-toggle-label">{if $settings.show_soon_operations}{$texts.enabled|escape}{else}{$texts.disabled|escape}{/if}</span></label></div>
+                </div>
+                <div class="masseditorproduct-panel__actions"><button class="button masseditorproduct-button masseditorproduct-button_primary" type="submit">{$texts.save_settings|escape}</button></div>
+            </section>
+        </form>
+    {/if}
+</div>
+</div>

@@ -7,7 +7,7 @@ services:
       - "8080:8080"
     volumes:
       - webasyst:/webasyst
-      - ../wa-apps/shop/plugins/masseditor:/webasyst/wa-apps/shop/plugins/masseditor
+      - ../wa-apps/shop/plugins/masseditorproduct:/webasyst/wa-apps/shop/plugins/masseditorproduct
     depends_on:
       db:
         condition: service_healthy

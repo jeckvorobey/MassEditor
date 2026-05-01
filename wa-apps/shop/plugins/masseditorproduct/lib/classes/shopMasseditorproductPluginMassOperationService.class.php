@@ -1,6 +1,6 @@
 <?php
 
-class shopMasseditorPluginMassOperationService
+class shopMasseditorproductPluginMassOperationService
 {
     const DEFAULT_OPERATION_LIMIT = 100;
     const APPLY_BATCH_SIZE = 20;
@@ -15,19 +15,19 @@ class shopMasseditorPluginMassOperationService
     private $language;
 
     public function __construct(
-        shopMasseditorPluginProductSelectionService $selection_service = null,
-        shopMasseditorPluginLogService $log_service = null,
+        shopMasseditorproductPluginProductSelectionService $selection_service = null,
+        shopMasseditorproductPluginLogService $log_service = null,
         waModel $model = null,
         $operation_limit = null,
-        $language = shopMasseditorPluginI18nService::RU
+        $language = shopMasseditorproductPluginI18nService::RU
     ) {
-        $this->selection_service = $selection_service ?: new shopMasseditorPluginProductSelectionService();
-        $this->log_service = $log_service ?: new shopMasseditorPluginLogService();
+        $this->selection_service = $selection_service ?: new shopMasseditorproductPluginProductSelectionService();
+        $this->log_service = $log_service ?: new shopMasseditorproductPluginLogService();
         $this->model = $model ?: new waModel();
         $this->operation_limit = $this->normalizeOperationLimit($operation_limit);
-        $this->language = $language === shopMasseditorPluginI18nService::EN
-            ? shopMasseditorPluginI18nService::EN
-            : shopMasseditorPluginI18nService::RU;
+        $this->language = $language === shopMasseditorproductPluginI18nService::EN
+            ? shopMasseditorproductPluginI18nService::EN
+            : shopMasseditorproductPluginI18nService::RU;
     }
 
     public function apply(array $raw_request)
@@ -600,6 +600,6 @@ class shopMasseditorPluginMassOperationService
 
     private function t($key)
     {
-        return shopMasseditorPluginI18nService::t($key, $this->language);
+        return shopMasseditorproductPluginI18nService::t($key, $this->language);
     }
 }

@@ -273,17 +273,17 @@ class shopPlugin
 
     public function getName()
     {
-        return 'Mass Editor';
+        return 'Mass Editor Product';
     }
 
     public function getId()
     {
-        return 'masseditor';
+        return 'masseditorproduct';
     }
 
     public function getPluginStaticUrl()
     {
-        return '/wa-apps/shop/plugins/masseditor/';
+        return '/wa-apps/shop/plugins/masseditorproduct/';
     }
 
     public function getSettings($name)
@@ -407,11 +407,11 @@ class shopHelper
     }
 }
 
-require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/models/shopMasseditorPluginProduct.model.php';
-require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/models/shopMasseditorPluginLog.model.php';
-require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginI18nService.class.php';
-require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginProductSelectionService.class.php';
-require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginLogService.class.php';
-require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginMassOperationService.class.php';
-require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/actions/shopMasseditorPluginBackend.action.php';
-require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/shopMasseditor.plugin.php';
+require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditorproduct/lib/models/shopMasseditorproductPluginProduct.model.php';
+require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditorproduct/lib/models/shopMasseditorproductPluginLog.model.php';
+require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditorproduct/lib/classes/shopMasseditorproductPluginI18nService.class.php';
+require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditorproduct/lib/classes/shopMasseditorproductPluginProductSelectionService.class.php';
+require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditorproduct/lib/classes/shopMasseditorproductPluginLogService.class.php';
+require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditorproduct/lib/classes/shopMasseditorproductPluginMassOperationService.class.php';
+require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditorproduct/lib/actions/shopMasseditorproductPluginBackend.action.php';
+require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditorproduct/lib/shopMasseditorproduct.plugin.php';

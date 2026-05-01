@@ -10,21 +10,21 @@ class ProductSelectionServiceTest extends TestCase
 
     public function testGetByIdsReturnsEmptyForNoIds(): void
     {
-        $model = new shopMasseditorPluginProductModel();
-        $service = new shopMasseditorPluginProductSelectionService($model);
+        $model = new shopMasseditorproductPluginProductModel();
+        $service = new shopMasseditorproductPluginProductSelectionService($model);
 
         $this->assertSame(array(), $service->getByIds(array()));
     }
 
     public function testGetByIdsQueriesAndKeysById(): void
     {
-        $model = new shopMasseditorPluginProductModel();
+        $model = new shopMasseditorproductPluginProductModel();
         $model->queueResponse('FROM shop_product p', new FakeQueryResult(array(
             array('id' => 5, 'name' => 'A'),
             array('id' => 9, 'name' => 'B'),
         )));
 
-        $service = new shopMasseditorPluginProductSelectionService($model);
+        $service = new shopMasseditorproductPluginProductSelectionService($model);
         $result = $service->getByIds(array(5, 9));
 
         $this->assertArrayHasKey(5, $result);
@@ -33,13 +33,13 @@ class ProductSelectionServiceTest extends TestCase
 
     public function testGetPageNormalizesFiltersAndPagination(): void
     {
-        $model = new shopMasseditorPluginProductModel();
+        $model = new shopMasseditorproductPluginProductModel();
         $model->queueResponse('SELECT COUNT(DISTINCT p.id)', new FakeQueryResult(array(), 51));
         $model->queueResponse('SELECT p.id, p.name, p.status', new FakeQueryResult(array(
             array('id' => 10, 'name' => 'One'),
         )));
 
-        $service = new shopMasseditorPluginProductSelectionService($model);
+        $service = new shopMasseditorproductPluginProductSelectionService($model);
         $result = $service->getPage(array(
             'query' => ' ABC ',
             'status' => 'broken',
@@ -58,7 +58,7 @@ class ProductSelectionServiceTest extends TestCase
 
     public function testBuildConditionsCoversStatusAvailabilityAndCategory(): void
     {
-        $service = new shopMasseditorPluginProductSelectionService(new shopMasseditorPluginProductModel());
+        $service = new shopMasseditorproductPluginProductSelectionService(new shopMasseditorproductPluginProductModel());
 
         $conditions = $this->invokePrivate($service, 'buildConditions', array(array(
             'query' => 'sku',
@@ -78,18 +78,18 @@ class ProductSelectionServiceTest extends TestCase
 
     public function testGetCategoriesReadsOrderedList(): void
     {
-        $model = new shopMasseditorPluginProductModel();
+        $model = new shopMasseditorproductPluginProductModel();
         $model->queueResponse('FROM shop_category', new FakeQueryResult(array(
             array('id' => 2, 'name' => 'Cat B'),
         )));
-        $service = new shopMasseditorPluginProductSelectionService($model);
+        $service = new shopMasseditorproductPluginProductSelectionService($model);
 
         $this->assertCount(1, $service->getCategories());
     }
 
     public function testNormalizePageSizeUsesBounds(): void
     {
-        $service = new shopMasseditorPluginProductSelectionService(new shopMasseditorPluginProductModel());
+        $service = new shopMasseditorproductPluginProductSelectionService(new shopMasseditorproductPluginProductModel());
 
         $this->assertSame(50, $this->invokePrivate($service, 'normalizePageSize', array(0)));
         $this->assertSame(200, $this->invokePrivate($service, 'normalizePageSize', array(500)));

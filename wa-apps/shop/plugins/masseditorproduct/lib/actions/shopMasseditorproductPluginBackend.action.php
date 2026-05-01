@@ -1,19 +1,19 @@
 <?php
 
-class shopMasseditorPluginBackendAction extends waViewAction
+class shopMasseditorproductPluginBackendAction extends waViewAction
 {
     public function execute()
     {
         $this->assertAdminRights();
 
-        /** @var shopMasseditorPlugin $plugin */
-        $plugin = wa('shop')->getPlugin('masseditor');
+        /** @var shopMasseditorproductPlugin $plugin */
+        $plugin = wa('shop')->getPlugin('masseditorproduct');
         $settings = $this->getPluginSettings($plugin);
         $language = $settings['interface_language'];
-        $texts = shopMasseditorPluginI18nService::getTexts($language);
-        $selection_service = new shopMasseditorPluginProductSelectionService();
-        $log_service = new shopMasseditorPluginLogService();
-        $operation_service = new shopMasseditorPluginMassOperationService(
+        $texts = shopMasseditorproductPluginI18nService::getTexts($language);
+        $selection_service = new shopMasseditorproductPluginProductSelectionService();
+        $log_service = new shopMasseditorproductPluginLogService();
+        $operation_service = new shopMasseditorproductPluginMassOperationService(
             $selection_service,
             $log_service,
             null,
@@ -63,7 +63,7 @@ class shopMasseditorPluginBackendAction extends waViewAction
                 if (waRequest::post('save_settings', 0, waRequest::TYPE_INT)) {
                     $settings = $this->savePluginSettings($plugin, $settings);
                     $language = $settings['interface_language'];
-                    $texts = shopMasseditorPluginI18nService::getTexts($language);
+                    $texts = shopMasseditorproductPluginI18nService::getTexts($language);
                     $selection = $selection_service->getPage($filters, $settings['page_size']);
                     $result_message = $texts['settings_saved'];
                     $active_tab = 'settings';
@@ -123,7 +123,7 @@ class shopMasseditorPluginBackendAction extends waViewAction
             'interface_language_setting' => $settings['interface_language_setting'],
             'language' => $language,
             'texts' => $texts,
-            'js_i18n_json' => json_encode(shopMasseditorPluginI18nService::getJsTexts($language), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT),
+            'js_i18n_json' => json_encode(shopMasseditorproductPluginI18nService::getJsTexts($language), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT),
             'theme_class' => $settings['theme_mode'] === 'dark' ? 'theme-dark' : '',
         ));
     }
@@ -318,14 +318,14 @@ class shopMasseditorPluginBackendAction extends waViewAction
     {
         $message = get_class($e) . ': ' . $e->getMessage();
         if (class_exists('waLog')) {
-            waLog::log($message, 'shop/plugins/masseditor.log');
+            waLog::log($message, 'shop/plugins/masseditorproduct.log');
             return;
         }
 
         error_log($message);
     }
 
-    private function decorateLogs(array $logs, $language = shopMasseditorPluginI18nService::RU)
+    private function decorateLogs(array $logs, $language = shopMasseditorproductPluginI18nService::RU)
     {
         $user_names = $this->resolveUserNames($logs);
         $date_format = $this->getCurrentDateFormat();
@@ -374,25 +374,25 @@ class shopMasseditorPluginBackendAction extends waViewAction
         return $names;
     }
 
-    private function getActionLabel($action_type, $language = shopMasseditorPluginI18nService::RU)
+    private function getActionLabel($action_type, $language = shopMasseditorproductPluginI18nService::RU)
     {
         if ($action_type === 'price') {
-            return shopMasseditorPluginI18nService::t('action_price', $language);
+            return shopMasseditorproductPluginI18nService::t('action_price', $language);
         }
         if ($action_type === 'compare_price') {
-            return shopMasseditorPluginI18nService::t('action_compare_price', $language);
+            return shopMasseditorproductPluginI18nService::t('action_compare_price', $language);
         }
         if ($action_type === 'visibility') {
-            return shopMasseditorPluginI18nService::t('action_visibility', $language);
+            return shopMasseditorproductPluginI18nService::t('action_visibility', $language);
         }
         if ($action_type === 'availability') {
-            return shopMasseditorPluginI18nService::t('action_availability', $language);
+            return shopMasseditorproductPluginI18nService::t('action_availability', $language);
         }
 
         return (string) $action_type;
     }
 
-    private function getPluginSettings(shopMasseditorPlugin $plugin)
+    private function getPluginSettings(shopMasseditorproductPlugin $plugin)
     {
         return array(
             'page_size' => $this->normalizeIntSetting($plugin->getSettings('page_size'), 50, 10, 200),
@@ -401,12 +401,12 @@ class shopMasseditorPluginBackendAction extends waViewAction
             'date_format' => $this->normalizeDateFormat($plugin->getSettings('date_format')),
             'theme_mode' => $this->normalizeThemeMode($plugin->getSettings('theme_mode')),
             'show_soon_operations' => (int) !!$plugin->getSettings('show_soon_operations'),
-            'interface_language_setting' => shopMasseditorPluginI18nService::normalizeSetting($plugin->getSettings('interface_language')),
-            'interface_language' => shopMasseditorPluginI18nService::resolveLanguage($plugin->getSettings('interface_language')),
+            'interface_language_setting' => shopMasseditorproductPluginI18nService::normalizeSetting($plugin->getSettings('interface_language')),
+            'interface_language' => shopMasseditorproductPluginI18nService::resolveLanguage($plugin->getSettings('interface_language')),
         );
     }
 
-    private function savePluginSettings(shopMasseditorPlugin $plugin, array $current_settings)
+    private function savePluginSettings(shopMasseditorproductPlugin $plugin, array $current_settings)
     {
         $settings = array(
             'page_size' => $this->normalizeIntSetting(waRequest::post('page_size', $current_settings['page_size'], waRequest::TYPE_INT), 50, 10, 200),
@@ -415,12 +415,12 @@ class shopMasseditorPluginBackendAction extends waViewAction
             'date_format' => $this->normalizeDateFormat(waRequest::post('date_format', $current_settings['date_format'], waRequest::TYPE_STRING_TRIM)),
             'theme_mode' => $this->normalizeThemeMode(waRequest::post('theme_mode', $current_settings['theme_mode'], waRequest::TYPE_STRING_TRIM)),
             'show_soon_operations' => waRequest::post('show_soon_operations', 0, waRequest::TYPE_INT) ? 1 : 0,
-            'interface_language' => shopMasseditorPluginI18nService::normalizeSetting(waRequest::post('interface_language', $current_settings['interface_language_setting'], waRequest::TYPE_STRING_TRIM)),
+            'interface_language' => shopMasseditorproductPluginI18nService::normalizeSetting(waRequest::post('interface_language', $current_settings['interface_language_setting'], waRequest::TYPE_STRING_TRIM)),
         );
 
         $plugin->saveSettings($settings);
         $settings['interface_language_setting'] = $settings['interface_language'];
-        $settings['interface_language'] = shopMasseditorPluginI18nService::resolveLanguage($settings['interface_language_setting']);
+        $settings['interface_language'] = shopMasseditorproductPluginI18nService::resolveLanguage($settings['interface_language_setting']);
 
         return $settings;
     }
@@ -428,21 +428,21 @@ class shopMasseditorPluginBackendAction extends waViewAction
     private function assertAdminRights()
     {
         if (!wa()->getUser()->isAdmin('shop')) {
-            throw new RuntimeException(shopMasseditorPluginI18nService::t('admin_required', shopMasseditorPluginI18nService::resolveLanguage(self::getPluginLanguageSetting())));
+            throw new RuntimeException(shopMasseditorproductPluginI18nService::t('admin_required', shopMasseditorproductPluginI18nService::resolveLanguage(self::getPluginLanguageSetting())));
         }
     }
 
     private static function getPluginLanguageSetting()
     {
         try {
-            $plugin = wa('shop')->getPlugin('masseditor');
+            $plugin = wa('shop')->getPlugin('masseditorproduct');
             if ($plugin) {
                 return $plugin->getSettings('interface_language');
             }
         } catch (Exception $e) {
         }
 
-        return shopMasseditorPluginI18nService::AUTO;
+        return shopMasseditorproductPluginI18nService::AUTO;
     }
 
     private function normalizeIntSetting($value, $default, $min, $max)
@@ -475,8 +475,8 @@ class shopMasseditorPluginBackendAction extends waViewAction
 
     private function getCurrentDateFormat()
     {
-        /** @var shopMasseditorPlugin $plugin */
-        $plugin = wa('shop')->getPlugin('masseditor');
+        /** @var shopMasseditorproductPlugin $plugin */
+        $plugin = wa('shop')->getPlugin('masseditorproduct');
 
         return $this->normalizeDateFormat($plugin->getSettings('date_format'));
     }
@@ -508,7 +508,7 @@ class shopMasseditorPluginBackendAction extends waViewAction
 
     private function getInterfaceLanguageOptions($language)
     {
-        $raw_options = shopMasseditorPluginI18nService::getLanguageOptions();
+        $raw_options = shopMasseditorproductPluginI18nService::getLanguageOptions();
         $options = array();
         foreach ($raw_options as $value => $titles) {
             $options[$value] = isset($titles[$language]) ? $titles[$language] : $value;
@@ -517,51 +517,51 @@ class shopMasseditorPluginBackendAction extends waViewAction
         return $options;
     }
 
-    private function getOperationsLibrary($show_soon_operations, $language = shopMasseditorPluginI18nService::RU)
+    private function getOperationsLibrary($show_soon_operations, $language = shopMasseditorproductPluginI18nService::RU)
     {
         $groups = array(
             array(
-                'title' => shopMasseditorPluginI18nService::t('group_prices', $language),
+                'title' => shopMasseditorproductPluginI18nService::t('group_prices', $language),
                 'items' => array(
-                    array('id' => 'price', 'label' => shopMasseditorPluginI18nService::t('operation_price', $language), 'enabled' => true),
-                    array('id' => 'compare_price', 'label' => shopMasseditorPluginI18nService::t('operation_compare_price', $language), 'enabled' => true),
+                    array('id' => 'price', 'label' => shopMasseditorproductPluginI18nService::t('operation_price', $language), 'enabled' => true),
+                    array('id' => 'compare_price', 'label' => shopMasseditorproductPluginI18nService::t('operation_compare_price', $language), 'enabled' => true),
                     array('id' => 'sku_generator', 'label' => 'SKU generator', 'enabled' => false),
                 ),
             ),
             array(
-                'title' => shopMasseditorPluginI18nService::t('group_content', $language),
+                'title' => shopMasseditorproductPluginI18nService::t('group_content', $language),
                 'items' => array(
-                    array('id' => 'visibility', 'label' => shopMasseditorPluginI18nService::t('operation_visibility', $language), 'enabled' => true),
-                    array('id' => 'availability', 'label' => shopMasseditorPluginI18nService::t('operation_availability', $language), 'enabled' => true),
-                    array('id' => 'description', 'label' => shopMasseditorPluginI18nService::t('operation_description', $language), 'enabled' => true),
-                    array('id' => 'tags', 'label' => shopMasseditorPluginI18nService::t('operation_tags', $language), 'enabled' => true),
+                    array('id' => 'visibility', 'label' => shopMasseditorproductPluginI18nService::t('operation_visibility', $language), 'enabled' => true),
+                    array('id' => 'availability', 'label' => shopMasseditorproductPluginI18nService::t('operation_availability', $language), 'enabled' => true),
+                    array('id' => 'description', 'label' => shopMasseditorproductPluginI18nService::t('operation_description', $language), 'enabled' => true),
+                    array('id' => 'tags', 'label' => shopMasseditorproductPluginI18nService::t('operation_tags', $language), 'enabled' => true),
                 ),
             ),
             array(
-                'title' => shopMasseditorPluginI18nService::t('group_media', $language),
+                'title' => shopMasseditorproductPluginI18nService::t('group_media', $language),
                 'items' => array(
-                    array('id' => 'product_images', 'label' => shopMasseditorPluginI18nService::t('product_images', $language), 'enabled' => false),
-                    array('id' => 'video', 'label' => shopMasseditorPluginI18nService::t('video', $language), 'enabled' => false),
+                    array('id' => 'product_images', 'label' => shopMasseditorproductPluginI18nService::t('product_images', $language), 'enabled' => false),
+                    array('id' => 'video', 'label' => shopMasseditorproductPluginI18nService::t('video', $language), 'enabled' => false),
                 ),
             ),
             array(
-                'title' => shopMasseditorPluginI18nService::t('group_links', $language),
+                'title' => shopMasseditorproductPluginI18nService::t('group_links', $language),
                 'items' => array(
                     array('id' => 'cross_selling', 'label' => 'Cross-selling', 'enabled' => false),
                     array('id' => 'similar_products', 'label' => 'Similar products', 'enabled' => false),
                 ),
             ),
             array(
-                'title' => shopMasseditorPluginI18nService::t('group_url_pages', $language),
+                'title' => shopMasseditorproductPluginI18nService::t('group_url_pages', $language),
                 'items' => array(
-                    array('id' => 'url', 'label' => shopMasseditorPluginI18nService::t('operation_url', $language), 'enabled' => true),
-                    array('id' => 'product_pages', 'label' => shopMasseditorPluginI18nService::t('product_pages', $language), 'enabled' => false),
+                    array('id' => 'url', 'label' => shopMasseditorproductPluginI18nService::t('operation_url', $language), 'enabled' => true),
+                    array('id' => 'product_pages', 'label' => shopMasseditorproductPluginI18nService::t('product_pages', $language), 'enabled' => false),
                 ),
             ),
             array(
-                'title' => shopMasseditorPluginI18nService::t('group_features', $language),
+                'title' => shopMasseditorproductPluginI18nService::t('group_features', $language),
                 'items' => array(
-                    array('id' => 'features', 'label' => shopMasseditorPluginI18nService::t('features', $language), 'enabled' => false),
+                    array('id' => 'features', 'label' => shopMasseditorproductPluginI18nService::t('features', $language), 'enabled' => false),
                 ),
             ),
         );

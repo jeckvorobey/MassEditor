@@ -2,4 +2,4 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-node --test "${ROOT_DIR}/tests/js/masseditor.test.js"
+node --test "${ROOT_DIR}/tests/js/masseditorproduct.test.js"

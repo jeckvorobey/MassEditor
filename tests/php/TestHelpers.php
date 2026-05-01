@@ -11,7 +11,7 @@ trait InvokesPrivateMethods
     }
 }
 
-class FakeSelectionService extends shopMasseditorPluginProductSelectionService
+class FakeSelectionService extends shopMasseditorproductPluginProductSelectionService
 {
     public $products = array();
     public $pages = array();
@@ -41,7 +41,7 @@ class FakeSelectionService extends shopMasseditorPluginProductSelectionService
     }
 }
 
-class FakeLogModel extends shopMasseditorPluginLogModel
+class FakeLogModel extends shopMasseditorproductPluginLogModel
 {
     public $inserted = array();
 
@@ -52,7 +52,7 @@ class FakeLogModel extends shopMasseditorPluginLogModel
     }
 }
 
-class FakeLogService extends shopMasseditorPluginLogService
+class FakeLogService extends shopMasseditorproductPluginLogService
 {
     public $logged = array();
     public $latest = array();

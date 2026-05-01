@@ -1,17 +1,17 @@
 <?php
 
-class shopMasseditorPluginProductSelectionService
+class shopMasseditorproductPluginProductSelectionService
 {
     const DEFAULT_PAGE_SIZE = 50;
 
     /**
-     * @var shopMasseditorPluginProductModel
+     * @var shopMasseditorproductPluginProductModel
      */
     private $product_model;
 
-    public function __construct(shopMasseditorPluginProductModel $product_model = null)
+    public function __construct(shopMasseditorproductPluginProductModel $product_model = null)
     {
-        $this->product_model = $product_model ?: new shopMasseditorPluginProductModel();
+        $this->product_model = $product_model ?: new shopMasseditorproductPluginProductModel();
     }
 
     public function getByIds(array $ids)

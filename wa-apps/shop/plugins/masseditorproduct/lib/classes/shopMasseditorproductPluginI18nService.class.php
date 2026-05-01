@@ -1,6 +1,6 @@
 <?php
 
-class shopMasseditorPluginI18nService
+class shopMasseditorproductPluginI18nService
 {
     const AUTO = 'auto';
     const RU = 'ru_RU';
@@ -134,7 +134,7 @@ class shopMasseditorPluginI18nService
             'save_settings' => 'Сохранить настройки',
             'settings_saved' => 'Настройки сохранены.',
             'generic_operation_error' => 'Операцию не удалось выполнить. Повторите действие или проверьте журнал ошибок.',
-            'admin_required' => 'Недостаточно прав для управления Mass Editor.',
+            'admin_required' => 'Недостаточно прав для управления Mass Editor Product.',
             'action_price' => 'Цена',
             'action_compare_price' => 'Compare price',
             'action_visibility' => 'Видимость',
@@ -414,7 +414,7 @@ class shopMasseditorPluginI18nService
             'save_settings' => 'Save settings',
             'settings_saved' => 'Settings saved.',
             'generic_operation_error' => 'The operation could not be completed. Try again or check the error log.',
-            'admin_required' => 'Not enough rights to manage Mass Editor.',
+            'admin_required' => 'Not enough rights to manage Mass Editor Product.',
             'action_price' => 'Price',
             'action_visibility' => 'Visibility',
             'action_availability' => 'Availability',

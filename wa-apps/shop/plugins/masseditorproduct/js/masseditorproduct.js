@@ -6,7 +6,7 @@
     var workspaceForm = document.querySelector('[data-role="workspace-form"]');
     var toastStack = document.querySelector('[data-role="toast-stack"]');
     var toastSourceNotices = Array.prototype.slice.call(document.querySelectorAll('[data-toast-source="true"]'));
-    var i18n = window.masseditorI18n || {};
+    var i18n = window.masseditorproductI18n || {};
 
     function t(key, fallback) {
         return i18n[key] || fallback || key;
@@ -58,18 +58,18 @@
         var closeButton = document.createElement('button');
         var timeout = 0;
 
-        toast.className = 'masseditor-toast masseditor-toast_' + toastType;
+        toast.className = 'masseditorproduct-toast masseditorproduct-toast_' + toastType;
         toast.setAttribute('role', toastType === 'error' ? 'alert' : 'status');
 
-        body.className = 'masseditor-toast__body';
-        title.className = 'masseditor-toast__title';
+        body.className = 'masseditorproduct-toast__body';
+        title.className = 'masseditorproduct-toast__title';
         title.textContent = settings.title || toastTitle(toastType);
 
-        text.className = 'masseditor-toast__message';
+        text.className = 'masseditorproduct-toast__message';
         text.textContent = message;
 
         closeButton.type = 'button';
-        closeButton.className = 'masseditor-toast__close';
+        closeButton.className = 'masseditorproduct-toast__close';
         closeButton.setAttribute('aria-label', t('toast_close', 'Закрыть уведомление'));
         closeButton.textContent = '×';
         closeButton.addEventListener('click', function () {
@@ -132,7 +132,7 @@
     var operationTitle = workspaceForm.querySelector('[data-role="operation-title"]');
     var operationButtons = Array.prototype.slice.call(document.querySelectorAll('[data-role="operation-trigger"]'));
     var operationFieldGroups = Array.prototype.slice.call(document.querySelectorAll('[data-operation-fields]'));
-    var comparePriceMode = document.getElementById('masseditor-compare-price-mode');
+    var comparePriceMode = document.getElementById('masseditorproduct-compare-price-mode');
     var comparePriceValueField = document.querySelector('[data-compare-mode-field]');
     var selectAll = document.querySelector('[data-role="select-all"]');
     var productCheckboxes = Array.prototype.slice.call(document.querySelectorAll('[data-role="product-checkbox"]'));
@@ -169,8 +169,8 @@
 
     function buildSelectionStorageKey() {
         var pluginIdField = workspaceForm.querySelector('input[name="plugin"]');
-        var pluginId = pluginIdField ? pluginIdField.value : 'masseditor';
-        return 'masseditor:selected-products:' + pluginId;
+        var pluginId = pluginIdField ? pluginIdField.value : 'masseditorproduct';
+        return 'masseditorproduct:selected-products:' + pluginId;
     }
 
     function toProductId(value) {
@@ -382,27 +382,27 @@
 
     function operationModeText(operation) {
         if (operation === 'price' || operation === 'compare_price') {
-            var mode = document.getElementById('masseditor-mode');
+            var mode = document.getElementById('masseditorproduct-mode');
             return mode ? mode.options[mode.selectedIndex].text : '—';
         }
         if (operation === 'visibility') {
-            var visibility = document.getElementById('masseditor-visibility-status');
+            var visibility = document.getElementById('masseditorproduct-visibility-status');
             return visibility ? visibility.options[visibility.selectedIndex].text : '—';
         }
         if (operation === 'availability') {
-            var availability = document.getElementById('masseditor-availability-value');
+            var availability = document.getElementById('masseditorproduct-availability-value');
             return availability ? availability.options[availability.selectedIndex].text : '—';
         }
         if (operation === 'description') {
-            var descriptionMode = document.getElementById('masseditor-description-mode');
+            var descriptionMode = document.getElementById('masseditorproduct-description-mode');
             return descriptionMode ? descriptionMode.options[descriptionMode.selectedIndex].text : '—';
         }
         if (operation === 'tags') {
-            var tagsMode = document.getElementById('masseditor-tags-mode');
+            var tagsMode = document.getElementById('masseditorproduct-tags-mode');
             return tagsMode ? tagsMode.options[tagsMode.selectedIndex].text : '—';
         }
         if (operation === 'url') {
-            var urlMode = document.getElementById('masseditor-url-mode');
+            var urlMode = document.getElementById('masseditorproduct-url-mode');
             return urlMode ? urlMode.options[urlMode.selectedIndex].text : '—';
         }
 
@@ -411,20 +411,20 @@
 
     function operationValueText(operation) {
         if (operation === 'price' || operation === 'compare_price') {
-            var numeric = document.getElementById('masseditor-numeric-value');
+            var numeric = document.getElementById('masseditorproduct-numeric-value');
             return numeric && numeric.value ? numeric.value : '—';
         }
         if (operation === 'description') {
-            var text = document.getElementById('masseditor-text-value');
+            var text = document.getElementById('masseditorproduct-text-value');
             return text && text.value ? text.value.substring(0, 80) : '—';
         }
         if (operation === 'tags') {
-            var tags = document.getElementById('masseditor-tags-value');
+            var tags = document.getElementById('masseditorproduct-tags-value');
             return tags && tags.value ? tags.value.substring(0, 80) : '—';
         }
         if (operation === 'url') {
-            var url = document.getElementById('masseditor-url-value');
-            var urlMode = document.getElementById('masseditor-url-mode');
+            var url = document.getElementById('masseditorproduct-url-value');
+            var urlMode = document.getElementById('masseditorproduct-url-mode');
             if (urlMode && urlMode.value === 'regenerate') {
                 return t('value_from_product_name', 'Из названия товара');
             }
@@ -443,24 +443,24 @@
             return false;
         }
 
-        if ((operation === 'price' || operation === 'compare_price') && !document.getElementById('masseditor-numeric-value').value.trim()) {
+        if ((operation === 'price' || operation === 'compare_price') && !document.getElementById('masseditorproduct-numeric-value').value.trim()) {
             showErrorToast(t('validation_numeric', 'Укажите значение для массовой операции.'));
             return false;
         }
 
-        if (operation === 'description' && !document.getElementById('masseditor-text-value').value.trim()) {
+        if (operation === 'description' && !document.getElementById('masseditorproduct-text-value').value.trim()) {
             showErrorToast(t('validation_description', 'Введите текст для описания.'));
             return false;
         }
 
-        if (operation === 'tags' && !document.getElementById('masseditor-tags-value').value.trim()) {
+        if (operation === 'tags' && !document.getElementById('masseditorproduct-tags-value').value.trim()) {
             showErrorToast(t('validation_tags', 'Укажите хотя бы один тег.'));
             return false;
         }
 
         if (operation === 'url') {
-            var mode = document.getElementById('masseditor-url-mode');
-            var value = document.getElementById('masseditor-url-value');
+            var mode = document.getElementById('masseditorproduct-url-mode');
+            var value = document.getElementById('masseditorproduct-url-value');
             if (mode && mode.value === 'template' && value && !value.value.trim()) {
                 showErrorToast(t('validation_url_template', 'Укажите шаблон URL.'));
                 return false;
@@ -468,7 +468,7 @@
         }
 
         if (operation === 'price' && comparePriceMode && comparePriceMode.value === 'coefficient') {
-            var coefficient = document.getElementById('masseditor-compare-price-value');
+            var coefficient = document.getElementById('masseditorproduct-compare-price-value');
             if (!coefficient || !coefficient.value.trim()) {
                 showErrorToast(t('validation_compare_coefficient', 'Укажите коэффициент для compare price.'));
                 return false;
@@ -500,7 +500,7 @@
 
         confirmApply.value = '0';
         modal.hidden = false;
-        document.body.classList.add('masseditor-modal-open');
+        document.body.classList.add('masseditorproduct-modal-open');
     }
 
     function closeModal() {
@@ -510,7 +510,7 @@
 
         modal.hidden = true;
         confirmApply.value = '0';
-        document.body.classList.remove('masseditor-modal-open');
+        document.body.classList.remove('masseditorproduct-modal-open');
     }
 
     operationButtons.forEach(function (button) {

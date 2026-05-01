@@ -20,7 +20,7 @@ class MassOperationServiceTest extends TestCase
 
     public function testApplyRejectsEmptySelection(): void
     {
-        $service = new shopMasseditorPluginMassOperationService(
+        $service = new shopMasseditorproductPluginMassOperationService(
             new FakeSelectionService(),
             new FakeLogService(),
             new waModel(),
@@ -40,7 +40,7 @@ class MassOperationServiceTest extends TestCase
 
     public function testApplyRejectsTooManyProducts(): void
     {
-        $service = new shopMasseditorPluginMassOperationService(
+        $service = new shopMasseditorproductPluginMassOperationService(
             new FakeSelectionService(),
             new FakeLogService(),
             new waModel(),
@@ -60,7 +60,7 @@ class MassOperationServiceTest extends TestCase
 
     public function testApplyRequiresConfirmation(): void
     {
-        $service = new shopMasseditorPluginMassOperationService(
+        $service = new shopMasseditorproductPluginMassOperationService(
             new FakeSelectionService(),
             new FakeLogService(),
             new waModel(),
@@ -80,7 +80,7 @@ class MassOperationServiceTest extends TestCase
     public function testApplyRejectsWhenUserHasNoAdminRights(): void
     {
         $GLOBALS['fake_wa_system']->user = new FakeUser(7, false);
-        $service = new shopMasseditorPluginMassOperationService(
+        $service = new shopMasseditorproductPluginMassOperationService(
             new FakeSelectionService(),
             new FakeLogService(),
             new waModel(),
@@ -108,7 +108,7 @@ class MassOperationServiceTest extends TestCase
         $log = new FakeLogService();
         $model = new waModel();
 
-        $service = new shopMasseditorPluginMassOperationService($selection, $log, $model, 100);
+        $service = new shopMasseditorproductPluginMassOperationService($selection, $log, $model, 100);
         $result = $service->apply(array(
             'product_ids' => array(11, 12),
             'operation' => 'visibility',
@@ -133,7 +133,7 @@ class MassOperationServiceTest extends TestCase
         );
         $model = new waModel();
 
-        $service = new shopMasseditorPluginMassOperationService($selection, new FakeLogService(), $model, 100);
+        $service = new shopMasseditorproductPluginMassOperationService($selection, new FakeLogService(), $model, 100);
 
         try {
             $service->apply(array(
@@ -164,7 +164,7 @@ class MassOperationServiceTest extends TestCase
         )));
         shopProduct::seed(11, array('name' => 'Test Product'));
 
-        $service = new shopMasseditorPluginMassOperationService($selection, $log, $model, 100);
+        $service = new shopMasseditorproductPluginMassOperationService($selection, $log, $model, 100);
         $service->apply(array(
             'product_ids' => array(11),
             'operation' => 'price',
@@ -190,7 +190,7 @@ class MassOperationServiceTest extends TestCase
         $selection->products = array(
             15 => array('id' => 15, 'name' => 'Fancy Product', 'url' => 'old-url'),
         );
-        $service = new shopMasseditorPluginMassOperationService($selection, new FakeLogService(), new waModel(), 100);
+        $service = new shopMasseditorproductPluginMassOperationService($selection, new FakeLogService(), new waModel(), 100);
 
         shopProduct::seed(15, array('description' => 'World', 'url' => 'old-url'));
         $service->apply(array(
@@ -223,7 +223,7 @@ class MassOperationServiceTest extends TestCase
 
     public function testNormalizeHelpersAndDescriptions(): void
     {
-        $service = new shopMasseditorPluginMassOperationService(
+        $service = new shopMasseditorproductPluginMassOperationService(
             new FakeSelectionService(),
             new FakeLogService(),
             new waModel(),
@@ -253,12 +253,12 @@ class MassOperationServiceTest extends TestCase
             11 => array('id' => 11, 'name' => 'Product 11'),
             12 => array('id' => 12, 'name' => 'Product 12'),
         );
-        $service = new shopMasseditorPluginMassOperationService(
+        $service = new shopMasseditorproductPluginMassOperationService(
             $selection,
             new FakeLogService(),
             new waModel(),
             100,
-            shopMasseditorPluginI18nService::EN
+            shopMasseditorproductPluginI18nService::EN
         );
 
         $result = $service->apply(array(
@@ -278,7 +278,7 @@ class MassOperationServiceTest extends TestCase
 
     public function testSuggestUniqueProductUrlThrowsAfterRetries(): void
     {
-        $service = new shopMasseditorPluginMassOperationService(
+        $service = new shopMasseditorproductPluginMassOperationService(
             new FakeSelectionService(),
             new FakeLogService(),
             new waModel(),
