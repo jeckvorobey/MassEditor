@@ -45,7 +45,7 @@
                   "type": "text",
                   "id": "0AXSZ",
                   "fill": "#1F2933ff",
-                  "content": "Mass Editor Product",
+                  "content": "Mass Editor",
                   "fontFamily": "Inter",
                   "fontSize": 24,
                   "fontWeight": "700"
@@ -4875,7 +4875,7 @@
                   "type": "text",
                   "id": "hAtBg",
                   "fill": "#687385ff",
-                  "content": "Параметры плагина Mass Editor Product.",
+                  "content": "Параметры плагина Mass Editor.",
                   "fontFamily": "Inter",
                   "fontSize": 14,
                   "fontWeight": "normal"
@@ -5922,7 +5922,7 @@
                   "type": "text",
                   "id": "QEQHc",
                   "fill": "#1F2933ff",
-                  "content": "Mass Editor Product",
+                  "content": "Mass Editor",
                   "fontFamily": "Inter",
                   "fontSize": 18,
                   "fontWeight": "700"
@@ -7145,7 +7145,7 @@
                   "type": "text",
                   "id": "ylLCm",
                   "fill": "#1F2933ff",
-                  "content": "Mass Editor Product",
+                  "content": "Mass Editor",
                   "fontFamily": "Inter",
                   "fontSize": 16,
                   "fontWeight": "700"
@@ -7893,7 +7893,7 @@
                   "type": "text",
                   "id": "xu5My",
                   "fill": "#F9FAFBff",
-                  "content": "Mass Editor Product",
+                  "content": "Mass Editor",
                   "fontFamily": "Inter",
                   "fontSize": 24,
                   "fontWeight": "700"

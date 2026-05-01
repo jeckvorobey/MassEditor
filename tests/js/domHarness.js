@@ -233,7 +233,7 @@ function buildAppDom() {
   const form = createNode(document, 'form', { 'data-role': 'workspace-form', 'data-selection-reset': '0' });
   document.body.appendChild(form);
 
-  const pluginInput = createNode(document, 'input', { name: 'plugin', value: 'masseditorproduct' });
+  const pluginInput = createNode(document, 'input', { name: 'plugin', value: 'masseditor' });
   form.appendChild(pluginInput);
 
   const toastStack = createNode(document, 'div', { 'data-role': 'toast-stack' });
@@ -265,36 +265,36 @@ function buildAppDom() {
   form.appendChild(tagsFields);
   form.appendChild(urlFields);
 
-  const numericValue = createNode(document, 'input', { id: 'masseditorproduct-numeric-value', value: '' });
+  const numericValue = createNode(document, 'input', { id: 'masseditor-numeric-value', value: '' });
   priceFields.appendChild(numericValue);
-  const compareMode = createSelect(document, 'masseditorproduct-compare-price-mode', null, [
+  const compareMode = createSelect(document, 'masseditor-compare-price-mode', null, [
     { value: 'keep', text: 'Keep' },
     { value: 'coefficient', text: 'Coefficient' },
   ], 'keep');
   priceFields.appendChild(compareMode);
   const compareValueWrap = createNode(document, 'div', { 'data-compare-mode-field': '1' });
-  const compareValue = createNode(document, 'input', { id: 'masseditorproduct-compare-price-value', value: '' });
+  const compareValue = createNode(document, 'input', { id: 'masseditor-compare-price-value', value: '' });
   compareValueWrap.appendChild(compareValue);
   priceFields.appendChild(compareValueWrap);
 
-  const textValue = createNode(document, 'textarea', { id: 'masseditorproduct-text-value' });
+  const textValue = createNode(document, 'textarea', { id: 'masseditor-text-value' });
   tagsFields.appendChild(textValue);
-  const tagsValue = createNode(document, 'textarea', { id: 'masseditorproduct-tags-value' });
+  const tagsValue = createNode(document, 'textarea', { id: 'masseditor-tags-value' });
   tagsFields.appendChild(tagsValue);
-  const urlMode = createSelect(document, 'masseditorproduct-url-mode', null, [
+  const urlMode = createSelect(document, 'masseditor-url-mode', null, [
     { value: 'regenerate', text: 'Regenerate' },
     { value: 'template', text: 'Template' },
   ], 'regenerate');
   urlFields.appendChild(urlMode);
-  const urlValue = createNode(document, 'input', { id: 'masseditorproduct-url-value', value: '' });
+  const urlValue = createNode(document, 'input', { id: 'masseditor-url-value', value: '' });
   urlFields.appendChild(urlValue);
 
-  const modeSelect = createSelect(document, 'masseditorproduct-mode', null, [
+  const modeSelect = createSelect(document, 'masseditor-mode', null, [
     { value: 'set', text: 'Set' },
     { value: 'percent', text: 'Percent' },
   ], 'set');
   form.appendChild(modeSelect);
-  const tagsMode = createSelect(document, 'masseditorproduct-tags-mode', null, [
+  const tagsMode = createSelect(document, 'masseditor-tags-mode', null, [
     { value: 'add', text: 'Add' },
     { value: 'remove', text: 'Remove' },
   ], 'add');

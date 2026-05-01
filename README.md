@@ -1,8 +1,8 @@
-# Mass Editor Product
+# Mass Editor
 
 ## Назначение
 
-`masseditorproduct` — backend-only плагин для Shop-Script, который развивается поэтапно как безопасный массовый редактор товаров.
+`masseditor` — backend-only плагин для Shop-Script, который развивается поэтапно как безопасный массовый редактор товаров.
 
 Текущий статус:
 
@@ -16,7 +16,7 @@
 ## Структура
 
 ```text
-wa-apps/shop/plugins/masseditorproduct/
+wa-apps/shop/plugins/masseditor/
 ├── lib/actions/   backend actions
 ├── lib/classes/   сервисы плагина, включая i18n
 ├── lib/config/    конфигурация и схема БД
@@ -33,7 +33,7 @@ wa-apps/shop/plugins/masseditorproduct/
 Собственная таблица:
 
 ```text
-shop_masseditorproduct_log
+shop_masseditor_log
 ```
 
 Поля:
@@ -48,7 +48,7 @@ shop_masseditorproduct_log
 Запись лога выполняет сервис:
 
 ```php
-shopMasseditorproductPluginLogService
+shopMasseditorPluginLogService
 ```
 
 ### Список товаров
@@ -94,7 +94,7 @@ shopMasseditorproductPluginLogService
 5. подтверждает применение
 6. сервер повторно валидирует входные данные
 7. изменения применяются батчами
-8. результат записывается в `shop_masseditorproduct_log`
+8. результат записывается в `shop_masseditor_log`
 
 ### Локализация
 
@@ -136,11 +136,11 @@ shopMasseditorproductPluginLogService
 Минимальная локальная проверка после PHP-изменений:
 
 ```bash
-php -l wa-apps/shop/plugins/masseditorproduct/lib/actions/shopMasseditorproductPluginBackend.action.php
-php -l wa-apps/shop/plugins/masseditorproduct/lib/classes/shopMasseditorproductPluginI18nService.class.php
-php -l wa-apps/shop/plugins/masseditorproduct/lib/classes/shopMasseditorproductPluginProductSelectionService.class.php
-php -l wa-apps/shop/plugins/masseditorproduct/lib/classes/shopMasseditorproductPluginLogService.class.php
-php -l wa-apps/shop/plugins/masseditorproduct/lib/classes/shopMasseditorproductPluginMassOperationService.class.php
+php -l wa-apps/shop/plugins/masseditor/lib/actions/shopMasseditorPluginBackend.action.php
+php -l wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginI18nService.class.php
+php -l wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginProductSelectionService.class.php
+php -l wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginLogService.class.php
+php -l wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginMassOperationService.class.php
 ```
 
 ## Автотесты
@@ -165,7 +165,7 @@ curl -L https://phar.phpunit.de/phpunit-10.phar -o tests/phpunit.phar
 
 PHP-тесты используют локальный bootstrap с заглушками Webasyst/Shop-Script и
 проверяют сервисы плагина, helper-логику backend action и публичное меню
-плагина. JS-тесты покрывают `masseditorproduct.js`: выбор товаров, localStorage,
+плагина. JS-тесты покрывают `masseditor.js`: выбор товаров, localStorage,
 валидацию, confirm modal и клиентские i18n-строки.
 
 ## Локальная проверка в Docker
@@ -182,7 +182,7 @@ docker compose up -d --build
 
 - Webasyst: `http://localhost:8080`
 - backend: `http://localhost:8080/webasyst/`
-- MassEditorProduct после входа: `http://localhost:8080/webasyst/shop/?plugin=masseditorproduct`
+- Mass Editor после входа: `http://localhost:8080/webasyst/shop/?plugin=masseditor`
 
 Подробная инструкция и проверочные команды лежат в [docker/README.md](docker/README.md).
 

@@ -45,7 +45,7 @@ if ! grep -q "'shop'" "$WA_DIR/wa-config/apps.php" 2>/dev/null; then
     sed -i "s/);/    'shop' => true,\n);/" "$WA_DIR/wa-config/apps.php"
 fi
 
-# Регистрируем плагин masseditorproduct
+# Регистрируем плагин masseditor
 mkdir -p "$WA_DIR/wa-config/apps/shop"
 php -r '
 $file = "/webasyst/wa-config/apps/shop/plugins.php";
@@ -54,7 +54,7 @@ if (!is_array($plugins)) {
     $plugins = array();
 }
 unset($plugins["masseditor"]);
-$plugins["masseditorproduct"] = true;
+$plugins["masseditor"] = true;
 file_put_contents($file, "<?php\nreturn " . var_export($plugins, true) . ";\n");
 '
 

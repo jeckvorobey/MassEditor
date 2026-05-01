@@ -5,7 +5,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 const { buildAppDom, createLocalStorage } = require('./domHarness');
 
-const scriptPath = path.join(__dirname, '../../wa-apps/shop/plugins/masseditorproduct/js/masseditorproduct.js');
+const scriptPath = path.join(__dirname, '../../wa-apps/shop/plugins/masseditor/js/masseditor.js');
 const scriptSource = fs.readFileSync(scriptPath, 'utf8');
 
 function boot(options = {}) {
@@ -15,7 +15,7 @@ function boot(options = {}) {
   const window = {
     document: app.document,
     localStorage,
-    masseditorproductI18n: options.i18n || {},
+    masseditorI18n: options.i18n || {},
     setTimeout(callback, timeout) {
       timeouts.push({ callback, timeout });
       return timeouts.length;
@@ -107,13 +107,13 @@ test('selection state persists to localStorage and select-all toggles rows', () 
   assert.equal(selectedCount.textContent, 2);
   assert.equal(app.document.querySelector('[data-role="selection-counter-pill"]').textContent, '2 из 2');
   assert.equal(checkboxes[0].closest('tr').classList.contains('is-selected'), true);
-  assert.equal(app.localStorage.snapshot()['masseditorproduct:selected-products:masseditorproduct'], '[1,2]');
+  assert.equal(app.localStorage.snapshot()['masseditor:selected-products:masseditor'], '[1,2]');
 });
 
 test('operation switching updates visible fields and compare-price toggle', () => {
   const app = boot();
   const buttons = app.document.querySelectorAll('[data-role="operation-trigger"]');
-  const compareMode = app.document.getElementById('masseditorproduct-compare-price-mode');
+  const compareMode = app.document.getElementById('masseditor-compare-price-mode');
   const compareField = app.document.querySelector('[data-compare-mode-field]');
 
   buttons[1].click();
@@ -142,11 +142,11 @@ test('validation shows error toast when required inputs are missing', () => {
 test('opening modal fills summary and submit appends hidden product ids with confirmation', () => {
   const app = boot({
     localStorage: {
-      'masseditorproduct:selected-products:masseditorproduct': '[1]',
+      'masseditor:selected-products:masseditor': '[1]',
     },
   });
-  const numeric = app.document.getElementById('masseditorproduct-numeric-value');
-  const compareMode = app.document.getElementById('masseditorproduct-compare-price-mode');
+  const numeric = app.document.getElementById('masseditor-numeric-value');
+  const compareMode = app.document.getElementById('masseditor-compare-price-mode');
   const openConfirm = app.document.querySelector('[data-role="open-confirm"]');
   const submitter = app.document.createElement('button');
   submitter.setAttribute('data-role', 'confirm-submit');
@@ -159,7 +159,7 @@ test('opening modal fills summary and submit appends hidden product ids with con
   assert.equal(app.modal.hidden, false);
   assert.equal(app.document.querySelector('[data-role="modal-count"]').textContent, 1);
   assert.equal(app.document.querySelector('[data-role="modal-operation"]').textContent, 'Изменить цену');
-  assert.equal(app.document.body.classList.contains('masseditorproduct-modal-open'), true);
+  assert.equal(app.document.body.classList.contains('masseditor-modal-open'), true);
 
   const event = submit(app.form, submitter);
   assert.equal(event.defaultPrevented, false);
@@ -173,12 +173,12 @@ test('opening modal fills summary and submit appends hidden product ids with con
 test('url template validation requires value', () => {
   const app = boot({
     localStorage: {
-      'masseditorproduct:selected-products:masseditorproduct': '[2]',
+      'masseditor:selected-products:masseditor': '[2]',
     },
   });
   const buttons = app.document.querySelectorAll('[data-role="operation-trigger"]');
   const openConfirm = app.document.querySelector('[data-role="open-confirm"]');
-  const urlMode = app.document.getElementById('masseditorproduct-url-mode');
+  const urlMode = app.document.getElementById('masseditor-url-mode');
 
   buttons[2].click();
   urlMode.value = 'template';

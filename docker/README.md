@@ -1,11 +1,11 @@
-# Локальный Docker-стенд Webasyst + Shop-Script + MassEditorProduct
+# Локальный Docker-стенд Webasyst + Shop-Script + Mass Editor
 
-Этот каталог поднимает локальный стенд для ручной проверки плагина `masseditorproduct`.
+Этот каталог поднимает локальный стенд для ручной проверки плагина `masseditor`.
 Репозиторий остается plugin-only: сам плагин монтируется в установленный внутри
 volume Webasyst по пути:
 
 ```text
-../wa-apps/shop/plugins/masseditorproduct -> /webasyst/wa-apps/shop/plugins/masseditorproduct
+../wa-apps/shop/plugins/masseditor -> /webasyst/wa-apps/shop/plugins/masseditor
 ```
 
 ## Быстрый старт
@@ -32,7 +32,7 @@ docker compose up -d --build
 |--------|-------|
 | Webasyst | http://localhost:8080 |
 | Backend | http://localhost:8080/webasyst/ |
-| MassEditorProduct после входа | http://localhost:8080/webasyst/shop/?plugin=masseditorproduct&action=backend |
+| Mass Editor после входа | http://localhost:8080/webasyst/shop/?plugin=masseditor&action=backend |
 | MariaDB внутри compose-сети | `db:3306` |
 
 Данные БД для мастера установки или ручной проверки:
@@ -59,34 +59,34 @@ curl --noproxy '*' -I http://localhost:8080/
 ```bash
 docker compose ps
 docker compose logs --tail=120 php
-curl --noproxy '*' -sS -o /tmp/masseditorproduct_home.html -w '%{http_code} %{content_type}\n' http://localhost:8080/
+curl --noproxy '*' -sS -o /tmp/masseditor_home.html -w '%{http_code} %{content_type}\n' http://localhost:8080/
 ```
 
 Ожидаемый минимум:
 
 - контейнеры `wa-db` и `wa-php` запущены;
 - главная страница возвращает `200 text/html` или редирект на backend/login;
-- `/webasyst/wa-apps/shop/plugins/masseditorproduct` существует внутри PHP-контейнера.
+- `/webasyst/wa-apps/shop/plugins/masseditor` существует внутри PHP-контейнера.
 
 Проверить bind mount плагина:
 
 ```bash
-docker compose exec -T php sh -c 'test -d /webasyst/wa-apps/shop/plugins/masseditorproduct && echo plugin-mounted'
+docker compose exec -T php sh -c 'test -d /webasyst/wa-apps/shop/plugins/masseditor && echo plugin-mounted'
 ```
 
 Проверить таблицу логов:
 
 ```bash
-docker compose exec -T db mariadb -uwebasyst -psecret webasyst -e "SHOW TABLES LIKE 'shop_masseditorproduct_log'; DESCRIBE shop_masseditorproduct_log;"
+docker compose exec -T db mariadb -uwebasyst -psecret webasyst -e "SHOW TABLES LIKE 'shop_masseditor_log'; DESCRIBE shop_masseditor_log;"
 ```
 
 ## Проверка PHP-синтаксиса
 
 ```bash
-docker compose exec -T php php -l /webasyst/wa-apps/shop/plugins/masseditorproduct/lib/actions/shopMasseditorproductPluginBackend.action.php
-docker compose exec -T php php -l /webasyst/wa-apps/shop/plugins/masseditorproduct/lib/classes/shopMasseditorproductPluginProductSelectionService.class.php
-docker compose exec -T php php -l /webasyst/wa-apps/shop/plugins/masseditorproduct/lib/classes/shopMasseditorproductPluginMassOperationService.class.php
-docker compose exec -T php php -l /webasyst/wa-apps/shop/plugins/masseditorproduct/lib/classes/shopMasseditorproductPluginLogService.class.php
+docker compose exec -T php php -l /webasyst/wa-apps/shop/plugins/masseditor/lib/actions/shopMasseditorPluginBackend.action.php
+docker compose exec -T php php -l /webasyst/wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginProductSelectionService.class.php
+docker compose exec -T php php -l /webasyst/wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginMassOperationService.class.php
+docker compose exec -T php php -l /webasyst/wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginLogService.class.php
 ```
 
 ## Что важно про текущий Docker

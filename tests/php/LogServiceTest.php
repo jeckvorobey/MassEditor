@@ -16,7 +16,7 @@ class LogServiceTest extends TestCase
 
     public function testLogRejectsEmptyActionType(): void
     {
-        $service = new shopMasseditorproductPluginLogService(new FakeLogModel());
+        $service = new shopMasseditorPluginLogService(new FakeLogModel());
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Action type is required.');
@@ -27,7 +27,7 @@ class LogServiceTest extends TestCase
     public function testLogNormalizesUserAndDescription(): void
     {
         $model = new FakeLogModel();
-        $service = new shopMasseditorproductPluginLogService($model);
+        $service = new shopMasseditorPluginLogService($model);
         $GLOBALS['fake_wa_system']->user = new FakeUser(42, true);
 
         $service->log('price', -5, '  demo  ');
@@ -49,7 +49,7 @@ class LogServiceTest extends TestCase
             array('id' => 2, 'action_type' => 'tags'),
         )));
 
-        $service = new shopMasseditorproductPluginLogService($model);
+        $service = new shopMasseditorPluginLogService($model);
         $this->assertCount(1, $service->getLatest(0));
 
         $page = $service->getPage(99, 20);
@@ -61,11 +61,11 @@ class LogServiceTest extends TestCase
     public function testPurgeOlderThanDaysShortCircuitsAndDeletes(): void
     {
         $model = new FakeLogModel();
-        $service = new shopMasseditorproductPluginLogService($model);
+        $service = new shopMasseditorPluginLogService($model);
 
         $this->assertSame(0, $service->purgeOlderThanDays(0));
         $this->assertSame(1, $service->purgeOlderThanDays(10));
         $this->assertCount(1, $model->execs);
-        $this->assertStringContainsString('DELETE FROM shop_masseditorproduct_log', $model->execs[0]['sql']);
+        $this->assertStringContainsString('DELETE FROM shop_masseditor_log', $model->execs[0]['sql']);
     }
 }

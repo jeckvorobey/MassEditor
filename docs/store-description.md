@@ -1,14 +1,14 @@
-# Описание Mass Editor Product для Webasyst Store
+# Описание Mass Editor для Webasyst Store
 
 Документ хранит черновик описания плагина для карточки Webasyst Store. HTML-блоки ниже используют только базовые теги, разрешенные редактором магазина, без CSS.
 
 ## RU title
 
-`Mass Editor Product для Shop-Script`
+`Mass Editor для Shop-Script`
 
 ## EN title
 
-`Mass Editor Product for Shop-Script`
+`Mass Editor for Shop-Script`
 
 ## RU summary
 
@@ -21,7 +21,7 @@ Safe bulk product editing in the Shop-Script backend with Russian and English in
 ## RU HTML description
 
 ```html
-<p><strong>Mass Editor Product помогает быстро обновлять выбранные товары в Shop-Script без ручного редактирования каждой карточки.</strong></p>
+<p><strong>Массовое изменение товаров - помогает быстро обновлять выбранные товары в Shop-Script без ручного редактирования каждой карточки.</strong></p>
 
 <p>Плагин добавляет в бекенд удобный экран для массовой работы с каталогом: найдите нужные товары, выберите их в таблице, настройте операцию и подтвердите применение изменений. Это полезно при обновлении цен, подготовке сезонных правок, управлении видимостью товаров и наведении порядка в описаниях, тегах и URL.</p>
 
@@ -44,7 +44,7 @@ Safe bulk product editing in the Shop-Script backend with Russian and English in
 
 <p><strong>Как это работает</strong></p>
 <ol>
-  <li>Откройте Mass Editor Product в бекенде Shop-Script.</li>
+  <li>Откройте "Массовое изменение товаров" в бекенде Shop-Script.</li>
   <li>Отфильтруйте каталог и отметьте товары, которые нужно изменить.</li>
   <li>Выберите операцию: цена, compare price, видимость, доступность, описание, теги или URL.</li>
   <li>Заполните параметры операции и проверьте выбранное действие в окне подтверждения.</li>
@@ -65,7 +65,7 @@ Safe bulk product editing in the Shop-Script backend with Russian and English in
 ## EN HTML description
 
 ```html
-<p><strong>Mass Editor Product helps update selected Shop-Script products without opening each product card manually.</strong></p>
+<p><strong>Mass Editor - helps update selected Shop-Script products without opening each product card manually.</strong></p>
 
 <p>The plugin adds a dedicated backend screen for bulk catalog management: find the required products, select them in the table, configure an operation, and confirm the change. It is useful for price updates, seasonal catalog maintenance, visibility management, and cleanup of descriptions, tags, and product URLs.</p>
 
@@ -88,7 +88,7 @@ Safe bulk product editing in the Shop-Script backend with Russian and English in
 
 <p><strong>How it works</strong></p>
 <ol>
-  <li>Open Mass Editor Product in the Shop-Script backend.</li>
+  <li>Open "Mass Editor" in the Shop-Script backend.</li>
   <li>Filter the catalog and select the products you want to update.</li>
   <li>Choose an operation: price, compare price, visibility, availability, description, tags, or URL.</li>
   <li>Fill in the operation settings and review the action in the confirmation dialog.</li>

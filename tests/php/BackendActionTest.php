@@ -13,7 +13,7 @@ class BackendActionTest extends TestCase
         waRequest::reset();
         waLog::reset();
         waContact::$names = array(5 => 'Alice Admin');
-        $plugin = new shopMasseditorproductPlugin(array(
+        $plugin = new shopMasseditorPlugin(array(
             'date_format' => 'd.m.Y H:i',
             'page_size' => 50,
             'operation_limit' => 100,
@@ -23,13 +23,13 @@ class BackendActionTest extends TestCase
             'interface_language' => 'auto',
         ));
         $GLOBALS['fake_wa_system'] = new FakeWaSystem();
-        $GLOBALS['fake_wa_system']->plugins['masseditorproduct'] = $plugin;
+        $GLOBALS['fake_wa_system']->plugins['masseditor'] = $plugin;
     }
 
     public function testExecuteRejectsNonAdminBeforeReadingBackendData(): void
     {
         $GLOBALS['fake_wa_system']->user = new FakeUser(9, false);
-        $action = new shopMasseditorproductPluginBackendAction();
+        $action = new shopMasseditorPluginBackendAction();
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Недостаточно прав');
@@ -39,7 +39,7 @@ class BackendActionTest extends TestCase
 
     public function testUnexpectedPostExceptionIsLoggedAndHiddenFromUi(): void
     {
-        $GLOBALS['fake_wa_system']->plugins['masseditorproduct'] = new ThrowingSettingsShopMasseditorproductPlugin(array(
+        $GLOBALS['fake_wa_system']->plugins['masseditor'] = new ThrowingSettingsShopMasseditorPlugin(array(
             'date_format' => 'd.m.Y H:i',
             'page_size' => 50,
             'operation_limit' => 100,
@@ -59,7 +59,7 @@ class BackendActionTest extends TestCase
             'interface_language' => 'auto',
         );
 
-        $action = new shopMasseditorproductPluginBackendAction();
+        $action = new shopMasseditorPluginBackendAction();
         $action->execute();
 
         $this->assertSame(array('Операцию не удалось выполнить. Повторите действие или проверьте журнал ошибок.'), $action->view->assigned['errors']);
@@ -67,12 +67,12 @@ class BackendActionTest extends TestCase
         $this->assertSame('settings', $action->view->assigned['active_tab']);
         $this->assertCount(1, waLog::$logs);
         $this->assertStringContainsString('SQLSTATE', waLog::$logs[0]['message']);
-        $this->assertSame('shop/plugins/masseditorproduct.log', waLog::$logs[0]['file']);
+        $this->assertSame('shop/plugins/masseditor.log', waLog::$logs[0]['file']);
     }
 
     public function testBuildPaginationUiCreatesEllipsisAndBounds(): void
     {
-        $action = new shopMasseditorproductPluginBackendAction();
+        $action = new shopMasseditorPluginBackendAction();
         $ui = $this->invokePrivate($action, 'buildPaginationUi', array(array(
             'page' => 5,
             'pages' => 10,
@@ -89,7 +89,7 @@ class BackendActionTest extends TestCase
 
     public function testFormattingHelpersNormalizeValues(): void
     {
-        $action = new shopMasseditorproductPluginBackendAction();
+        $action = new shopMasseditorPluginBackendAction();
 
         $this->assertSame('10.5', $this->invokePrivate($action, 'formatDecimalForView', array('10.5000')));
         $this->assertSame('-0', $this->invokePrivate($action, 'formatDecimalForView', array('-0')));
@@ -98,7 +98,7 @@ class BackendActionTest extends TestCase
 
     public function testSelectedIdsAndOperationFormMerge(): void
     {
-        $action = new shopMasseditorproductPluginBackendAction();
+        $action = new shopMasseditorPluginBackendAction();
 
         $this->assertSame(array(2, 3), $this->invokePrivate($action, 'normalizeSelectedProductIds', array(array('2', '3', '0', '2'))));
         $this->assertSame(array('operation' => 'tags', 'mode' => 'set'), $this->invokePrivate($action, 'mergeOperationForm', array(
@@ -109,7 +109,7 @@ class BackendActionTest extends TestCase
 
     public function testDecorateLogsSettingsAndOperationsLibrary(): void
     {
-        $action = new shopMasseditorproductPluginBackendAction();
+        $action = new shopMasseditorPluginBackendAction();
         $logs = $this->invokePrivate($action, 'decorateLogs', array(array(
             array('action_type' => 'price', 'user_id' => 5, 'created_at' => '2026-04-26 14:30:00'),
             array('action_type' => 'unknown', 'user_id' => 99, 'created_at' => 'broken'),
@@ -137,8 +137,8 @@ class BackendActionTest extends TestCase
 
     public function testPluginSettingsNormalizationAndThemeMode(): void
     {
-        $action = new shopMasseditorproductPluginBackendAction();
-        $plugin = $GLOBALS['fake_wa_system']->plugins['masseditorproduct'];
+        $action = new shopMasseditorPluginBackendAction();
+        $plugin = $GLOBALS['fake_wa_system']->plugins['masseditor'];
         $settings = $this->invokePrivate($action, 'getPluginSettings', array($plugin));
 
         $this->assertSame(50, $settings['page_size']);
@@ -152,8 +152,8 @@ class BackendActionTest extends TestCase
 
     public function testLanguageSettingsCanForceEnglishAndAutoUsesWebasystLocale(): void
     {
-        $action = new shopMasseditorproductPluginBackendAction();
-        $plugin = $GLOBALS['fake_wa_system']->plugins['masseditorproduct'];
+        $action = new shopMasseditorPluginBackendAction();
+        $plugin = $GLOBALS['fake_wa_system']->plugins['masseditor'];
 
         $GLOBALS['fake_wa_system']->locale = 'en_US';
         $settings = $this->invokePrivate($action, 'getPluginSettings', array($plugin));
@@ -171,7 +171,7 @@ class BackendActionTest extends TestCase
         $settings = $this->invokePrivate($action, 'savePluginSettings', array($plugin, $settings));
         $this->assertSame('en_US', $settings['interface_language_setting']);
         $this->assertSame('en_US', $settings['interface_language']);
-        $this->assertSame('Products found', shopMasseditorproductPluginI18nService::t('stats_found', $settings['interface_language']));
+        $this->assertSame('Products found', shopMasseditorPluginI18nService::t('stats_found', $settings['interface_language']));
 
         $library = $this->invokePrivate($action, 'getOperationsLibrary', array(0, 'en_US'));
         $this->assertSame('Prices and SKU', $library[0]['title']);
@@ -179,7 +179,7 @@ class BackendActionTest extends TestCase
     }
 }
 
-class ThrowingSettingsShopMasseditorproductPlugin extends shopMasseditorproductPlugin
+class ThrowingSettingsShopMasseditorPlugin extends shopMasseditorPlugin
 {
     public function saveSettings(array $settings)
     {

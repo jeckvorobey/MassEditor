@@ -1,6 +1,6 @@
 <?php
 
-class shopMasseditorproductPluginMassOperationService
+class shopMasseditorPluginMassOperationService
 {
     const DEFAULT_OPERATION_LIMIT = 100;
     const APPLY_BATCH_SIZE = 20;
@@ -15,19 +15,19 @@ class shopMasseditorproductPluginMassOperationService
     private $language;
 
     public function __construct(
-        shopMasseditorproductPluginProductSelectionService $selection_service = null,
-        shopMasseditorproductPluginLogService $log_service = null,
+        shopMasseditorPluginProductSelectionService $selection_service = null,
+        shopMasseditorPluginLogService $log_service = null,
         waModel $model = null,
         $operation_limit = null,
-        $language = shopMasseditorproductPluginI18nService::RU
+        $language = shopMasseditorPluginI18nService::RU
     ) {
-        $this->selection_service = $selection_service ?: new shopMasseditorproductPluginProductSelectionService();
-        $this->log_service = $log_service ?: new shopMasseditorproductPluginLogService();
+        $this->selection_service = $selection_service ?: new shopMasseditorPluginProductSelectionService();
+        $this->log_service = $log_service ?: new shopMasseditorPluginLogService();
         $this->model = $model ?: new waModel();
         $this->operation_limit = $this->normalizeOperationLimit($operation_limit);
-        $this->language = $language === shopMasseditorproductPluginI18nService::EN
-            ? shopMasseditorproductPluginI18nService::EN
-            : shopMasseditorproductPluginI18nService::RU;
+        $this->language = $language === shopMasseditorPluginI18nService::EN
+            ? shopMasseditorPluginI18nService::EN
+            : shopMasseditorPluginI18nService::RU;
     }
 
     public function apply(array $raw_request)
@@ -600,6 +600,6 @@ class shopMasseditorproductPluginMassOperationService
 
     private function t($key)
     {
-        return shopMasseditorproductPluginI18nService::t($key, $this->language);
+        return shopMasseditorPluginI18nService::t($key, $this->language);
     }
 }

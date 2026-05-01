@@ -3,7 +3,7 @@
          colors="true"
          cacheResult="false">
     <testsuites>
-        <testsuite name="MassEditorProduct">
+        <testsuite name="Mass Editor">
             <directory>tests/php</directory>
         </testsuite>
     </testsuites>

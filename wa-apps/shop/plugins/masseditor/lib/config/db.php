@@ -1,7 +1,7 @@
 <?php
 
 return array(
-    'shop_masseditorproduct_log' => array(
+    'shop_masseditor_log' => array(
         'id' => array('int', 11, 'null' => 0, 'autoincrement' => 1),
         'user_id' => array('int', 11, 'null' => 1, 'default' => null),
         'action_type' => array('varchar', 64, 'null' => 0, 'default' => ''),
