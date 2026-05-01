@@ -15,6 +15,7 @@ function boot(options = {}) {
   const window = {
     document: app.document,
     localStorage,
+    masseditorI18n: options.i18n || {},
     setTimeout(callback, timeout) {
       timeouts.push({ callback, timeout });
       return timeouts.length;
@@ -61,6 +62,37 @@ test('initializes toast sources and toggle label', () => {
   assert.equal(app.toastStack.children.length, 1);
   assert.equal(app.toastStack.children[0].getAttribute('role'), 'status');
   assert.equal(app.timeouts[0].timeout, 4000);
+});
+
+test('uses provided English i18n dictionary for labels and validation', () => {
+  const app = boot({
+    i18n: {
+      enabled: 'Enabled',
+      disabled: 'Disabled',
+      toast_success: 'Success',
+      toast_error: 'Error',
+      toast_info: 'Message',
+      toast_close: 'Close notification',
+      operation_price: 'Change price',
+      operation_tags: 'Tags',
+      operation_url: 'Product URLs',
+      operation_parameters: 'Operation parameters',
+      ready_empty: 'Select products to process.',
+      ready_selected_suffix: 'action will be written to the log',
+      products_word: 'products',
+      selected_counter_separator: 'of',
+      validation_select_product: 'Select at least one product.',
+      validation_url_template: 'Enter a URL template.',
+    },
+  });
+  const toggleLabel = app.document.querySelector('[data-role="soon-operations-toggle-label"]');
+  const openConfirm = app.document.querySelector('[data-role="open-confirm"]');
+
+  assert.equal(toggleLabel.textContent, 'Disabled');
+  assert.equal(app.document.querySelector('[data-role="operation-title"]').textContent, 'Change price');
+
+  openConfirm.click();
+  assert.equal(app.toastStack.children[1].querySelector('p').textContent, 'Select at least one product.');
 });
 
 test('selection state persists to localStorage and select-all toggles rows', () => {

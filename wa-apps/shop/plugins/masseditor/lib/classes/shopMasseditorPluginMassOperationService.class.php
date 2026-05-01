@@ -12,17 +12,22 @@ class shopMasseditorPluginMassOperationService
     private $log_service;
     private $model;
     private $operation_limit;
+    private $language;
 
     public function __construct(
         shopMasseditorPluginProductSelectionService $selection_service = null,
         shopMasseditorPluginLogService $log_service = null,
         waModel $model = null,
-        $operation_limit = null
+        $operation_limit = null,
+        $language = shopMasseditorPluginI18nService::RU
     ) {
         $this->selection_service = $selection_service ?: new shopMasseditorPluginProductSelectionService();
         $this->log_service = $log_service ?: new shopMasseditorPluginLogService();
         $this->model = $model ?: new waModel();
         $this->operation_limit = $this->normalizeOperationLimit($operation_limit);
+        $this->language = $language === shopMasseditorPluginI18nService::EN
+            ? shopMasseditorPluginI18nService::EN
+            : shopMasseditorPluginI18nService::RU;
     }
 
     public function apply(array $raw_request)
@@ -59,7 +64,7 @@ class shopMasseditorPluginMassOperationService
         return array(
             'request' => $request,
             'summary' => $this->buildSummary($request, $count),
-            'message' => 'Операция успешно применена.',
+            'message' => $this->t('operation_success'),
         );
     }
 
@@ -78,18 +83,18 @@ class shopMasseditorPluginMassOperationService
         }
 
         if (!$product_ids) {
-            throw new InvalidArgumentException('Выберите хотя бы один товар.');
+            throw new InvalidArgumentException($this->t('validation_select_product'));
         }
 
         if (count($product_ids) > $this->operation_limit) {
             throw new InvalidArgumentException(
-                'За одну операцию можно обработать не более ' . $this->operation_limit . ' товаров.'
+                $this->t('limit_error_prefix') . $this->operation_limit . $this->t('limit_error_suffix')
             );
         }
 
         $operation = isset($raw_request['operation']) ? trim((string) $raw_request['operation']) : '';
         if (!in_array($operation, self::ALL_OPERATIONS, true)) {
-            throw new InvalidArgumentException('Неизвестная массовая операция.');
+            throw new InvalidArgumentException($this->t('unknown_operation'));
         }
 
         $request = array(
@@ -114,12 +119,12 @@ class shopMasseditorPluginMassOperationService
         if (in_array($operation, self::PRICE_OPERATIONS, true)) {
             $mode = isset($raw_request['mode']) ? (string) $raw_request['mode'] : 'set';
             if (!in_array($mode, array('set', 'percent'), true)) {
-                throw new InvalidArgumentException('Неизвестный режим изменения цены.');
+                throw new InvalidArgumentException($this->t('unknown_price_mode'));
             }
 
             $value = isset($raw_request['numeric_value']) ? str_replace(',', '.', trim((string) $raw_request['numeric_value'])) : '';
             if ($value === '' || !is_numeric($value)) {
-                throw new InvalidArgumentException('Укажите корректное числовое значение.');
+                throw new InvalidArgumentException($this->t('invalid_numeric'));
             }
 
             $request['mode'] = $mode;
@@ -138,7 +143,7 @@ class shopMasseditorPluginMassOperationService
                         ? str_replace(',', '.', trim((string) $raw_request['compare_price_value']))
                         : '';
                     if ($compare_price_value === '' || !is_numeric($compare_price_value)) {
-                        throw new InvalidArgumentException('Укажите коэффициент для compare price.');
+                        throw new InvalidArgumentException($this->t('validation_compare_coefficient'));
                     }
                     $request['compare_price_value'] = (float) $compare_price_value;
                 }
@@ -146,13 +151,13 @@ class shopMasseditorPluginMassOperationService
         } elseif ($operation === 'visibility') {
             $status = isset($raw_request['visibility_status']) ? (int) $raw_request['visibility_status'] : 1;
             if (!in_array($status, array(1, 0, -1), true)) {
-                throw new InvalidArgumentException('Некорректное значение видимости.');
+                throw new InvalidArgumentException($this->t('invalid_visibility'));
             }
             $request['visibility_status'] = $status;
         } elseif ($operation === 'availability') {
             $availability = isset($raw_request['availability_value']) ? (int) $raw_request['availability_value'] : 1;
             if (!in_array($availability, array(0, 1), true)) {
-                throw new InvalidArgumentException('Некорректное значение доступности.');
+                throw new InvalidArgumentException($this->t('invalid_availability'));
             }
             $request['availability_value'] = $availability;
         } elseif ($operation === 'description') {
@@ -161,24 +166,24 @@ class shopMasseditorPluginMassOperationService
             );
             $request['text_value'] = isset($raw_request['text_value']) ? trim((string) $raw_request['text_value']) : '';
             if ($request['text_value'] === '') {
-                throw new InvalidArgumentException('Введите текст для описания.');
+                throw new InvalidArgumentException($this->t('validation_description'));
             }
         } elseif ($operation === 'tags') {
             $request['tags_mode'] = $this->normalizeTagsMode(isset($raw_request['tags_mode']) ? $raw_request['tags_mode'] : 'add');
             $request['tags_value'] = $this->normalizeTagList(isset($raw_request['tags_value']) ? (string) $raw_request['tags_value'] : '');
             if (!$request['tags_value']) {
-                throw new InvalidArgumentException('Укажите хотя бы один тег.');
+                throw new InvalidArgumentException($this->t('validation_tags'));
             }
         } elseif ($operation === 'url') {
             $request['url_mode'] = $this->normalizeUrlMode(isset($raw_request['url_mode']) ? $raw_request['url_mode'] : 'regenerate');
             $request['url_value'] = isset($raw_request['url_value']) ? trim((string) $raw_request['url_value']) : '';
             if ($request['url_mode'] === 'template' && $request['url_value'] === '') {
-                throw new InvalidArgumentException('Укажите шаблон или URL-значение.');
+                throw new InvalidArgumentException($this->t('validation_url_template'));
             }
         }
 
         if ($require_confirmation && empty($raw_request['confirm_apply'])) {
-            throw new InvalidArgumentException('Подтвердите применение изменений.');
+            throw new InvalidArgumentException($this->t('confirm_required'));
         }
 
         return $request;
@@ -221,7 +226,7 @@ class shopMasseditorPluginMassOperationService
     private function assertSelectedProductsLoaded(array $products, array $requested_ids)
     {
         if (count($products) !== count($requested_ids)) {
-            throw new InvalidArgumentException('Часть выбранных товаров не найдена. Повторите выбор перед применением.');
+            throw new InvalidArgumentException($this->t('missing_products'));
         }
     }
 
@@ -365,7 +370,7 @@ class shopMasseditorPluginMassOperationService
             }
         }
 
-        throw new RuntimeException('Не удалось подобрать уникальный URL для товара ID ' . $product_id . '.');
+        throw new RuntimeException(sprintf($this->t('unique_url_failed'), $product_id));
     }
 
     private function calculateNumericValue($old_value, $mode, $input_value)
@@ -380,7 +385,7 @@ class shopMasseditorPluginMassOperationService
         }
 
         if ($new_value < 0) {
-            throw new InvalidArgumentException('Итоговое значение не может быть отрицательным.');
+            throw new InvalidArgumentException($this->t('negative_value'));
         }
 
         return round($new_value, 4);
@@ -429,13 +434,13 @@ class shopMasseditorPluginMassOperationService
     private function getOperationLabel($operation)
     {
         $labels = array(
-            'price' => 'Изменить цену',
-            'compare_price' => 'Изменить compare price',
-            'visibility' => 'Изменить видимость',
-            'availability' => 'Изменить доступность',
-            'description' => 'Описание',
-            'tags' => 'Теги',
-            'url' => 'URL товара',
+            'price' => $this->t('operation_price'),
+            'compare_price' => $this->t('operation_compare_price'),
+            'visibility' => $this->t('operation_visibility'),
+            'availability' => $this->t('operation_availability'),
+            'description' => $this->t('operation_description'),
+            'tags' => $this->t('operation_tags'),
+            'url' => $this->t('operation_url'),
         );
 
         return isset($labels[$operation]) ? $labels[$operation] : (string) $operation;
@@ -444,13 +449,13 @@ class shopMasseditorPluginMassOperationService
     private function formatVisibilityStatus($status)
     {
         if ((int) $status === 1) {
-            return 'Опубликован';
+            return $this->t('published');
         }
         if ((int) $status === 0) {
-            return 'Скрыт';
+            return $this->t('hidden');
         }
         if ((int) $status === -1) {
-            return 'Неопубликован';
+            return $this->t('unpublished');
         }
 
         return (string) $status;
@@ -458,36 +463,33 @@ class shopMasseditorPluginMassOperationService
 
     private function buildSummary(array $request, $count)
     {
-        return sprintf('%s · %d товаров', $this->getOperationLabel($request['operation']), (int) $count);
+        return sprintf('%s%s%d %s', $this->getOperationLabel($request['operation']), $this->t('summary_separator'), (int) $count, $this->t('products_word'));
     }
 
     private function buildDescription(array $request, $count)
     {
         if (in_array($request['operation'], self::PRICE_OPERATIONS, true)) {
-            $details = $request['mode'] === 'percent'
-                ? 'изменение на ' . $this->formatNumber($request['numeric_value']) . '%'
-                : 'значение ' . $this->formatNumber($request['numeric_value']);
-
-            return sprintf('%s: %s для %d товаров', $this->getOperationLabel($request['operation']), $details, (int) $count);
+            $key = $request['mode'] === 'percent' ? 'description_price_percent' : 'description_price_set';
+            return sprintf($this->t($key), $this->getOperationLabel($request['operation']), $this->formatNumber($request['numeric_value']), (int) $count);
         }
 
         if ($request['operation'] === 'visibility') {
-            return sprintf('Видимость: %s для %d товаров', $this->formatVisibilityStatus($request['visibility_status']), (int) $count);
+            return sprintf($this->t('description_visibility'), $this->formatVisibilityStatus($request['visibility_status']), (int) $count);
         }
 
         if ($request['operation'] === 'availability') {
-            return sprintf('Доступность: %s для %d товаров', $request['availability_value'] ? 'доступен' : 'недоступен', (int) $count);
+            return sprintf($this->t('description_availability'), $request['availability_value'] ? $this->t('available') : $this->t('unavailable'), (int) $count);
         }
 
         if ($request['operation'] === 'description') {
-            return sprintf('Описание: режим %s для %d товаров', $request['description_mode'], (int) $count);
+            return sprintf($this->t('description_description'), $request['description_mode'], (int) $count);
         }
 
         if ($request['operation'] === 'tags') {
-            return sprintf('Теги: режим %s для %d товаров', $request['tags_mode'], (int) $count);
+            return sprintf($this->t('description_tags'), $request['tags_mode'], (int) $count);
         }
 
-        return sprintf('URL: режим %s для %d товаров', $request['url_mode'], (int) $count);
+        return sprintf($this->t('description_url'), $request['url_mode'], (int) $count);
     }
 
     private function formatNumber($value)
@@ -592,7 +594,12 @@ class shopMasseditorPluginMassOperationService
     private function assertAdminRights()
     {
         if (!wa()->getUser()->isAdmin('shop')) {
-            throw new RuntimeException('Недостаточно прав для массового редактирования товаров.');
+            throw new RuntimeException($this->t('admin_required'));
         }
+    }
+
+    private function t($key)
+    {
+        return shopMasseditorPluginI18nService::t($key, $this->language);
     }
 }

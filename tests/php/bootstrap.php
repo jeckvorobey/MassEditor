@@ -117,6 +117,7 @@ class FakeWaSystem
     public $plugins = array();
     public $user;
     public $app_url = '/webasyst/shop/';
+    public $locale = 'ru_RU';
 
     public function __construct()
     {
@@ -136,6 +137,11 @@ class FakeWaSystem
     public function getAppUrl($app)
     {
         return $this->app_url;
+    }
+
+    public function getLocale()
+    {
+        return $this->locale;
     }
 }
 
@@ -403,6 +409,7 @@ class shopHelper
 
 require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/models/shopMasseditorPluginProduct.model.php';
 require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/models/shopMasseditorPluginLog.model.php';
+require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginI18nService.class.php';
 require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginProductSelectionService.class.php';
 require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginLogService.class.php';
 require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginMassOperationService.class.php';

@@ -9,13 +9,16 @@ class shopMasseditorPluginBackendAction extends waViewAction
         /** @var shopMasseditorPlugin $plugin */
         $plugin = wa('shop')->getPlugin('masseditor');
         $settings = $this->getPluginSettings($plugin);
+        $language = $settings['interface_language'];
+        $texts = shopMasseditorPluginI18nService::getTexts($language);
         $selection_service = new shopMasseditorPluginProductSelectionService();
         $log_service = new shopMasseditorPluginLogService();
         $operation_service = new shopMasseditorPluginMassOperationService(
             $selection_service,
             $log_service,
             null,
-            $settings['operation_limit']
+            $settings['operation_limit'],
+            $language
         );
 
         $log_service->purgeOlderThanDays($settings['log_retention_days']);
@@ -59,8 +62,10 @@ class shopMasseditorPluginBackendAction extends waViewAction
             try {
                 if (waRequest::post('save_settings', 0, waRequest::TYPE_INT)) {
                     $settings = $this->savePluginSettings($plugin, $settings);
+                    $language = $settings['interface_language'];
+                    $texts = shopMasseditorPluginI18nService::getTexts($language);
                     $selection = $selection_service->getPage($filters, $settings['page_size']);
-                    $result_message = 'Настройки сохранены.';
+                    $result_message = $texts['settings_saved'];
                     $active_tab = 'settings';
                 } elseif (waRequest::post('do_apply', 0, waRequest::TYPE_INT)) {
                     $operation_payload = $this->readOperationPayload();
@@ -78,17 +83,17 @@ class shopMasseditorPluginBackendAction extends waViewAction
                 $this->restorePostStateAfterError($operation_form, $selected_product_ids, $active_tab);
             } catch (Exception $e) {
                 $this->logUnexpectedException($e);
-                $errors[] = 'Операцию не удалось выполнить. Повторите действие или проверьте журнал ошибок.';
+                $errors[] = $texts['generic_operation_error'];
                 $this->restorePostStateAfterError($operation_form, $selected_product_ids, $active_tab);
             }
         }
 
         $categories = $selection_service->getCategories();
         $log_selection = $log_service->getPage($log_page, 20);
-        $recent_logs = $this->decorateLogs($log_selection['logs']);
-        $last_log = $this->decorateLogs($log_service->getLatest(1));
+        $recent_logs = $this->decorateLogs($log_selection['logs'], $language);
+        $last_log = $this->decorateLogs($log_service->getLatest(1), $language);
         $last_log = $last_log ? reset($last_log) : null;
-        $operations = $this->getOperationsLibrary($settings['show_soon_operations']);
+        $operations = $this->getOperationsLibrary($settings['show_soon_operations'], $language);
 
         $this->view->assign(array(
             'page_title' => $plugin->getName(),
@@ -114,6 +119,11 @@ class shopMasseditorPluginBackendAction extends waViewAction
             'active_tab' => $active_tab,
             'settings' => $settings,
             'date_format_options' => $this->getDateFormatOptions(),
+            'interface_language_options' => $this->getInterfaceLanguageOptions($language),
+            'interface_language_setting' => $settings['interface_language_setting'],
+            'language' => $language,
+            'texts' => $texts,
+            'js_i18n_json' => json_encode(shopMasseditorPluginI18nService::getJsTexts($language), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT),
             'theme_class' => $settings['theme_mode'] === 'dark' ? 'theme-dark' : '',
         ));
     }
@@ -315,13 +325,13 @@ class shopMasseditorPluginBackendAction extends waViewAction
         error_log($message);
     }
 
-    private function decorateLogs(array $logs)
+    private function decorateLogs(array $logs, $language = shopMasseditorPluginI18nService::RU)
     {
         $user_names = $this->resolveUserNames($logs);
         $date_format = $this->getCurrentDateFormat();
 
         foreach ($logs as &$log) {
-            $log['action_label'] = $this->getActionLabel(isset($log['action_type']) ? $log['action_type'] : '');
+            $log['action_label'] = $this->getActionLabel(isset($log['action_type']) ? $log['action_type'] : '', $language);
             $user_id = isset($log['user_id']) ? (int) $log['user_id'] : 0;
             $log['user_name'] = isset($user_names[$user_id]) ? $user_names[$user_id] : null;
             $log['created_at_view'] = $this->formatDateForView(
@@ -364,19 +374,19 @@ class shopMasseditorPluginBackendAction extends waViewAction
         return $names;
     }
 
-    private function getActionLabel($action_type)
+    private function getActionLabel($action_type, $language = shopMasseditorPluginI18nService::RU)
     {
         if ($action_type === 'price') {
-            return 'Цена';
+            return shopMasseditorPluginI18nService::t('action_price', $language);
         }
         if ($action_type === 'compare_price') {
-            return 'Compare price';
+            return shopMasseditorPluginI18nService::t('action_compare_price', $language);
         }
         if ($action_type === 'visibility') {
-            return 'Видимость';
+            return shopMasseditorPluginI18nService::t('action_visibility', $language);
         }
         if ($action_type === 'availability') {
-            return 'Доступность';
+            return shopMasseditorPluginI18nService::t('action_availability', $language);
         }
 
         return (string) $action_type;
@@ -391,6 +401,8 @@ class shopMasseditorPluginBackendAction extends waViewAction
             'date_format' => $this->normalizeDateFormat($plugin->getSettings('date_format')),
             'theme_mode' => $this->normalizeThemeMode($plugin->getSettings('theme_mode')),
             'show_soon_operations' => (int) !!$plugin->getSettings('show_soon_operations'),
+            'interface_language_setting' => shopMasseditorPluginI18nService::normalizeSetting($plugin->getSettings('interface_language')),
+            'interface_language' => shopMasseditorPluginI18nService::resolveLanguage($plugin->getSettings('interface_language')),
         );
     }
 
@@ -403,9 +415,12 @@ class shopMasseditorPluginBackendAction extends waViewAction
             'date_format' => $this->normalizeDateFormat(waRequest::post('date_format', $current_settings['date_format'], waRequest::TYPE_STRING_TRIM)),
             'theme_mode' => $this->normalizeThemeMode(waRequest::post('theme_mode', $current_settings['theme_mode'], waRequest::TYPE_STRING_TRIM)),
             'show_soon_operations' => waRequest::post('show_soon_operations', 0, waRequest::TYPE_INT) ? 1 : 0,
+            'interface_language' => shopMasseditorPluginI18nService::normalizeSetting(waRequest::post('interface_language', $current_settings['interface_language_setting'], waRequest::TYPE_STRING_TRIM)),
         );
 
         $plugin->saveSettings($settings);
+        $settings['interface_language_setting'] = $settings['interface_language'];
+        $settings['interface_language'] = shopMasseditorPluginI18nService::resolveLanguage($settings['interface_language_setting']);
 
         return $settings;
     }
@@ -413,8 +428,21 @@ class shopMasseditorPluginBackendAction extends waViewAction
     private function assertAdminRights()
     {
         if (!wa()->getUser()->isAdmin('shop')) {
-            throw new RuntimeException('Недостаточно прав для управления Mass Editor.');
+            throw new RuntimeException(shopMasseditorPluginI18nService::t('admin_required', shopMasseditorPluginI18nService::resolveLanguage(self::getPluginLanguageSetting())));
         }
+    }
+
+    private static function getPluginLanguageSetting()
+    {
+        try {
+            $plugin = wa('shop')->getPlugin('masseditor');
+            if ($plugin) {
+                return $plugin->getSettings('interface_language');
+            }
+        } catch (Exception $e) {
+        }
+
+        return shopMasseditorPluginI18nService::AUTO;
     }
 
     private function normalizeIntSetting($value, $default, $min, $max)
@@ -478,51 +506,62 @@ class shopMasseditorPluginBackendAction extends waViewAction
         );
     }
 
-    private function getOperationsLibrary($show_soon_operations)
+    private function getInterfaceLanguageOptions($language)
+    {
+        $raw_options = shopMasseditorPluginI18nService::getLanguageOptions();
+        $options = array();
+        foreach ($raw_options as $value => $titles) {
+            $options[$value] = isset($titles[$language]) ? $titles[$language] : $value;
+        }
+
+        return $options;
+    }
+
+    private function getOperationsLibrary($show_soon_operations, $language = shopMasseditorPluginI18nService::RU)
     {
         $groups = array(
             array(
-                'title' => 'Цены и SKU',
+                'title' => shopMasseditorPluginI18nService::t('group_prices', $language),
                 'items' => array(
-                    array('id' => 'price', 'label' => 'Изменить цену', 'enabled' => true),
-                    array('id' => 'compare_price', 'label' => 'Изменить compare price', 'enabled' => true),
+                    array('id' => 'price', 'label' => shopMasseditorPluginI18nService::t('operation_price', $language), 'enabled' => true),
+                    array('id' => 'compare_price', 'label' => shopMasseditorPluginI18nService::t('operation_compare_price', $language), 'enabled' => true),
                     array('id' => 'sku_generator', 'label' => 'SKU generator', 'enabled' => false),
                 ),
             ),
             array(
-                'title' => 'Контент',
+                'title' => shopMasseditorPluginI18nService::t('group_content', $language),
                 'items' => array(
-                    array('id' => 'visibility', 'label' => 'Изменить видимость', 'enabled' => true),
-                    array('id' => 'availability', 'label' => 'Изменить доступность', 'enabled' => true),
-                    array('id' => 'description', 'label' => 'Описание', 'enabled' => true),
-                    array('id' => 'tags', 'label' => 'Теги', 'enabled' => true),
+                    array('id' => 'visibility', 'label' => shopMasseditorPluginI18nService::t('operation_visibility', $language), 'enabled' => true),
+                    array('id' => 'availability', 'label' => shopMasseditorPluginI18nService::t('operation_availability', $language), 'enabled' => true),
+                    array('id' => 'description', 'label' => shopMasseditorPluginI18nService::t('operation_description', $language), 'enabled' => true),
+                    array('id' => 'tags', 'label' => shopMasseditorPluginI18nService::t('operation_tags', $language), 'enabled' => true),
                 ),
             ),
             array(
-                'title' => 'Медиа',
+                'title' => shopMasseditorPluginI18nService::t('group_media', $language),
                 'items' => array(
-                    array('id' => 'product_images', 'label' => 'Фото товаров', 'enabled' => false),
-                    array('id' => 'video', 'label' => 'Видео', 'enabled' => false),
+                    array('id' => 'product_images', 'label' => shopMasseditorPluginI18nService::t('product_images', $language), 'enabled' => false),
+                    array('id' => 'video', 'label' => shopMasseditorPluginI18nService::t('video', $language), 'enabled' => false),
                 ),
             ),
             array(
-                'title' => 'Связи',
+                'title' => shopMasseditorPluginI18nService::t('group_links', $language),
                 'items' => array(
                     array('id' => 'cross_selling', 'label' => 'Cross-selling', 'enabled' => false),
                     array('id' => 'similar_products', 'label' => 'Similar products', 'enabled' => false),
                 ),
             ),
             array(
-                'title' => 'URL и страницы',
+                'title' => shopMasseditorPluginI18nService::t('group_url_pages', $language),
                 'items' => array(
-                    array('id' => 'url', 'label' => 'URL товаров', 'enabled' => true),
-                    array('id' => 'product_pages', 'label' => 'Страницы товара', 'enabled' => false),
+                    array('id' => 'url', 'label' => shopMasseditorPluginI18nService::t('operation_url', $language), 'enabled' => true),
+                    array('id' => 'product_pages', 'label' => shopMasseditorPluginI18nService::t('product_pages', $language), 'enabled' => false),
                 ),
             ),
             array(
-                'title' => 'Параметры и характеристики',
+                'title' => shopMasseditorPluginI18nService::t('group_features', $language),
                 'items' => array(
-                    array('id' => 'features', 'label' => 'Характеристики', 'enabled' => false),
+                    array('id' => 'features', 'label' => shopMasseditorPluginI18nService::t('features', $language), 'enabled' => false),
                 ),
             ),
         );

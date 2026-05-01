@@ -246,6 +246,36 @@ class MassOperationServiceTest extends TestCase
         )));
     }
 
+    public function testEnglishLanguageChangesMessagesSummaryAndDescriptions(): void
+    {
+        $selection = new FakeSelectionService();
+        $selection->products = array(
+            11 => array('id' => 11, 'name' => 'Product 11'),
+            12 => array('id' => 12, 'name' => 'Product 12'),
+        );
+        $service = new shopMasseditorPluginMassOperationService(
+            $selection,
+            new FakeLogService(),
+            new waModel(),
+            100,
+            shopMasseditorPluginI18nService::EN
+        );
+
+        $result = $service->apply(array(
+            'product_ids' => array(11, 12),
+            'operation' => 'visibility',
+            'visibility_status' => 0,
+            'confirm_apply' => 1,
+        ));
+
+        $this->assertSame('Operation applied successfully.', $result['message']);
+        $this->assertSame('Change visibility · 2 products', $result['summary']);
+        $this->assertSame('Visibility: Hidden for 2 products', $this->invokePrivate($service, 'buildDescription', array(
+            array('operation' => 'visibility', 'visibility_status' => 0),
+            2,
+        )));
+    }
+
     public function testSuggestUniqueProductUrlThrowsAfterRetries(): void
     {
         $service = new shopMasseditorPluginMassOperationService(

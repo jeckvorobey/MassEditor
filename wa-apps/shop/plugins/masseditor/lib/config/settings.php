@@ -42,6 +42,17 @@ return array(
             array('value' => 'dark', 'title' => 'Dark'),
         ),
     ),
+    'interface_language' => array(
+        'title' => 'Язык интерфейса',
+        'description' => 'Auto использует текущую локаль Webasyst.',
+        'value' => 'auto',
+        'control_type' => waHtmlControl::SELECT,
+        'options' => array(
+            array('value' => 'auto', 'title' => 'Auto'),
+            array('value' => 'ru_RU', 'title' => 'Русский'),
+            array('value' => 'en_US', 'title' => 'English'),
+        ),
+    ),
     'show_soon_operations' => array(
         'title' => 'Показывать операции "Скоро"',
         'description' => 'Показывать в библиотеке будущие, но пока неактивные операции.',

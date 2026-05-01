@@ -12,11 +12,11 @@
 
 ## RU summary
 
-Безопасное массовое редактирование цен, видимости, доступности, описаний, тегов и URL товаров в бекенде Shop-Script.
+Безопасное массовое редактирование товаров в бекенде Shop-Script с русским и английским интерфейсом.
 
 ## EN summary
 
-Safe bulk editing for product prices, visibility, availability, descriptions, tags, and URLs in the Shop-Script backend.
+Safe bulk product editing in the Shop-Script backend with Russian and English interface support.
 
 ## RU HTML description
 
@@ -38,7 +38,8 @@ Safe bulk editing for product prices, visibility, availability, descriptions, ta
   <li>Фильтрация товаров по названию или артикулу, категории, статусу и доступности.</li>
   <li>Пагинация и сохранение выбранных товаров при переходе между страницами списка.</li>
   <li>Журнал выполненных операций с количеством обработанных товаров и описанием действия.</li>
-  <li>Настройки лимита товаров за одну операцию, размера страницы, срока хранения журнала, формата даты и режима темы.</li>
+  <li>Настройки лимита товаров за одну операцию, размера страницы, срока хранения журнала, формата даты, режима темы и языка интерфейса.</li>
+  <li>Русский и английский интерфейс с режимом Auto: язык выбирается по текущей локали Webasyst, также доступно ручное переключение.</li>
 </ul>
 
 <p><strong>Как это работает</strong></p>
@@ -58,7 +59,7 @@ Safe bulk editing for product prices, visibility, availability, descriptions, ta
   <li>Изменения выполняются пакетами и записываются в журнал.</li>
 </ul>
 
-<blockquote>Плагин работает в бекенде Shop-Script и не изменяет витрину, корзину, логику заказов, единицы измерения и оформление storefront. Массовое редактирование характеристик, фотографий, видео, cross-selling, similar products и страниц товаров в текущей версии не выполняется.</blockquote>
+<blockquote>Плагин работает в бекенде Shop-Script и не изменяет витрину, корзину, логику заказов, единицы измерения и оформление storefront. Массовое редактирование характеристик, фотографий, видео, cross-selling, similar products и страниц товаров в текущей версии не выполняется. В режиме Auto язык интерфейса определяется по локали Webasyst.</blockquote>
 ```
 
 ## EN HTML description
@@ -81,7 +82,8 @@ Safe bulk editing for product prices, visibility, availability, descriptions, ta
   <li>Product filtering by name or SKU, category, status, and availability.</li>
   <li>Pagination with product selection preserved across pages.</li>
   <li>Operation log with processed product count and action description.</li>
-  <li>Settings for operation limit, page size, log retention, date format, and theme mode.</li>
+  <li>Settings for operation limit, page size, log retention, date format, theme mode, and interface language.</li>
+  <li>Russian and English interface support with Auto mode based on the current Webasyst locale, plus manual language selection.</li>
 </ul>
 
 <p><strong>How it works</strong></p>
@@ -101,7 +103,7 @@ Safe bulk editing for product prices, visibility, availability, descriptions, ta
   <li>Changes are processed in batches and recorded in the operation log.</li>
 </ul>
 
-<blockquote>The plugin works in the Shop-Script backend and does not modify the storefront, cart, order logic, units of measurement, or storefront design. Bulk editing of features, product images, videos, cross-selling, similar products, and product pages is not performed in the current version.</blockquote>
+<blockquote>The plugin works in the Shop-Script backend and does not modify the storefront, cart, order logic, units of measurement, or storefront design. Bulk editing of features, product images, videos, cross-selling, similar products, and product pages is not performed in the current version. In Auto mode, the interface language is selected from the Webasyst locale.</blockquote>
 ```
 
 ## Metadata notes
@@ -109,5 +111,6 @@ Safe bulk editing for product prices, visibility, availability, descriptions, ta
 - Версия по `plugin.php`: `1.0.0`.
 - Vendor указан: `1329551`.
 - Premium support declared: `yes`.
+- Интерфейс плагина поддерживает `ru_RU` и `en_US`; режим `Auto` опирается на текущую локаль Webasyst.
 - Точные минимальные требования PHP/Webasyst/Shop-Script в коде не заданы отдельным `requirements.php`, поэтому в карточке магазина их лучше не придумывать.
 - Перед публикацией отдельно проверить фактическую совместимость с Webasyst 2 / UI 2.0 на целевом стенде.

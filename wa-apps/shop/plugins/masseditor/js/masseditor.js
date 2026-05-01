@@ -6,13 +6,18 @@
     var workspaceForm = document.querySelector('[data-role="workspace-form"]');
     var toastStack = document.querySelector('[data-role="toast-stack"]');
     var toastSourceNotices = Array.prototype.slice.call(document.querySelectorAll('[data-toast-source="true"]'));
+    var i18n = window.masseditorI18n || {};
+
+    function t(key, fallback) {
+        return i18n[key] || fallback || key;
+    }
 
     function updateSoonOperationsToggleLabel() {
         if (!soonOperationsToggle || !soonOperationsToggleLabel) {
             return;
         }
 
-        soonOperationsToggleLabel.textContent = soonOperationsToggle.checked ? 'Включено' : 'Выключено';
+        soonOperationsToggleLabel.textContent = soonOperationsToggle.checked ? t('enabled', 'Включено') : t('disabled', 'Выключено');
     }
 
     if (soonOperationsToggle) {
@@ -22,13 +27,13 @@
 
     function toastTitle(type) {
         if (type === 'success') {
-            return 'Успешно';
+            return t('toast_success', 'Успешно');
         }
         if (type === 'error') {
-            return 'Ошибка';
+            return t('toast_error', 'Ошибка');
         }
 
-        return 'Сообщение';
+        return t('toast_info', 'Сообщение');
     }
 
     function removeToast(toast) {
@@ -65,7 +70,7 @@
 
         closeButton.type = 'button';
         closeButton.className = 'masseditor-toast__close';
-        closeButton.setAttribute('aria-label', 'Закрыть уведомление');
+        closeButton.setAttribute('aria-label', t('toast_close', 'Закрыть уведомление'));
         closeButton.textContent = '×';
         closeButton.addEventListener('click', function () {
             removeToast(toast);
@@ -149,13 +154,13 @@
     var selectedProductsMap = loadSelectedProductsMap();
 
     var operationLabels = {
-        price: 'Изменить цену',
-        compare_price: 'Изменить compare price',
-        visibility: 'Изменить видимость',
-        availability: 'Изменить доступность',
-        description: 'Описание',
-        tags: 'Теги',
-        url: 'URL товаров'
+        price: t('operation_price', 'Изменить цену'),
+        compare_price: t('operation_compare_price', 'Изменить compare price'),
+        visibility: t('operation_visibility', 'Изменить видимость'),
+        availability: t('operation_availability', 'Изменить доступность'),
+        description: t('operation_description', 'Описание'),
+        tags: t('operation_tags', 'Теги'),
+        url: t('operation_url', 'URL товаров')
     };
 
     function currentOperation() {
@@ -309,13 +314,13 @@
         }
 
         if (selectionCounterPill) {
-            selectionCounterPill.textContent = totalSelected + ' из ' + total;
+            selectionCounterPill.textContent = totalSelected + ' ' + t('selected_counter_separator', 'из') + ' ' + total;
         }
 
         if (readyCopy) {
             readyCopy.textContent = totalSelected > 0
-                ? totalSelected + ' товара(ов) · действие будет записано в журнал'
-                : 'Выберите товары для обработки.';
+                ? totalSelected + ' ' + t('products_word', 'товара(ов)') + ' · ' + t('ready_selected_suffix', 'действие будет записано в журнал')
+                : t('ready_empty', 'Выберите товары для обработки.');
         }
 
         if (selectAll) {
@@ -324,7 +329,7 @@
         }
 
         if (mobileApplyCount) {
-            mobileApplyCount.textContent = totalSelected + ' товара(ов)';
+            mobileApplyCount.textContent = totalSelected + ' ' + t('products_word', 'товара(ов)');
         }
 
         syncRowSelectionState();
@@ -342,11 +347,11 @@
         });
 
         if (operationTitle) {
-            operationTitle.textContent = operationLabels[operation] || 'Параметры операции';
+            operationTitle.textContent = operationLabels[operation] || t('operation_parameters', 'Параметры операции');
         }
 
         if (mobileApplyOperation) {
-            mobileApplyOperation.textContent = operationLabels[operation] || 'Параметры операции';
+            mobileApplyOperation.textContent = operationLabels[operation] || t('operation_parameters', 'Параметры операции');
         }
 
         operationFieldGroups.forEach(function (field) {
@@ -421,7 +426,7 @@
             var url = document.getElementById('masseditor-url-value');
             var urlMode = document.getElementById('masseditor-url-mode');
             if (urlMode && urlMode.value === 'regenerate') {
-                return 'Из названия товара';
+                return t('value_from_product_name', 'Из названия товара');
             }
             return url && url.value ? url.value : '—';
         }
@@ -434,22 +439,22 @@
         var operation = currentOperation();
 
         if (checkedCount === 0) {
-            showErrorToast('Выберите хотя бы один товар.');
+            showErrorToast(t('validation_select_product', 'Выберите хотя бы один товар.'));
             return false;
         }
 
         if ((operation === 'price' || operation === 'compare_price') && !document.getElementById('masseditor-numeric-value').value.trim()) {
-            showErrorToast('Укажите значение для массовой операции.');
+            showErrorToast(t('validation_numeric', 'Укажите значение для массовой операции.'));
             return false;
         }
 
         if (operation === 'description' && !document.getElementById('masseditor-text-value').value.trim()) {
-            showErrorToast('Введите текст для описания.');
+            showErrorToast(t('validation_description', 'Введите текст для описания.'));
             return false;
         }
 
         if (operation === 'tags' && !document.getElementById('masseditor-tags-value').value.trim()) {
-            showErrorToast('Укажите хотя бы один тег.');
+            showErrorToast(t('validation_tags', 'Укажите хотя бы один тег.'));
             return false;
         }
 
@@ -457,7 +462,7 @@
             var mode = document.getElementById('masseditor-url-mode');
             var value = document.getElementById('masseditor-url-value');
             if (mode && mode.value === 'template' && value && !value.value.trim()) {
-                showErrorToast('Укажите шаблон URL.');
+                showErrorToast(t('validation_url_template', 'Укажите шаблон URL.'));
                 return false;
             }
         }
@@ -465,7 +470,7 @@
         if (operation === 'price' && comparePriceMode && comparePriceMode.value === 'coefficient') {
             var coefficient = document.getElementById('masseditor-compare-price-value');
             if (!coefficient || !coefficient.value.trim()) {
-                showErrorToast('Укажите коэффициент для compare price.');
+                showErrorToast(t('validation_compare_coefficient', 'Укажите коэффициент для compare price.'));
                 return false;
             }
         }
