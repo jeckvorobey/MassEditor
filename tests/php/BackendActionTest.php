@@ -135,6 +135,19 @@ class BackendActionTest extends TestCase
         $this->assertNotContains('sku_generator', $flat_ids);
     }
 
+    public function testExecuteAssignsLocalizedPluginSurfacesInRussian(): void
+    {
+        $GLOBALS['fake_wa_system']->locale = 'ru_RU';
+
+        $action = new shopMasseditorPluginBackendAction();
+        $action->execute();
+
+        $this->assertSame('Массовый редактор', $action->view->assigned['page_title']);
+        $this->assertSame('Массовый редактор', $action->view->assigned['plugin_name']);
+        $this->assertSame('Разделы массового редактора', $action->view->assigned['texts']['tabs_aria_label']);
+        $this->assertSame('Цена сравнения', $action->view->assigned['texts']['compare_price']);
+    }
+
     public function testPluginSettingsNormalizationAndThemeMode(): void
     {
         $action = new shopMasseditorPluginBackendAction();
@@ -176,6 +189,17 @@ class BackendActionTest extends TestCase
         $library = $this->invokePrivate($action, 'getOperationsLibrary', array(0, 'en_US'));
         $this->assertSame('Prices and SKU', $library[0]['title']);
         $this->assertSame('Change price', $library[0]['items'][0]['label']);
+        $this->assertSame('SKU generator', $this->invokePrivate($action, 'getOperationsLibrary', array(1, 'en_US'))[0]['items'][2]['label']);
+    }
+
+    public function testTemplateUsesLocalizedCompareAndPrimaryFilterButton(): void
+    {
+        $template = file_get_contents(__DIR__ . '/../../wa-apps/shop/plugins/masseditor/templates/actions/backend/Backend.html');
+
+        $this->assertStringContainsString('<h1>{$plugin_name|escape}</h1>', $template);
+        $this->assertStringContainsString('aria-label="{$texts.tabs_aria_label|escape}"', $template);
+        $this->assertStringContainsString('<th>{$texts.compare_price|escape}</th>', $template);
+        $this->assertStringContainsString('class="button masseditor-button masseditor-button_primary" type="submit" form="masseditor-filter-form"', $template);
     }
 }
 

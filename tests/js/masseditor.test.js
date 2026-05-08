@@ -90,6 +90,7 @@ test('uses provided English i18n dictionary for labels and validation', () => {
 
   assert.equal(toggleLabel.textContent, 'Disabled');
   assert.equal(app.document.querySelector('[data-role="operation-title"]').textContent, 'Change price');
+  assert.equal(app.toastStack.children[0].querySelector('button').getAttribute('aria-label'), 'Close notification');
 
   openConfirm.click();
   assert.equal(app.toastStack.children[1].querySelector('p').textContent, 'Select at least one product.');

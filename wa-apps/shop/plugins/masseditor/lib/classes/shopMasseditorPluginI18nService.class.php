@@ -8,10 +8,13 @@ class shopMasseditorPluginI18nService
 
     private static $texts = array(
         self::RU => array(
+            'plugin_name' => 'Массовый редактор',
+            'plugin_description' => 'Backend-плагин для безопасного массового редактирования товаров с русским и английским интерфейсом.',
             'subtitle' => 'Массовое редактирование товаров.',
             'nav_products' => 'Товары',
             'nav_log' => 'Журнал',
             'nav_settings' => 'Настройки',
+            'tabs_aria_label' => 'Разделы массового редактора',
             'stats_found' => 'Товаров найдено',
             'stats_selected' => 'Выбрано',
             'stats_last_operation' => 'Последняя операция',
@@ -122,6 +125,9 @@ class shopMasseditorPluginI18nService
             'appearance' => 'Внешний вид',
             'theme_mode' => 'Режим темы',
             'theme_mode_hint' => 'Auto использует тему backend по умолчанию.',
+            'theme_auto' => 'Auto',
+            'theme_light' => 'Светлая',
+            'theme_dark' => 'Тёмная',
             'interface_language' => 'Язык интерфейса',
             'interface_language_hint' => 'Auto использует текущую локаль Webasyst.',
             'language_auto' => 'Auto',
@@ -134,24 +140,28 @@ class shopMasseditorPluginI18nService
             'save_settings' => 'Сохранить настройки',
             'settings_saved' => 'Настройки сохранены.',
             'generic_operation_error' => 'Операцию не удалось выполнить. Повторите действие или проверьте журнал ошибок.',
-            'admin_required' => 'Недостаточно прав для управления Mass Editor.',
+            'admin_required' => 'Недостаточно прав для управления массовым редактором.',
             'action_price' => 'Цена',
-            'action_compare_price' => 'Compare price',
+            'action_compare_price' => 'Цена сравнения',
             'action_visibility' => 'Видимость',
             'action_availability' => 'Доступность',
             'operation_price' => 'Изменить цену',
-            'operation_compare_price' => 'Изменить compare price',
+            'operation_compare_price' => 'Изменить цену сравнения',
             'operation_visibility' => 'Изменить видимость',
             'operation_availability' => 'Изменить доступность',
             'operation_description' => 'Описание',
             'operation_tags' => 'Теги',
             'operation_url' => 'URL товаров',
+            'operation_sku_generator' => 'Генератор SKU',
+            'operation_cross_selling' => 'Перекрёстные продажи',
+            'operation_similar_products' => 'Похожие товары',
             'group_prices' => 'Цены и SKU',
             'group_content' => 'Контент',
             'group_media' => 'Медиа',
             'group_links' => 'Связи',
             'group_url_pages' => 'URL и страницы',
             'group_features' => 'Параметры и характеристики',
+            'compare_price' => 'Цена сравнения',
             'product_images' => 'Фото товаров',
             'video' => 'Видео',
             'product_pages' => 'Страницы товара',
@@ -289,13 +299,26 @@ class shopMasseditorPluginI18nService
         return $result;
     }
 
+    public static function getPluginName($language)
+    {
+        return self::t('plugin_name', $language, 'Mass Editor');
+    }
+
+    public static function getPluginDescription($language)
+    {
+        return self::t('plugin_description', $language, 'Backend-only plugin for safe bulk product editing with Russian and English interface.');
+    }
+
     private static function buildEnglishTexts()
     {
         self::$texts[self::EN] = array_merge(self::$texts[self::RU], array(
+            'plugin_name' => 'Mass Editor',
+            'plugin_description' => 'Backend-only plugin for safe bulk product editing with Russian and English interface.',
             'subtitle' => 'Bulk product editing.',
             'nav_products' => 'Products',
             'nav_log' => 'Log',
             'nav_settings' => 'Settings',
+            'tabs_aria_label' => 'Mass Editor sections',
             'stats_found' => 'Products found',
             'stats_selected' => 'Selected',
             'stats_last_operation' => 'Last operation',
@@ -404,6 +427,9 @@ class shopMasseditorPluginI18nService
             'appearance' => 'Appearance',
             'theme_mode' => 'Theme mode',
             'theme_mode_hint' => 'Auto uses the default backend theme.',
+            'theme_auto' => 'Auto',
+            'theme_light' => 'Light',
+            'theme_dark' => 'Dark',
             'interface_language' => 'Interface language',
             'interface_language_hint' => 'Auto uses the current Webasyst locale.',
             'language_ru' => 'Russian',
@@ -425,12 +451,16 @@ class shopMasseditorPluginI18nService
             'operation_description' => 'Description',
             'operation_tags' => 'Tags',
             'operation_url' => 'Product URLs',
+            'operation_sku_generator' => 'SKU generator',
+            'operation_cross_selling' => 'Cross-selling',
+            'operation_similar_products' => 'Similar products',
             'group_prices' => 'Prices and SKU',
             'group_content' => 'Content',
             'group_media' => 'Media',
             'group_links' => 'Links',
             'group_url_pages' => 'URLs and pages',
             'group_features' => 'Parameters and features',
+            'compare_price' => 'Compare price',
             'product_images' => 'Product photos',
             'video' => 'Video',
             'product_pages' => 'Product pages',

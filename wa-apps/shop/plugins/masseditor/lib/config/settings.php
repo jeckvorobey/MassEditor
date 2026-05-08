@@ -56,7 +56,7 @@ return array(
     'show_soon_operations' => array(
         'title' => 'Показывать операции "Скоро"',
         'description' => 'Показывать в библиотеке будущие, но пока неактивные операции.',
-        'value' => '1',
+        'value' => '0',
         'control_type' => waHtmlControl::CHECKBOX,
     ),
 );

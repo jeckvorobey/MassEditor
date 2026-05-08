@@ -4,16 +4,53 @@ use PHPUnit\Framework\TestCase;
 
 class PluginTest extends TestCase
 {
-    public function testBackendMenuReturnsExpectedMarkup(): void
+    public function testBackendMenuReturnsLocalizedMarkup(): void
     {
         $GLOBALS['fake_wa_system'] = new FakeWaSystem();
         $GLOBALS['fake_wa_system']->app_url = '/backend/shop/';
-        $plugin = new shopMasseditorPlugin();
+        $plugin = new shopMasseditorPlugin(array(
+            'interface_language' => 'auto',
+        ));
 
+        $GLOBALS['fake_wa_system']->locale = 'ru_RU';
         $menu = $plugin->backendMenu();
 
         $this->assertArrayHasKey('core_li', $menu);
         $this->assertStringContainsString('/backend/shop/?plugin=masseditor', $menu['core_li']);
+        $this->assertStringContainsString('Массовый редактор', $menu['core_li']);
+
+        $GLOBALS['fake_wa_system']->locale = 'en_US';
+        $menu = $plugin->backendMenu();
         $this->assertStringContainsString('Mass Editor', $menu['core_li']);
+    }
+
+    public function testPluginNameAndDescriptionFollowResolvedLanguage(): void
+    {
+        $GLOBALS['fake_wa_system'] = new FakeWaSystem();
+        $plugin = new shopMasseditorPlugin(array(
+            'interface_language' => 'auto',
+        ));
+
+        $GLOBALS['fake_wa_system']->locale = 'ru_RU';
+        $this->assertSame('Массовый редактор', $plugin->getName());
+        $this->assertStringContainsString('массового редактирования товаров', $plugin->getDescription());
+
+        $GLOBALS['fake_wa_system']->locale = 'en_US';
+        $this->assertSame('Mass Editor', $plugin->getName());
+        $this->assertStringContainsString('bulk product editing', $plugin->getDescription());
+    }
+
+    public function testPluginSettingsDefaultHideSoonOperations(): void
+    {
+        $settings_source = file_get_contents(__DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/config/settings.php');
+
+        $this->assertStringContainsString("'show_soon_operations' => array(", $settings_source);
+        $this->assertStringContainsString("'value' => '0'", $settings_source);
+    }
+
+    public function testLocaleCatalogsExistForMetadata(): void
+    {
+        $this->assertFileExists(__DIR__ . '/../../wa-apps/shop/plugins/masseditor/locale/ru_RU/LC_MESSAGES/shop_masseditor.po');
+        $this->assertFileExists(__DIR__ . '/../../wa-apps/shop/plugins/masseditor/locale/en_US/LC_MESSAGES/shop_masseditor.po');
     }
 }

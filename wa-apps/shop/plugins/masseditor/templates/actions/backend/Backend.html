@@ -22,10 +22,10 @@
 
     <header class="masseditor-header">
         <div>
-            <h1>Mass Editor</h1>
+            <h1>{$plugin_name|escape}</h1>
             <p class="masseditor-subtitle">{$texts.subtitle|escape}</p>
         </div>
-        <nav class="masseditor-tabs" aria-label="Mass Editor">
+        <nav class="masseditor-tabs" aria-label="{$texts.tabs_aria_label|escape}">
             <a class="masseditor-tab{if $active_tab === 'products'} is-active{/if}" href="?plugin={$plugin_id|escape}&view=products&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&page={$pagination.page|escape:'url'}">{$texts.nav_products|escape}</a>
             <a class="masseditor-tab{if $active_tab === 'log'} is-active{/if}" href="?plugin={$plugin_id|escape}&view=log&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&page={$pagination.page|escape:'url'}&log_page={$log_pagination.page|escape:'url'}">{$texts.nav_log|escape}</a>
             <a class="masseditor-tab{if $active_tab === 'settings'} is-active{/if}" href="?plugin={$plugin_id|escape}&view=settings&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&page={$pagination.page|escape:'url'}&log_page={$log_pagination.page|escape:'url'}">{$texts.nav_settings|escape}</a>
@@ -91,7 +91,7 @@
                         </div>
                     </div>
                     <div class="masseditor-panel__actions">
-                        <button class="button masseditor-button masseditor-button_secondary" type="submit" form="masseditor-filter-form">{$texts.apply|escape}</button>
+                        <button class="button masseditor-button masseditor-button_primary" type="submit" form="masseditor-filter-form">{$texts.apply|escape}</button>
                         {if $has_active_filters}
                             <a class="button masseditor-button masseditor-button_ghost" href="{$filter_reset_url|escape}">{$texts.reset|escape}</a>
                         {/if}
@@ -151,7 +151,7 @@
                             </select>
                         </div>
                         <div class="masseditor-field" data-operation-fields="price">
-                            <label for="masseditor-compare-price-mode">Compare price</label>
+                            <label for="masseditor-compare-price-mode">{$texts.compare_price|escape}</label>
                             <select id="masseditor-compare-price-mode" name="compare_price_mode">
                                 <option value="keep"{if $operation_form.compare_price_mode === 'keep'} selected{/if}>{$texts.keep_unchanged|escape}</option>
                                 <option value="set_old_price"{if $operation_form.compare_price_mode === 'set_old_price'} selected{/if}>{$texts.write_old_price|escape}</option>
@@ -246,7 +246,7 @@
                                     <th>{$texts.status|escape}</th>
                                     <th>{$texts.availability|escape}</th>
                                     <th>{$texts.price|escape}</th>
-                                    <th>Compare</th>
+                                    <th>{$texts.compare_price|escape}</th>
                                     <th>{$texts.stock|escape}</th>
                                     <th>{$texts.changed|escape}</th>
                                 </tr>
@@ -268,7 +268,7 @@
                                                 <div class="masseditor-product-mobile-details__row"><span>{$texts.tags|escape}</span><strong>{$product.tag_names|default:'-'|escape}</strong></div>
                                                 <div class="masseditor-product-mobile-details__row"><span>{$texts.availability|escape}</span><strong>{if $product.availability == 1}{$texts.available|escape}{else}{$texts.unavailable|escape}{/if}</strong></div>
                                                 <div class="masseditor-product-mobile-details__row"><span>{$texts.price|escape}</span><strong>{$product.price_view|escape}</strong></div>
-                                                <div class="masseditor-product-mobile-details__row"><span>Compare</span><strong>{if $product.compare_price_view !== ''}{$product.compare_price_view|escape}{else}-{/if}</strong></div>
+                                                <div class="masseditor-product-mobile-details__row"><span>{$texts.compare_price|escape}</span><strong>{if $product.compare_price_view !== ''}{$product.compare_price_view|escape}{else}-{/if}</strong></div>
                                                 <div class="masseditor-product-mobile-details__row"><span>{$texts.stock|escape}</span><strong>{if $product.count === null}∞{else}{$product.count|escape}{/if}</strong></div>
                                                 <div class="masseditor-product-mobile-details__row"><span>{$texts.changed|escape}</span><strong>{$product.edit_datetime_view|escape}</strong></div>
                                             </div>
@@ -442,7 +442,7 @@
                 </div>
                 <div class="masseditor-settings-group">
                     <h2>{$texts.appearance|escape}</h2>
-                    <div class="masseditor-settings-row"><div><strong>{$texts.theme_mode|escape}</strong><p class="hint">{$texts.theme_mode_hint|escape}</p></div><select name="theme_mode"><option value="auto"{if $settings.theme_mode === 'auto'} selected{/if}>Auto</option><option value="light"{if $settings.theme_mode === 'light'} selected{/if}>Light</option><option value="dark"{if $settings.theme_mode === 'dark'} selected{/if}>Dark</option></select></div>
+                    <div class="masseditor-settings-row"><div><strong>{$texts.theme_mode|escape}</strong><p class="hint">{$texts.theme_mode_hint|escape}</p></div><select name="theme_mode"><option value="auto"{if $settings.theme_mode === 'auto'} selected{/if}>{$texts.theme_auto|escape}</option><option value="light"{if $settings.theme_mode === 'light'} selected{/if}>{$texts.theme_light|escape}</option><option value="dark"{if $settings.theme_mode === 'dark'} selected{/if}>{$texts.theme_dark|escape}</option></select></div>
                     <div class="masseditor-settings-row">
                         <div>
                             <strong>{$texts.interface_language|escape}</strong>

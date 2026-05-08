@@ -97,6 +97,7 @@ class shopMasseditorPluginBackendAction extends waViewAction
 
         $this->view->assign(array(
             'page_title' => $plugin->getName(),
+            'plugin_name' => $plugin->getName(),
             'plugin_id' => $plugin->getId(),
             'plugin_static_url' => $plugin->getPluginStaticUrl(),
             'products' => $this->decorateProducts($selection['products']),
@@ -525,7 +526,7 @@ class shopMasseditorPluginBackendAction extends waViewAction
                 'items' => array(
                     array('id' => 'price', 'label' => shopMasseditorPluginI18nService::t('operation_price', $language), 'enabled' => true),
                     array('id' => 'compare_price', 'label' => shopMasseditorPluginI18nService::t('operation_compare_price', $language), 'enabled' => true),
-                    array('id' => 'sku_generator', 'label' => 'SKU generator', 'enabled' => false),
+                    array('id' => 'sku_generator', 'label' => shopMasseditorPluginI18nService::t('operation_sku_generator', $language), 'enabled' => false),
                 ),
             ),
             array(
@@ -547,8 +548,8 @@ class shopMasseditorPluginBackendAction extends waViewAction
             array(
                 'title' => shopMasseditorPluginI18nService::t('group_links', $language),
                 'items' => array(
-                    array('id' => 'cross_selling', 'label' => 'Cross-selling', 'enabled' => false),
-                    array('id' => 'similar_products', 'label' => 'Similar products', 'enabled' => false),
+                    array('id' => 'cross_selling', 'label' => shopMasseditorPluginI18nService::t('operation_cross_selling', $language), 'enabled' => false),
+                    array('id' => 'similar_products', 'label' => shopMasseditorPluginI18nService::t('operation_similar_products', $language), 'enabled' => false),
                 ),
             ),
             array(
