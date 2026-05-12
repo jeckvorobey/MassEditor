@@ -12,22 +12,18 @@ class shopMasseditorPluginMassOperationService
     private $log_service;
     private $model;
     private $operation_limit;
-    private $language;
 
     public function __construct(
         shopMasseditorPluginProductSelectionService $selection_service = null,
         shopMasseditorPluginLogService $log_service = null,
         waModel $model = null,
         $operation_limit = null,
-        $language = shopMasseditorPluginI18nService::RU
+        $language = null
     ) {
         $this->selection_service = $selection_service ?: new shopMasseditorPluginProductSelectionService();
         $this->log_service = $log_service ?: new shopMasseditorPluginLogService();
         $this->model = $model ?: new waModel();
         $this->operation_limit = $this->normalizeOperationLimit($operation_limit);
-        $this->language = $language === shopMasseditorPluginI18nService::EN
-            ? shopMasseditorPluginI18nService::EN
-            : shopMasseditorPluginI18nService::RU;
     }
 
     public function apply(array $raw_request)
@@ -463,7 +459,11 @@ class shopMasseditorPluginMassOperationService
 
     private function buildSummary(array $request, $count)
     {
-        return sprintf('%s%s%d %s', $this->getOperationLabel($request['operation']), $this->t('summary_separator'), (int) $count, $this->t('products_word'));
+        return sprintf(
+            '%s · %s',
+            $this->getOperationLabel($request['operation']),
+            sprintf($this->tp('%d product', '%d products', (int) $count), (int) $count)
+        );
     }
 
     private function buildDescription(array $request, $count)
@@ -600,6 +600,15 @@ class shopMasseditorPluginMassOperationService
 
     private function t($key)
     {
-        return shopMasseditorPluginI18nService::t($key, $this->language);
+        return shopMasseditorPluginI18nService::t($key);
+    }
+
+    private function tp($singular, $plural, $count)
+    {
+        if (function_exists('_wp')) {
+            return _wp($singular, $plural, $count);
+        }
+
+        return (int) $count === 1 ? $singular : $plural;
     }
 }

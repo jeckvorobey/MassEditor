@@ -117,7 +117,7 @@ class MassOperationServiceTest extends TestCase
         ));
 
         $this->assertSame('Операция успешно применена.', $result['message']);
-        $this->assertSame('Изменить видимость · 2 товаров', $result['summary']);
+        $this->assertSame('Изменить видимость · 2 товара', $result['summary']);
         $this->assertCount(4, $model->execs);
         $this->assertStringContainsString('START TRANSACTION', $model->execs[0]['sql']);
         $this->assertStringContainsString('COMMIT', $model->execs[3]['sql']);
@@ -258,9 +258,9 @@ class MassOperationServiceTest extends TestCase
             new FakeLogService(),
             new waModel(),
             100,
-            shopMasseditorPluginI18nService::EN
         );
 
+        $GLOBALS['fake_wa_system']->locale = 'en_US';
         $result = $service->apply(array(
             'product_ids' => array(11, 12),
             'operation' => 'visibility',

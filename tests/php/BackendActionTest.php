@@ -20,7 +20,6 @@ class BackendActionTest extends TestCase
             'log_retention_days' => 90,
             'theme_mode' => 'auto',
             'show_soon_operations' => 0,
-            'interface_language' => 'auto',
         ));
         $GLOBALS['fake_wa_system'] = new FakeWaSystem();
         $GLOBALS['fake_wa_system']->plugins['masseditor'] = $plugin;
@@ -46,7 +45,6 @@ class BackendActionTest extends TestCase
             'log_retention_days' => 90,
             'theme_mode' => 'auto',
             'show_soon_operations' => 0,
-            'interface_language' => 'auto',
         ));
         waRequest::$method = 'post';
         waRequest::$post = array(
@@ -56,7 +54,6 @@ class BackendActionTest extends TestCase
             'log_retention_days' => 90,
             'date_format' => 'd.m.Y H:i',
             'theme_mode' => 'auto',
-            'interface_language' => 'auto',
         );
 
         $action = new shopMasseditorPluginBackendAction();
@@ -156,21 +153,21 @@ class BackendActionTest extends TestCase
 
         $this->assertSame(50, $settings['page_size']);
         $this->assertSame('auto', $settings['theme_mode']);
-        $this->assertSame('auto', $settings['interface_language_setting']);
-        $this->assertSame('ru_RU', $settings['interface_language']);
+        $this->assertSame(0, $settings['show_soon_operations']);
         $this->assertSame('auto', $this->invokePrivate($action, 'normalizeThemeMode', array('broken')));
         $this->assertSame('d.m.Y H:i', $this->invokePrivate($action, 'normalizeDateFormat', array('wrong')));
         $this->assertSame(200, $this->invokePrivate($action, 'normalizeIntSetting', array(999, 50, 10, 200)));
     }
 
-    public function testLanguageSettingsCanForceEnglishAndAutoUsesWebasystLocale(): void
+    public function testWebasystLocaleControlsEnglishTexts(): void
     {
         $action = new shopMasseditorPluginBackendAction();
         $plugin = $GLOBALS['fake_wa_system']->plugins['masseditor'];
 
         $GLOBALS['fake_wa_system']->locale = 'en_US';
         $settings = $this->invokePrivate($action, 'getPluginSettings', array($plugin));
-        $this->assertSame('en_US', $settings['interface_language']);
+        $this->assertSame('auto', $settings['theme_mode']);
+        $this->assertSame('Products found', shopMasseditorPluginI18nService::t('stats_found'));
 
         waRequest::$post = array(
             'page_size' => 50,
@@ -178,18 +175,15 @@ class BackendActionTest extends TestCase
             'log_retention_days' => 90,
             'date_format' => 'd.m.Y H:i',
             'theme_mode' => 'auto',
-            'interface_language' => 'en_US',
         );
 
         $settings = $this->invokePrivate($action, 'savePluginSettings', array($plugin, $settings));
-        $this->assertSame('en_US', $settings['interface_language_setting']);
-        $this->assertSame('en_US', $settings['interface_language']);
-        $this->assertSame('Products found', shopMasseditorPluginI18nService::t('stats_found', $settings['interface_language']));
+        $this->assertSame(50, $settings['page_size']);
 
-        $library = $this->invokePrivate($action, 'getOperationsLibrary', array(0, 'en_US'));
+        $library = $this->invokePrivate($action, 'getOperationsLibrary', array(0));
         $this->assertSame('Prices and SKU', $library[0]['title']);
         $this->assertSame('Change price', $library[0]['items'][0]['label']);
-        $this->assertSame('SKU generator', $this->invokePrivate($action, 'getOperationsLibrary', array(1, 'en_US'))[0]['items'][2]['label']);
+        $this->assertSame('SKU generator', $this->invokePrivate($action, 'getOperationsLibrary', array(1))[0]['items'][2]['label']);
     }
 
     public function testTemplateUsesLocalizedCompareAndPrimaryFilterButton(): void
@@ -200,6 +194,7 @@ class BackendActionTest extends TestCase
         $this->assertStringContainsString('aria-label="{$texts.tabs_aria_label|escape}"', $template);
         $this->assertStringContainsString('<th>{$texts.compare_price|escape}</th>', $template);
         $this->assertStringContainsString('class="button masseditor-button masseditor-button_primary" type="submit" form="masseditor-filter-form"', $template);
+        $this->assertStringNotContainsString('name="interface_language"', $template);
     }
 }
 

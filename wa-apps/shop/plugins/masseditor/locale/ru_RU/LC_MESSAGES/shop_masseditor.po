@@ -4,9 +4,571 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: ru_RU\n"
+"Plural-Forms: nplurals=3; plural=((((n%10)==1)&&((n%100)!=11))?(0):(((((n%10)>=2)&&((n%10)<=4))&&(((n%100)<10)||((n%100)>=20)))?(1):2));\n"
 
 msgid "Mass Editor"
 msgstr "Массовый редактор"
 
 msgid "Backend-only plugin for safe bulk product editing with Russian and English interface."
 msgstr "Backend-плагин для безопасного массового редактирования товаров с русским и английским интерфейсом."
+
+msgid "Bulk product editing."
+msgstr "Массовое редактирование товаров."
+
+msgid "Products"
+msgstr "Товары"
+
+msgid "Log"
+msgstr "Журнал"
+
+msgid "Settings"
+msgstr "Настройки"
+
+msgid "Mass Editor sections"
+msgstr "Разделы массового редактора"
+
+msgid "Products found"
+msgstr "Товаров найдено"
+
+msgid "Selected"
+msgstr "Выбрано"
+
+msgid "Last operation"
+msgstr "Последняя операция"
+
+msgid "No data"
+msgstr "Нет данных"
+
+msgid "Log is empty"
+msgstr "Журнал пока пуст"
+
+msgid "products"
+msgstr "товаров"
+
+msgid "records"
+msgstr "записей"
+
+msgid "Filters"
+msgstr "Фильтры"
+
+msgid "Search"
+msgstr "Поиск"
+
+msgid "Name or SKU"
+msgstr "Название или артикул"
+
+msgid "Status"
+msgstr "Статус"
+
+msgid "All"
+msgstr "Все"
+
+msgid "Published"
+msgstr "Опубликован"
+
+msgid "Hidden"
+msgstr "Скрыт"
+
+msgid "Unpublished"
+msgstr "Неопубликован"
+
+msgid "Category"
+msgstr "Категория"
+
+msgid "All categories"
+msgstr "Все категории"
+
+msgid "Availability"
+msgstr "Доступность"
+
+msgid "Available"
+msgstr "Доступен"
+
+msgid "Unavailable"
+msgstr "Недоступен"
+
+msgid "Apply"
+msgstr "Применить"
+
+msgid "Reset"
+msgstr "Сбросить"
+
+msgid "Operations"
+msgstr "Операции"
+
+msgid "Soon"
+msgstr "Скоро"
+
+msgid "Operation parameters"
+msgstr "Параметры операции"
+
+msgid "Selected products will be processed only after confirmation in the modal window."
+msgstr "Выбранные товары будут обработаны только после подтверждения в модальном окне."
+
+msgid "Mode"
+msgstr "Режим"
+
+msgid "Set value"
+msgstr "Установить значение"
+
+msgid "Increase by percent"
+msgstr "Увеличить на процент"
+
+msgid "Value"
+msgstr "Значение"
+
+msgid "Rounding"
+msgstr "Округление"
+
+msgid "No rounding"
+msgstr "Без округления"
+
+msgid "To 1"
+msgstr "До 1"
+
+msgid "To 10"
+msgstr "До 10"
+
+msgid "To 100"
+msgstr "До 100"
+
+msgid "Direction"
+msgstr "Направление"
+
+msgid "Nearest"
+msgstr "По правилам округления"
+
+msgid "Up"
+msgstr "Вверх"
+
+msgid "Down"
+msgstr "Вниз"
+
+msgid "Keep unchanged"
+msgstr "Оставить без изменений"
+
+msgid "Write old price"
+msgstr "Записать старую цену"
+
+msgid "Clear"
+msgstr "Очистить"
+
+msgid "Multiply by coefficient"
+msgstr "Умножить по коэффициенту"
+
+msgid "Coefficient"
+msgstr "Коэффициент"
+
+msgid "Visibility"
+msgstr "Видимость"
+
+msgid "Description mode"
+msgstr "Режим описания"
+
+msgid "Replace"
+msgstr "Полная замена"
+
+msgid "Add to beginning"
+msgstr "Добавить в начало"
+
+msgid "Add to end"
+msgstr "Добавить в конец"
+
+msgid "Text"
+msgstr "Текст"
+
+msgid "Tags mode"
+msgstr "Режим тегов"
+
+msgid "Add"
+msgstr "Добавить"
+
+msgid "Remove"
+msgstr "Удалить"
+
+msgid "Tags"
+msgstr "Теги"
+
+msgid "comma-separated or one per line"
+msgstr "через запятую или с новой строки"
+
+msgid "URL mode"
+msgstr "Режим URL"
+
+msgid "Generate from name"
+msgstr "Сгенерировать из названия"
+
+msgid "Template"
+msgstr "Шаблон"
+
+msgid "URL template"
+msgstr "Шаблон URL"
+
+msgid "Ready to apply"
+msgstr "Готово к применению"
+
+msgid "Select products to process."
+msgstr "Выберите товары для обработки."
+
+msgid "action will be written to the log"
+msgstr "действие будет записано в журнал"
+
+msgid "of"
+msgstr "из"
+
+msgid "ID"
+msgstr "ID"
+
+msgid "Date"
+msgstr "Дата"
+
+msgid "Name"
+msgstr "Название"
+
+msgid "URL"
+msgstr "URL"
+
+msgid "Description"
+msgstr "Описание"
+
+msgid "Categories"
+msgstr "Категории"
+
+msgid "Price"
+msgstr "Цена"
+
+msgid "Stock"
+msgstr "Остаток"
+
+msgid "Changed"
+msgstr "Изменён"
+
+msgid "Select all products on this page"
+msgstr "Выбрать все товары на странице"
+
+msgid "SKU is not set"
+msgstr "SKU не задан"
+
+msgid "Products not found."
+msgstr "Товары не найдены."
+
+msgid "Change the filter and try again."
+msgstr "Измените фильтр и попробуйте снова."
+
+msgid "Shown"
+msgstr "Показано"
+
+msgid "Product pagination"
+msgstr "Пагинация товаров"
+
+msgid "Log pagination"
+msgstr "Пагинация журнала"
+
+msgid "Previous page"
+msgstr "Предыдущая страница"
+
+msgid "Next page"
+msgstr "Следующая страница"
+
+msgid "Change price"
+msgstr "Изменить цену"
+
+msgid "Confirm bulk change"
+msgstr "Подтвердите массовое изменение"
+
+msgid "Check the parameters before applying."
+msgstr "Проверьте параметры перед применением."
+
+msgid "Close"
+msgstr "Закрыть"
+
+msgid "Products to be changed"
+msgstr "Будет изменено товаров"
+
+msgid "Operation"
+msgstr "Операция"
+
+msgid "This action cannot be automatically undone."
+msgstr "Действие нельзя автоматически отменить."
+
+msgid "The operation will be written to the log and available for audit."
+msgstr "Операция будет записана в журнал и доступна для аудита."
+
+msgid "Cancel"
+msgstr "Отмена"
+
+msgid "Apply changes"
+msgstr "Применить изменения"
+
+msgid "User"
+msgstr "Пользователь"
+
+msgid "Count"
+msgstr "Количество"
+
+msgid "Log is empty."
+msgstr "Журнал пока пуст."
+
+msgid "Records will appear here after the first confirmed operation."
+msgstr "После первой подтверждённой операции здесь появятся записи."
+
+msgid "Performance"
+msgstr "Производительность"
+
+msgid "Page size"
+msgstr "Размер страницы"
+
+msgid "How many products to show in the table."
+msgstr "Сколько товаров отображать в таблице."
+
+msgid "Products per operation limit"
+msgstr "Лимит товаров за операцию"
+
+msgid "Maximum products per single run."
+msgstr "Максимум товаров за один запуск."
+
+msgid "Keep log, days"
+msgstr "Хранить журнал, дней"
+
+msgid "Old records will be cleaned automatically."
+msgstr "Старые записи будут автоматически очищаться."
+
+msgid "Date format"
+msgstr "Формат даты"
+
+msgid "Choose how dates and times are shown in all plugin sections."
+msgstr "Выберите, как показывать дату и время во всех разделах плагина."
+
+msgid "Appearance"
+msgstr "Внешний вид"
+
+msgid "Theme mode"
+msgstr "Режим темы"
+
+msgid "Auto uses the default backend theme."
+msgstr "Auto использует тему backend по умолчанию."
+
+msgid "Auto"
+msgstr "Auto"
+
+msgid "Light"
+msgstr "Светлая"
+
+msgid "Dark"
+msgstr "Тёмная"
+
+msgid "Interface language"
+msgstr "Язык интерфейса"
+
+msgid "Auto uses the current Webasyst locale."
+msgstr "Auto использует текущую локаль Webasyst."
+
+msgid "Russian"
+msgstr "Русский"
+
+msgid "English"
+msgstr "English"
+
+msgid "Show \"Soon\" operations"
+msgstr "Показывать операции «Скоро»"
+
+msgid "Controls future operations visibility in the library."
+msgstr "Управляет отображением будущих операций в библиотеке."
+
+msgid "Enabled"
+msgstr "Включено"
+
+msgid "Disabled"
+msgstr "Выключено"
+
+msgid "Save settings"
+msgstr "Сохранить настройки"
+
+msgid "Settings saved."
+msgstr "Настройки сохранены."
+
+msgid "The operation could not be completed. Try again or check the error log."
+msgstr "Операцию не удалось выполнить. Повторите действие или проверьте журнал ошибок."
+
+msgid "Not enough rights to manage Mass Editor."
+msgstr "Недостаточно прав для управления массовым редактором."
+
+msgid "Compare price"
+msgstr "Цена сравнения"
+
+msgid "Change compare price"
+msgstr "Изменить цену сравнения"
+
+msgid "Change visibility"
+msgstr "Изменить видимость"
+
+msgid "Change availability"
+msgstr "Изменить доступность"
+
+msgid "Product URLs"
+msgstr "URL товаров"
+
+msgid "SKU generator"
+msgstr "Генератор SKU"
+
+msgid "Cross-selling"
+msgstr "Перекрёстные продажи"
+
+msgid "Similar products"
+msgstr "Похожие товары"
+
+msgid "Prices and SKU"
+msgstr "Цены и SKU"
+
+msgid "Content"
+msgstr "Контент"
+
+msgid "Media"
+msgstr "Медиа"
+
+msgid "Links"
+msgstr "Связи"
+
+msgid "URLs and pages"
+msgstr "URL и страницы"
+
+msgid "Parameters and features"
+msgstr "Параметры и характеристики"
+
+msgid "Product photos"
+msgstr "Фото товаров"
+
+msgid "Video"
+msgstr "Видео"
+
+msgid "Product pages"
+msgstr "Страницы товара"
+
+msgid "Features"
+msgstr "Характеристики"
+
+msgid "Success"
+msgstr "Успешно"
+
+msgid "Error"
+msgstr "Ошибка"
+
+msgid "Message"
+msgstr "Сообщение"
+
+msgid "Close notification"
+msgstr "Закрыть уведомление"
+
+msgid "Select at least one product."
+msgstr "Выберите хотя бы один товар."
+
+msgid "Enter a value for the bulk operation."
+msgstr "Укажите значение для массовой операции."
+
+msgid "Enter description text."
+msgstr "Введите текст для описания."
+
+msgid "Enter at least one tag."
+msgstr "Укажите хотя бы один тег."
+
+msgid "Enter a URL template."
+msgstr "Укажите шаблон URL."
+
+msgid "Enter a compare price coefficient."
+msgstr "Укажите коэффициент для compare price."
+
+msgid "From product name"
+msgstr "Из названия товара"
+
+msgid "Operation applied successfully."
+msgstr "Операция успешно применена."
+
+msgid "No more than "
+msgstr "За одну операцию можно обработать не более "
+
+msgid " products can be processed in one operation."
+msgstr " товаров."
+
+msgid "Unknown bulk operation."
+msgstr "Неизвестная массовая операция."
+
+msgid "Unknown price change mode."
+msgstr "Неизвестный режим изменения цены."
+
+msgid "Enter a valid numeric value."
+msgstr "Укажите корректное числовое значение."
+
+msgid "Invalid visibility value."
+msgstr "Некорректное значение видимости."
+
+msgid "Invalid availability value."
+msgstr "Некорректное значение доступности."
+
+msgid "Confirm applying changes."
+msgstr "Подтвердите применение изменений."
+
+msgid "Some selected products were not found. Select them again before applying."
+msgstr "Часть выбранных товаров не найдена. Повторите выбор перед применением."
+
+msgid "Could not find a unique URL for product ID %d."
+msgstr "Не удалось подобрать уникальный URL для товара ID %d."
+
+msgid "The final value cannot be negative."
+msgstr "Итоговое значение не может быть отрицательным."
+
+msgid " · "
+msgstr " · "
+
+msgid "%s: change by %s%% for %d products"
+msgstr "%s: изменение на %s%% для %d товаров"
+
+msgid "%s: value %s for %d products"
+msgstr "%s: значение %s для %d товаров"
+
+msgid "Visibility: %s for %d products"
+msgstr "Видимость: %s для %d товаров"
+
+msgid "Availability: %s for %d products"
+msgstr "Доступность: %s для %d товаров"
+
+msgid "Description: mode %s for %d products"
+msgstr "Описание: режим %s для %d товаров"
+
+msgid "Tags: mode %s for %d products"
+msgstr "Теги: режим %s для %d товаров"
+
+msgid "URL: mode %s for %d products"
+msgstr "URL: режим %s для %d товаров"
+
+msgid "product"
+msgid_plural "products"
+msgstr[0] "товар"
+msgstr[1] "товара"
+msgstr[2] "товаров"
+
+msgid "%d product"
+msgid_plural "%d products"
+msgstr[0] "%d товар"
+msgstr[1] "%d товара"
+msgstr[2] "%d товаров"
+
+msgid "record"
+msgid_plural "records"
+msgstr[0] "запись"
+msgstr[1] "записи"
+msgstr[2] "записей"
+
+msgid "%d record"
+msgid_plural "%d records"
+msgstr[0] "%d запись"
+msgstr[1] "%d записи"
+msgstr[2] "%d записей"
+
+msgid "Published products"
+msgstr "Опубликованные"
+
+msgid "Hidden products"
+msgstr "Скрытые"
+
+msgid "Unpublished products"
+msgstr "Неопубликованные"

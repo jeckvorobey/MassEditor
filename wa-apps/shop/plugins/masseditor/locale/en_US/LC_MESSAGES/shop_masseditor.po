@@ -4,9 +4,567 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgid "Mass Editor"
 msgstr "Mass Editor"
 
 msgid "Backend-only plugin for safe bulk product editing with Russian and English interface."
 msgstr "Backend-only plugin for safe bulk product editing with Russian and English interface."
+
+msgid "Bulk product editing."
+msgstr "Bulk product editing."
+
+msgid "Products"
+msgstr "Products"
+
+msgid "Log"
+msgstr "Log"
+
+msgid "Settings"
+msgstr "Settings"
+
+msgid "Mass Editor sections"
+msgstr "Mass Editor sections"
+
+msgid "Products found"
+msgstr "Products found"
+
+msgid "Selected"
+msgstr "Selected"
+
+msgid "Last operation"
+msgstr "Last operation"
+
+msgid "No data"
+msgstr "No data"
+
+msgid "Log is empty"
+msgstr "Log is empty"
+
+msgid "products"
+msgstr "products"
+
+msgid "records"
+msgstr "records"
+
+msgid "Filters"
+msgstr "Filters"
+
+msgid "Search"
+msgstr "Search"
+
+msgid "Name or SKU"
+msgstr "Name or SKU"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "All"
+msgstr "All"
+
+msgid "Published"
+msgstr "Published"
+
+msgid "Hidden"
+msgstr "Hidden"
+
+msgid "Unpublished"
+msgstr "Unpublished"
+
+msgid "Category"
+msgstr "Category"
+
+msgid "All categories"
+msgstr "All categories"
+
+msgid "Availability"
+msgstr "Availability"
+
+msgid "Available"
+msgstr "Available"
+
+msgid "Unavailable"
+msgstr "Unavailable"
+
+msgid "Apply"
+msgstr "Apply"
+
+msgid "Reset"
+msgstr "Reset"
+
+msgid "Operations"
+msgstr "Operations"
+
+msgid "Soon"
+msgstr "Soon"
+
+msgid "Operation parameters"
+msgstr "Operation parameters"
+
+msgid "Selected products will be processed only after confirmation in the modal window."
+msgstr "Selected products will be processed only after confirmation in the modal window."
+
+msgid "Mode"
+msgstr "Mode"
+
+msgid "Set value"
+msgstr "Set value"
+
+msgid "Increase by percent"
+msgstr "Increase by percent"
+
+msgid "Value"
+msgstr "Value"
+
+msgid "Rounding"
+msgstr "Rounding"
+
+msgid "No rounding"
+msgstr "No rounding"
+
+msgid "To 1"
+msgstr "To 1"
+
+msgid "To 10"
+msgstr "To 10"
+
+msgid "To 100"
+msgstr "To 100"
+
+msgid "Direction"
+msgstr "Direction"
+
+msgid "Nearest"
+msgstr "Nearest"
+
+msgid "Up"
+msgstr "Up"
+
+msgid "Down"
+msgstr "Down"
+
+msgid "Keep unchanged"
+msgstr "Keep unchanged"
+
+msgid "Write old price"
+msgstr "Write old price"
+
+msgid "Clear"
+msgstr "Clear"
+
+msgid "Multiply by coefficient"
+msgstr "Multiply by coefficient"
+
+msgid "Coefficient"
+msgstr "Coefficient"
+
+msgid "Visibility"
+msgstr "Visibility"
+
+msgid "Description mode"
+msgstr "Description mode"
+
+msgid "Replace"
+msgstr "Replace"
+
+msgid "Add to beginning"
+msgstr "Add to beginning"
+
+msgid "Add to end"
+msgstr "Add to end"
+
+msgid "Text"
+msgstr "Text"
+
+msgid "Tags mode"
+msgstr "Tags mode"
+
+msgid "Add"
+msgstr "Add"
+
+msgid "Remove"
+msgstr "Remove"
+
+msgid "Tags"
+msgstr "Tags"
+
+msgid "comma-separated or one per line"
+msgstr "comma-separated or one per line"
+
+msgid "URL mode"
+msgstr "URL mode"
+
+msgid "Generate from name"
+msgstr "Generate from name"
+
+msgid "Template"
+msgstr "Template"
+
+msgid "URL template"
+msgstr "URL template"
+
+msgid "Ready to apply"
+msgstr "Ready to apply"
+
+msgid "Select products to process."
+msgstr "Select products to process."
+
+msgid "action will be written to the log"
+msgstr "action will be written to the log"
+
+msgid "of"
+msgstr "of"
+
+msgid "ID"
+msgstr "ID"
+
+msgid "Date"
+msgstr "Date"
+
+msgid "Name"
+msgstr "Name"
+
+msgid "URL"
+msgstr "URL"
+
+msgid "Description"
+msgstr "Description"
+
+msgid "Categories"
+msgstr "Categories"
+
+msgid "Price"
+msgstr "Price"
+
+msgid "Stock"
+msgstr "Stock"
+
+msgid "Changed"
+msgstr "Changed"
+
+msgid "Select all products on this page"
+msgstr "Select all products on this page"
+
+msgid "SKU is not set"
+msgstr "SKU is not set"
+
+msgid "Products not found."
+msgstr "Products not found."
+
+msgid "Change the filter and try again."
+msgstr "Change the filter and try again."
+
+msgid "Shown"
+msgstr "Shown"
+
+msgid "Product pagination"
+msgstr "Product pagination"
+
+msgid "Log pagination"
+msgstr "Log pagination"
+
+msgid "Previous page"
+msgstr "Previous page"
+
+msgid "Next page"
+msgstr "Next page"
+
+msgid "Change price"
+msgstr "Change price"
+
+msgid "Confirm bulk change"
+msgstr "Confirm bulk change"
+
+msgid "Check the parameters before applying."
+msgstr "Check the parameters before applying."
+
+msgid "Close"
+msgstr "Close"
+
+msgid "Products to be changed"
+msgstr "Products to be changed"
+
+msgid "Operation"
+msgstr "Operation"
+
+msgid "This action cannot be automatically undone."
+msgstr "This action cannot be automatically undone."
+
+msgid "The operation will be written to the log and available for audit."
+msgstr "The operation will be written to the log and available for audit."
+
+msgid "Cancel"
+msgstr "Cancel"
+
+msgid "Apply changes"
+msgstr "Apply changes"
+
+msgid "User"
+msgstr "User"
+
+msgid "Count"
+msgstr "Count"
+
+msgid "Log is empty."
+msgstr "Log is empty."
+
+msgid "Records will appear here after the first confirmed operation."
+msgstr "Records will appear here after the first confirmed operation."
+
+msgid "Performance"
+msgstr "Performance"
+
+msgid "Page size"
+msgstr "Page size"
+
+msgid "How many products to show in the table."
+msgstr "How many products to show in the table."
+
+msgid "Products per operation limit"
+msgstr "Products per operation limit"
+
+msgid "Maximum products per single run."
+msgstr "Maximum products per single run."
+
+msgid "Keep log, days"
+msgstr "Keep log, days"
+
+msgid "Old records will be cleaned automatically."
+msgstr "Old records will be cleaned automatically."
+
+msgid "Date format"
+msgstr "Date format"
+
+msgid "Choose how dates and times are shown in all plugin sections."
+msgstr "Choose how dates and times are shown in all plugin sections."
+
+msgid "Appearance"
+msgstr "Appearance"
+
+msgid "Theme mode"
+msgstr "Theme mode"
+
+msgid "Auto uses the default backend theme."
+msgstr "Auto uses the default backend theme."
+
+msgid "Auto"
+msgstr "Auto"
+
+msgid "Light"
+msgstr "Light"
+
+msgid "Dark"
+msgstr "Dark"
+
+msgid "Interface language"
+msgstr "Interface language"
+
+msgid "Auto uses the current Webasyst locale."
+msgstr "Auto uses the current Webasyst locale."
+
+msgid "Russian"
+msgstr "Russian"
+
+msgid "English"
+msgstr "English"
+
+msgid "Show \"Soon\" operations"
+msgstr "Show \"Soon\" operations"
+
+msgid "Controls future operations visibility in the library."
+msgstr "Controls future operations visibility in the library."
+
+msgid "Enabled"
+msgstr "Enabled"
+
+msgid "Disabled"
+msgstr "Disabled"
+
+msgid "Save settings"
+msgstr "Save settings"
+
+msgid "Settings saved."
+msgstr "Settings saved."
+
+msgid "The operation could not be completed. Try again or check the error log."
+msgstr "The operation could not be completed. Try again or check the error log."
+
+msgid "Not enough rights to manage Mass Editor."
+msgstr "Not enough rights to manage Mass Editor."
+
+msgid "Compare price"
+msgstr "Compare price"
+
+msgid "Change compare price"
+msgstr "Change compare price"
+
+msgid "Change visibility"
+msgstr "Change visibility"
+
+msgid "Change availability"
+msgstr "Change availability"
+
+msgid "Product URLs"
+msgstr "Product URLs"
+
+msgid "SKU generator"
+msgstr "SKU generator"
+
+msgid "Cross-selling"
+msgstr "Cross-selling"
+
+msgid "Similar products"
+msgstr "Similar products"
+
+msgid "Prices and SKU"
+msgstr "Prices and SKU"
+
+msgid "Content"
+msgstr "Content"
+
+msgid "Media"
+msgstr "Media"
+
+msgid "Links"
+msgstr "Links"
+
+msgid "URLs and pages"
+msgstr "URLs and pages"
+
+msgid "Parameters and features"
+msgstr "Parameters and features"
+
+msgid "Product photos"
+msgstr "Product photos"
+
+msgid "Video"
+msgstr "Video"
+
+msgid "Product pages"
+msgstr "Product pages"
+
+msgid "Features"
+msgstr "Features"
+
+msgid "Success"
+msgstr "Success"
+
+msgid "Error"
+msgstr "Error"
+
+msgid "Message"
+msgstr "Message"
+
+msgid "Close notification"
+msgstr "Close notification"
+
+msgid "Select at least one product."
+msgstr "Select at least one product."
+
+msgid "Enter a value for the bulk operation."
+msgstr "Enter a value for the bulk operation."
+
+msgid "Enter description text."
+msgstr "Enter description text."
+
+msgid "Enter at least one tag."
+msgstr "Enter at least one tag."
+
+msgid "Enter a URL template."
+msgstr "Enter a URL template."
+
+msgid "Enter a compare price coefficient."
+msgstr "Enter a compare price coefficient."
+
+msgid "From product name"
+msgstr "From product name"
+
+msgid "Operation applied successfully."
+msgstr "Operation applied successfully."
+
+msgid "No more than "
+msgstr "No more than "
+
+msgid " products can be processed in one operation."
+msgstr " products can be processed in one operation."
+
+msgid "Unknown bulk operation."
+msgstr "Unknown bulk operation."
+
+msgid "Unknown price change mode."
+msgstr "Unknown price change mode."
+
+msgid "Enter a valid numeric value."
+msgstr "Enter a valid numeric value."
+
+msgid "Invalid visibility value."
+msgstr "Invalid visibility value."
+
+msgid "Invalid availability value."
+msgstr "Invalid availability value."
+
+msgid "Confirm applying changes."
+msgstr "Confirm applying changes."
+
+msgid "Some selected products were not found. Select them again before applying."
+msgstr "Some selected products were not found. Select them again before applying."
+
+msgid "Could not find a unique URL for product ID %d."
+msgstr "Could not find a unique URL for product ID %d."
+
+msgid "The final value cannot be negative."
+msgstr "The final value cannot be negative."
+
+msgid " · "
+msgstr " · "
+
+msgid "%s: change by %s%% for %d products"
+msgstr "%s: change by %s%% for %d products"
+
+msgid "%s: value %s for %d products"
+msgstr "%s: value %s for %d products"
+
+msgid "Visibility: %s for %d products"
+msgstr "Visibility: %s for %d products"
+
+msgid "Availability: %s for %d products"
+msgstr "Availability: %s for %d products"
+
+msgid "Description: mode %s for %d products"
+msgstr "Description: mode %s for %d products"
+
+msgid "Tags: mode %s for %d products"
+msgstr "Tags: mode %s for %d products"
+
+msgid "URL: mode %s for %d products"
+msgstr "URL: mode %s for %d products"
+
+msgid "product"
+msgid_plural "products"
+msgstr[0] "product"
+msgstr[1] "products"
+
+msgid "%d product"
+msgid_plural "%d products"
+msgstr[0] "%d product"
+msgstr[1] "%d products"
+
+msgid "record"
+msgid_plural "records"
+msgstr[0] "record"
+msgstr[1] "records"
+
+msgid "%d record"
+msgid_plural "%d records"
+msgstr[0] "%d record"
+msgstr[1] "%d records"
+
+msgid "Published products"
+msgstr "Published products"
+
+msgid "Hidden products"
+msgstr "Hidden products"
+
+msgid "Unpublished products"
+msgstr "Unpublished products"

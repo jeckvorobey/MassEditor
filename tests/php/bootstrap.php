@@ -16,6 +16,132 @@ function wa_lambda($args, $body)
     return eval('return function(' . $args . ') { ' . $body . ' };');
 }
 
+class FakePluginLocaleCatalog
+{
+    private static $messages = array();
+    private static $plurals = array();
+
+    public static function translate($msgid, $msgid_plural = null, $count = null, $locale = 'ru_RU')
+    {
+        self::load($locale);
+
+        if ($msgid_plural !== null && $count !== null) {
+            $index = self::pluralIndex($locale, (int) $count);
+            if (isset(self::$plurals[$locale][$msgid][$index])) {
+                return self::$plurals[$locale][$msgid][$index];
+            }
+
+            return (int) $count === 1 ? $msgid : $msgid_plural;
+        }
+
+        if (isset(self::$messages[$locale][$msgid])) {
+            return self::$messages[$locale][$msgid];
+        }
+
+        return $msgid;
+    }
+
+    private static function load($locale)
+    {
+        if (isset(self::$messages[$locale])) {
+            return;
+        }
+
+        self::$messages[$locale] = array();
+        self::$plurals[$locale] = array();
+
+        $path = __DIR__ . '/../../wa-apps/shop/plugins/masseditor/locale/' . $locale . '/LC_MESSAGES/shop_masseditor.po';
+        if (!is_file($path)) {
+            return;
+        }
+
+        $lines = file($path, FILE_IGNORE_NEW_LINES);
+        $entry = array();
+        foreach ($lines as $line) {
+            if (trim($line) === '') {
+                self::storeEntry($locale, $entry);
+                $entry = array();
+                continue;
+            }
+
+            if (strpos($line, 'msgid_plural ') === 0) {
+                $entry['msgid_plural'] = self::decodePoString(substr($line, 13));
+                continue;
+            }
+
+            if (preg_match('/^msgstr\\[(\\d+)\\]\\s+(".*")$/', $line, $matches)) {
+                $entry['msgstr_plural'][(int) $matches[1]] = self::decodePoString($matches[2]);
+                continue;
+            }
+
+            if (strpos($line, 'msgid ') === 0) {
+                $entry['msgid'] = self::decodePoString(substr($line, 6));
+                continue;
+            }
+
+            if (strpos($line, 'msgstr ') === 0) {
+                $entry['msgstr'] = self::decodePoString(substr($line, 7));
+            }
+        }
+
+        self::storeEntry($locale, $entry);
+    }
+
+    private static function storeEntry($locale, array $entry)
+    {
+        if (!isset($entry['msgid']) || $entry['msgid'] === '') {
+            return;
+        }
+
+        if (isset($entry['msgid_plural'])) {
+            self::$plurals[$locale][$entry['msgid']] = isset($entry['msgstr_plural']) ? $entry['msgstr_plural'] : array();
+            return;
+        }
+
+        self::$messages[$locale][$entry['msgid']] = isset($entry['msgstr']) && $entry['msgstr'] !== ''
+            ? $entry['msgstr']
+            : $entry['msgid'];
+    }
+
+    private static function decodePoString($value)
+    {
+        $value = trim($value);
+        if ($value === '""') {
+            return '';
+        }
+
+        return stripcslashes(substr($value, 1, -1));
+    }
+
+    private static function pluralIndex($locale, $count)
+    {
+        if (strpos((string) $locale, 'ru') === 0) {
+            $mod10 = $count % 10;
+            $mod100 = $count % 100;
+            if ($mod10 === 1 && $mod100 !== 11) {
+                return 0;
+            }
+            if ($mod10 >= 2 && $mod10 <= 4 && ($mod100 < 10 || $mod100 >= 20)) {
+                return 1;
+            }
+
+            return 2;
+        }
+
+        return $count === 1 ? 0 : 1;
+    }
+}
+
+if (!function_exists('_wp')) {
+    function _wp($msgid, $msgid_plural = null, $count = null)
+    {
+        $system = wa();
+        $locale = $system && method_exists($system, 'getLocale') ? $system->getLocale() : 'ru_RU';
+
+        return FakePluginLocaleCatalog::translate($msgid, $msgid_plural, $count, $locale);
+    }
+}
+
 class FakeQueryResult
 {
     private $rows;

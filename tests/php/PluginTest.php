@@ -8,9 +8,7 @@ class PluginTest extends TestCase
     {
         $GLOBALS['fake_wa_system'] = new FakeWaSystem();
         $GLOBALS['fake_wa_system']->app_url = '/backend/shop/';
-        $plugin = new shopMasseditorPlugin(array(
-            'interface_language' => 'auto',
-        ));
+        $plugin = new shopMasseditorPlugin(array());
 
         $GLOBALS['fake_wa_system']->locale = 'ru_RU';
         $menu = $plugin->backendMenu();
@@ -27,9 +25,7 @@ class PluginTest extends TestCase
     public function testPluginNameAndDescriptionFollowResolvedLanguage(): void
     {
         $GLOBALS['fake_wa_system'] = new FakeWaSystem();
-        $plugin = new shopMasseditorPlugin(array(
-            'interface_language' => 'auto',
-        ));
+        $plugin = new shopMasseditorPlugin(array());
 
         $GLOBALS['fake_wa_system']->locale = 'ru_RU';
         $this->assertSame('Массовый редактор', $plugin->getName());

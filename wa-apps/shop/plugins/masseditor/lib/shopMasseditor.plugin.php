@@ -4,16 +4,14 @@ class shopMasseditorPlugin extends shopPlugin
 {
     public function getName()
     {
-        return shopMasseditorPluginI18nService::getPluginName(
-            shopMasseditorPluginI18nService::resolveLanguage($this->getSettings('interface_language'))
-        );
+        return function_exists('_wp') ? _wp('Mass Editor') : 'Mass Editor';
     }
 
     public function getDescription()
     {
-        return shopMasseditorPluginI18nService::getPluginDescription(
-            shopMasseditorPluginI18nService::resolveLanguage($this->getSettings('interface_language'))
-        );
+        $description = 'Backend-only plugin for safe bulk product editing with Russian and English interface.';
+
+        return function_exists('_wp') ? _wp($description) : $description;
     }
 
     public function backendMenu()
