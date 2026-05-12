@@ -19,9 +19,9 @@ docker compose up -d --build
 
 - клонирует Webasyst Framework в volume `/webasyst`;
 - клонирует Shop-Script в `/webasyst/wa-apps/shop`;
-- создает `/webasyst/wa-config/db.php` с доступом к MariaDB;
+- создает `/webasyst/wa-config/db.php` с доступом к MariaDB и `sql_mode => TRADITIONAL`;
 - включает приложение `shop` в `/webasyst/wa-config/apps.php`;
-- регистрирует плагин в `/webasyst/wa-config/apps/shop/plugins.php`;
+- регистрирует плагин `masseditor` в `/webasyst/wa-config/apps/shop/plugins.php`;
 - запускает PHP built-in server на порту `8080`.
 
 Отдельно запускать `setup.sh` для обычного сценария не нужно.
@@ -32,7 +32,7 @@ docker compose up -d --build
 |--------|-------|
 | Webasyst | http://localhost:8080 |
 | Backend | http://localhost:8080/webasyst/ |
-| Mass Editor после входа | http://localhost:8080/webasyst/shop/?plugin=masseditor&action=backend |
+| Mass Editor после входа | http://localhost:8080/webasyst/shop/?plugin=masseditor |
 | MariaDB внутри compose-сети | `db:3306` |
 
 Данные БД для мастера установки или ручной проверки:
@@ -92,6 +92,7 @@ docker compose exec -T php php -l /webasyst/wa-apps/shop/plugins/masseditor/lib/
 ## Что важно про текущий Docker
 
 - Compose использует `php:8.1-cli-alpine` и PHP built-in server. Это нормально для локальной разработки, но не production-схема.
+- Для режима проверки по чек-листу Store в контейнере включены `display_errors = On`, `error_reporting = 2147483647` и `sql_mode => TRADITIONAL`.
 - `docker/nginx.conf` сейчас не подключен в `docker-compose.yml`. Его нужно либо удалить, либо добавить отдельный `nginx` + `php-fpm` сервис, если понадобится стенд ближе к боевому хостингу.
 - Webasyst и Shop-Script берутся из GitHub при первом запуске. Для воспроизводимых проверок лучше закрепить конкретные версии или теги.
 - Данные Webasyst и MariaDB лежат в named volumes `webasyst` и `dbdata`.
