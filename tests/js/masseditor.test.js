@@ -58,10 +58,14 @@ test('initializes toast sources and toggle label', () => {
   const app = boot();
   const toggleLabel = app.document.querySelector('[data-role="soon-operations-toggle-label"]');
 
-  assert.equal(toggleLabel.textContent, 'Выключено');
+  assert.equal(toggleLabel.textContent, 'Disabled');
   assert.equal(app.toastStack.children.length, 1);
   assert.equal(app.toastStack.children[0].getAttribute('role'), 'status');
   assert.equal(app.timeouts[0].timeout, 4000);
+});
+
+test('fallback strings stay English when i18n dictionary is missing', () => {
+  assert.doesNotMatch(scriptSource, /t\('[^']+',\s*'[^']*[А-Яа-яЁё][^']*'\)/);
 });
 
 test('uses provided English i18n dictionary for labels and validation', () => {
@@ -106,7 +110,7 @@ test('selection state persists to localStorage and select-all toggles rows', () 
   change(selectAll);
 
   assert.equal(selectedCount.textContent, 2);
-  assert.equal(app.document.querySelector('[data-role="selection-counter-pill"]').textContent, '2 из 2');
+  assert.equal(app.document.querySelector('[data-role="selection-counter-pill"]').textContent, '2 of 2');
   assert.equal(checkboxes[0].closest('tr').classList.contains('is-selected'), true);
   assert.equal(app.localStorage.snapshot()['masseditor:selected-products:masseditor'], '[1,2]');
 });
@@ -118,7 +122,7 @@ test('operation switching updates visible fields and compare-price toggle', () =
   const compareField = app.document.querySelector('[data-compare-mode-field]');
 
   buttons[1].click();
-  assert.equal(app.document.querySelector('[data-role="operation-title"]').textContent, 'Теги');
+  assert.equal(app.document.querySelector('[data-role="operation-title"]').textContent, 'Tags');
 
   buttons[0].click();
   compareMode.value = 'coefficient';
@@ -159,7 +163,7 @@ test('opening modal fills summary and submit appends hidden product ids with con
   openConfirm.click();
   assert.equal(app.modal.hidden, false);
   assert.equal(app.document.querySelector('[data-role="modal-count"]').textContent, 1);
-  assert.equal(app.document.querySelector('[data-role="modal-operation"]').textContent, 'Изменить цену');
+  assert.equal(app.document.querySelector('[data-role="modal-operation"]').textContent, 'Change price');
   assert.equal(app.document.body.classList.contains('masseditor-modal-open'), true);
 
   const event = submit(app.form, submitter);
@@ -186,5 +190,5 @@ test('url template validation requires value', () => {
   urlMode.selectedIndex = 1;
   openConfirm.click();
 
-  assert.equal(app.toastStack.children[1].querySelector('p').textContent, 'Укажите шаблон URL.');
+  assert.equal(app.toastStack.children[1].querySelector('p').textContent, 'Enter a URL template.');
 });

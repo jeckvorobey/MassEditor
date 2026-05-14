@@ -1,4 +1,6 @@
 {
   "support_premium": "yes",
-  "support_premium_description": "Плагин работает в бекенде Shop-Script, поддерживает русский и английский интерфейс и не изменяет оформление витрины, корзину, единицы измерения и логику заказов."
+  "support_premium_description": "The plugin works in the Shop-Script backend, supports Russian and English interfaces, and does not change the storefront design, cart, units of measurement, or order logic.",
+  "support_premium_description_ru_RU": "Плагин работает в бекенде Shop-Script, поддерживает русский и английский интерфейс и не изменяет оформление витрины, корзину, единицы измерения и логику заказов.",
+  "support_premium_description_en_US": "The plugin works in the Shop-Script backend, supports Russian and English interfaces, and does not change the storefront design, cart, units of measurement, or order logic."
 }

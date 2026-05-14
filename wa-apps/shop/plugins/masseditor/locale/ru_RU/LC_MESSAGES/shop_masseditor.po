@@ -346,10 +346,10 @@ msgid "Theme mode"
 msgstr "Режим темы"
 
 msgid "Auto uses the default backend theme."
-msgstr "Auto использует тему backend по умолчанию."
+msgstr "Автоматический режим использует тему backend по умолчанию."
 
 msgid "Auto"
-msgstr "Auto"
+msgstr "Авто"
 
 msgid "Light"
 msgstr "Светлая"
@@ -367,7 +367,7 @@ msgid "Russian"
 msgstr "Русский"
 
 msgid "English"
-msgstr "English"
+msgstr "Английский"
 
 msgid "Show \"Soon\" operations"
 msgstr "Показывать операции «Скоро»"
@@ -475,7 +475,7 @@ msgid "Enter a URL template."
 msgstr "Укажите шаблон URL."
 
 msgid "Enter a compare price coefficient."
-msgstr "Укажите коэффициент для compare price."
+msgstr "Укажите коэффициент для цены сравнения."
 
 msgid "From product name"
 msgstr "Из названия товара"
