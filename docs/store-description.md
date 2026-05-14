@@ -83,7 +83,7 @@ Safe bulk product editing in the Shop-Script backend with Russian and English in
   <li>Pagination with product selection preserved across pages.</li>
   <li>Operation log with processed product count and action description.</li>
   <li>Settings for operation limit, page size, log retention, date format, theme mode, and interface language.</li>
-  <li>Russian and English interface support with Auto mode based on the current Webasyst locale, plus manual language selection.</li>
+  <li>Russian and English interface support with locale-based default language and manual language selection.</li>
 </ul>
 
 <p><strong>How it works</strong></p>
@@ -103,7 +103,7 @@ Safe bulk product editing in the Shop-Script backend with Russian and English in
   <li>Changes are processed in batches and recorded in the operation log.</li>
 </ul>
 
-<blockquote>The plugin works in the Shop-Script backend and does not modify the storefront, cart, order logic, units of measurement, or storefront design. Bulk editing of features, product images, videos, cross-selling, similar products, and product pages is not performed in the current version. In Auto mode, the interface language is selected from the Webasyst locale.</blockquote>
+<blockquote>The plugin works in the Shop-Script backend and does not modify the storefront, cart, order logic, units of measurement, or storefront design. Bulk editing of features, product images, videos, cross-selling, similar products, and product pages is not performed in the current version. Before a manual language is saved, the interface language is selected from the Webasyst locale.</blockquote>
 ```
 
 ## Metadata notes

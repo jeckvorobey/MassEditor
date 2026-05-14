@@ -9,8 +9,8 @@ msgstr ""
 msgid "Mass Editor"
 msgstr "Массовый редактор"
 
-msgid "Backend-only plugin for safe bulk product editing with Russian and English interface."
-msgstr "Backend-плагин для безопасного массового редактирования товаров с русским и английским интерфейсом."
+msgid "Backend-only plugin for safe bulk product editing."
+msgstr "Backend-плагин для безопасного массового редактирования товаров."
 
 msgid "Bulk product editing."
 msgstr "Массовое редактирование товаров."
@@ -360,8 +360,8 @@ msgstr "Тёмная"
 msgid "Interface language"
 msgstr "Язык интерфейса"
 
-msgid "Auto uses the current Webasyst locale."
-msgstr "Auto использует текущую локаль Webasyst."
+msgid "Defaults to the current Webasyst locale until you choose a language."
+msgstr "По умолчанию используется текущая локаль Webasyst, пока вы не выберете язык."
 
 msgid "Russian"
 msgstr "Русский"

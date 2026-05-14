@@ -443,6 +443,17 @@
                 <div class="masseditor-settings-group">
                     <h2>{$texts.appearance|escape}</h2>
                     <div class="masseditor-settings-row"><div><strong>{$texts.theme_mode|escape}</strong><p class="hint">{$texts.theme_mode_hint|escape}</p></div><select name="theme_mode"><option value="auto"{if $settings.theme_mode === 'auto'} selected{/if}>{$texts.theme_auto|escape}</option><option value="light"{if $settings.theme_mode === 'light'} selected{/if}>{$texts.theme_light|escape}</option><option value="dark"{if $settings.theme_mode === 'dark'} selected{/if}>{$texts.theme_dark|escape}</option></select></div>
+                    <div class="masseditor-settings-row">
+                        <div>
+                            <strong>{$texts.interface_language|escape}</strong>
+                            <p class="hint">{$texts.interface_language_hint|escape}</p>
+                        </div>
+                        <select name="interface_language">
+                            {foreach $interface_language_options as $language_value => $language_title}
+                                <option value="{$language_value|escape}"{if $settings.interface_language === $language_value} selected{/if}>{$language_title|escape}</option>
+                            {/foreach}
+                        </select>
+                    </div>
                     <div class="masseditor-settings-row"><div><strong>{$texts.show_soon_operations|escape}</strong><p class="hint">{$texts.show_soon_operations_hint|escape}</p></div><label class="masseditor-toggle"><input type="checkbox" name="show_soon_operations" value="1"{if $settings.show_soon_operations} checked{/if} data-role="soon-operations-toggle"><span data-role="soon-operations-toggle-label">{if $settings.show_soon_operations}{$texts.enabled|escape}{else}{$texts.disabled|escape}{/if}</span></label></div>
                 </div>
                 <div class="masseditor-panel__actions"><button class="button masseditor-button masseditor-button_primary" type="submit">{$texts.save_settings|escape}</button></div>

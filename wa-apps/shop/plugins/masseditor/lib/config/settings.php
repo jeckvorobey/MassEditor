@@ -25,7 +25,7 @@ return array(
         'value' => 'd.m.Y H:i',
         'control_type' => waHtmlControl::SELECT,
         'options' => array(
-            array('value' => 'd.m.Y H:i', 'title' => 'd.m.Y H:i (26.ьщву.04.2026 14:30)'),
+            array('value' => 'd.m.Y H:i', 'title' => 'd.m.Y H:i (26.04.2026 14:30)'),
             array('value' => 'd.m.Y H:i:s', 'title' => 'd.m.Y H:i:s (26.04.2026 14:30:45)'),
             array('value' => 'Y-m-d H:i', 'title' => 'Y-m-d H:i (2026-04-26 14:30)'),
             array('value' => 'm/d/Y h:i A', 'title' => 'm/d/Y h:i A (04/26/2026 02:30 PM)'),
@@ -40,6 +40,16 @@ return array(
             array('value' => 'auto', 'title' => 'Auto'),
             array('value' => 'light', 'title' => 'Light'),
             array('value' => 'dark', 'title' => 'Dark'),
+        ),
+    ),
+    'interface_language' => array(
+        'title' => 'Язык интерфейса',
+        'description' => 'Если значение не сохранено, язык выбирается по текущей локали Webasyst.',
+        'value' => '',
+        'control_type' => waHtmlControl::SELECT,
+        'options' => array(
+            array('value' => 'ru_RU', 'title' => 'Русский'),
+            array('value' => 'en_US', 'title' => 'English'),
         ),
     ),
     'show_soon_operations' => array(

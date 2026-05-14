@@ -9,8 +9,8 @@ msgstr ""
 msgid "Mass Editor"
 msgstr "Mass Editor"
 
-msgid "Backend-only plugin for safe bulk product editing with Russian and English interface."
-msgstr "Backend-only plugin for safe bulk product editing with Russian and English interface."
+msgid "Backend-only plugin for safe bulk product editing."
+msgstr "Backend-only plugin for safe bulk product editing."
 
 msgid "Bulk product editing."
 msgstr "Bulk product editing."
@@ -360,8 +360,8 @@ msgstr "Dark"
 msgid "Interface language"
 msgstr "Interface language"
 
-msgid "Auto uses the current Webasyst locale."
-msgstr "Auto uses the current Webasyst locale."
+msgid "Defaults to the current Webasyst locale until you choose a language."
+msgstr "Defaults to the current Webasyst locale until you choose a language."
 
 msgid "Russian"
 msgstr "Russian"

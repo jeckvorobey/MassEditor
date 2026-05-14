@@ -9,7 +9,7 @@ class shopMasseditorPlugin extends shopPlugin
 
     public function getDescription()
     {
-        $description = 'Backend-only plugin for safe bulk product editing with Russian and English interface.';
+        $description = 'Backend-only plugin for safe bulk product editing.';
 
         return function_exists('_wp') ? _wp($description) : $description;
     }

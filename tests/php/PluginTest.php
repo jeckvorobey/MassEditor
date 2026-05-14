@@ -29,11 +29,13 @@ class PluginTest extends TestCase
 
         $GLOBALS['fake_wa_system']->locale = 'ru_RU';
         $this->assertSame('Массовый редактор', $plugin->getName());
-        $this->assertStringContainsString('массового редактирования товаров', $plugin->getDescription());
+        $this->assertSame('Backend-плагин для безопасного массового редактирования товаров.', $plugin->getDescription());
+        $this->assertStringNotContainsString('русским и английским интерфейсом', $plugin->getDescription());
 
         $GLOBALS['fake_wa_system']->locale = 'en_US';
         $this->assertSame('Mass Editor', $plugin->getName());
-        $this->assertStringContainsString('bulk product editing', $plugin->getDescription());
+        $this->assertSame('Backend-only plugin for safe bulk product editing.', $plugin->getDescription());
+        $this->assertStringNotContainsString('Russian and English interface', $plugin->getDescription());
     }
 
     public function testPluginSettingsDefaultHideSoonOperations(): void
@@ -42,6 +44,9 @@ class PluginTest extends TestCase
 
         $this->assertStringContainsString("'show_soon_operations' => array(", $settings_source);
         $this->assertStringContainsString("'value' => '0'", $settings_source);
+        $this->assertStringContainsString("'interface_language' => array(", $settings_source);
+        $this->assertStringContainsString("'value' => ''", $settings_source);
+        $this->assertDoesNotMatchRegularExpression("/'interface_language' => array\\([\\s\\S]*array\\('value' => 'auto'/", $settings_source);
     }
 
     public function testLocaleCatalogsExistForMetadata(): void

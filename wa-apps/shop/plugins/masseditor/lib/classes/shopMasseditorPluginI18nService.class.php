@@ -2,9 +2,12 @@
 
 class shopMasseditorPluginI18nService
 {
+    const RU = 'ru_RU';
+    const EN = 'en_US';
+
     private static $messages = array(
         'plugin_name' => 'Mass Editor',
-        'plugin_description' => 'Backend-only plugin for safe bulk product editing with Russian and English interface.',
+        'plugin_description' => 'Backend-only plugin for safe bulk product editing.',
         'subtitle' => 'Bulk product editing.',
         'nav_products' => 'Products',
         'nav_log' => 'Log',
@@ -123,6 +126,10 @@ class shopMasseditorPluginI18nService
         'theme_auto' => 'Auto',
         'theme_light' => 'Light',
         'theme_dark' => 'Dark',
+        'interface_language' => 'Interface language',
+        'interface_language_hint' => 'Defaults to the current Webasyst locale until you choose a language.',
+        'language_ru' => 'Russian',
+        'language_en' => 'English',
         'show_soon_operations' => 'Show "Soon" operations',
         'show_soon_operations_hint' => 'Controls future operations visibility in the library.',
         'enabled' => 'Enabled',
@@ -217,26 +224,80 @@ class shopMasseditorPluginI18nService
         'value_from_product_name',
     );
 
-    public static function t($key, $default = null)
+    private static $catalogs = array();
+
+    public static function normalizeLanguageSetting($value)
+    {
+        $value = (string) $value;
+        if (in_array($value, array(self::RU, self::EN), true)) {
+            return $value;
+        }
+
+        return '';
+    }
+
+    public static function resolveLanguage($setting = null)
+    {
+        $setting = self::normalizeLanguageSetting($setting);
+        if ($setting !== '') {
+            return $setting;
+        }
+
+        try {
+            $locale = wa()->getLocale();
+        } catch (Exception $e) {
+            $locale = self::RU;
+        }
+
+        return strpos((string) $locale, 'en') === 0 ? self::EN : self::RU;
+    }
+
+    public static function getLanguageOptions($language = null)
+    {
+        $texts = self::getTexts($language);
+
+        return array(
+            self::RU => isset($texts['language_ru']) ? $texts['language_ru'] : 'Russian',
+            self::EN => isset($texts['language_en']) ? $texts['language_en'] : 'English',
+        );
+    }
+
+    public static function t($key, $language = null, $default = null)
     {
         $message = self::msgid($key, $default);
+        if ($language !== null) {
+            return self::translateMsgid($message, $language);
+        }
 
         return function_exists('_wp') ? _wp($message) : $message;
     }
 
-    public static function getTexts()
+    public static function tp($singular, $plural, $count, $language = null)
+    {
+        if ($language !== null) {
+            return self::translatePlural($singular, $plural, (int) $count, $language);
+        }
+
+        if (function_exists('_wp')) {
+            return _wp($singular, $plural, $count);
+        }
+
+        return (int) $count === 1 ? $singular : $plural;
+    }
+
+    public static function getTexts($language = null)
     {
         $texts = array();
         foreach (self::$messages as $key => $msgid) {
-            $texts[$key] = self::t($key);
+            $texts[$key] = self::t($key, $language);
         }
 
         return $texts;
     }
 
-    public static function getJsTexts()
+    public static function getJsTexts($language = null)
     {
-        $texts = self::getTexts();
+        $texts = self::getTexts($language);
         $result = array();
         foreach (self::$jsKeys as $key) {
             $result[$key] = isset($texts[$key]) ? $texts[$key] : $key;
@@ -252,5 +313,112 @@ class shopMasseditorPluginI18nService
         }
 
         return $default === null ? $key : $default;
+    }
+
+    private static function translateMsgid($msgid, $language)
+    {
+        $language = self::resolveLanguage($language);
+        $catalog = self::loadCatalog($language);
+
+        return isset($catalog['messages'][$msgid]) ? $catalog['messages'][$msgid] : $msgid;
+    }
+
+    private static function translatePlural($singular, $plural, $count, $language)
+    {
+        $language = self::resolveLanguage($language);
+        $catalog = self::loadCatalog($language);
+        if (isset($catalog['plurals'][$singular])) {
+            $index = self::pluralIndex($language, $count);
+            if (isset($catalog['plurals'][$singular][$index])) {
+                return $catalog['plurals'][$singular][$index];
+            }
+        }
+
+        return $count === 1 ? $singular : $plural;
+    }
+
+    private static function loadCatalog($language)
+    {
+        $language = self::resolveLanguage($language);
+        if (isset(self::$catalogs[$language])) {
+            return self::$catalogs[$language];
+        }
+
+        $catalog = array('messages' => array(), 'plurals' => array());
+        $path = dirname(dirname(dirname(__FILE__))) . '/locale/' . $language . '/LC_MESSAGES/shop_masseditor.po';
+        if (!is_readable($path)) {
+            self::$catalogs[$language] = $catalog;
+            return $catalog;
+        }
+
+        $entry = array();
+        $current = null;
+        foreach (file($path) as $line) {
+            $line = trim($line);
+            if ($line === '') {
+                self::storeCatalogEntry($catalog, $entry);
+                $entry = array();
+                $current = null;
+                continue;
+            }
+            if (strpos($line, '#') === 0) {
+                continue;
+            }
+            if (preg_match('/^(msgid|msgid_plural|msgstr(?:\[(\d+)\])?)\s+"(.*)"$/', $line, $matches)) {
+                $current = $matches[1];
+                $value = stripcslashes($matches[3]);
+                if (strpos($current, 'msgstr[') === 0) {
+                    $entry['msgstr_plural'][(int) $matches[2]] = $value;
+                } else {
+                    $entry[$current] = $value;
+                }
+                continue;
+            }
+            if ($current !== null && preg_match('/^"(.*)"$/', $line, $matches)) {
+                if (strpos($current, 'msgstr[') === 0) {
+                    $entry['msgstr_plural'][(int) substr($current, 7, 1)] .= stripcslashes($matches[1]);
+                } else {
+                    $entry[$current] .= stripcslashes($matches[1]);
+                }
+            }
+        }
+        self::storeCatalogEntry($catalog, $entry);
+
+        self::$catalogs[$language] = $catalog;
+        return $catalog;
+    }
+
+    private static function storeCatalogEntry(array &$catalog, array $entry)
+    {
+        if (!isset($entry['msgid']) || $entry['msgid'] === '') {
+            return;
+        }
+
+        if (isset($entry['msgid_plural'])) {
+            $catalog['plurals'][$entry['msgid']] = isset($entry['msgstr_plural']) ? $entry['msgstr_plural'] : array();
+            return;
+        }
+
+        if (isset($entry['msgstr']) && $entry['msgstr'] !== '') {
+            $catalog['messages'][$entry['msgid']] = $entry['msgstr'];
+        }
+    }
+
+    private static function pluralIndex($language, $count)
+    {
+        if ($language === self::RU) {
+            $mod10 = $count % 10;
+            $mod100 = $count % 100;
+            if ($mod10 === 1 && $mod100 !== 11) {
+                return 0;
+            }
+            if ($mod10 >= 2 && $mod10 <= 4 && ($mod100 < 10 || $mod100 >= 20)) {
+                return 1;
+            }
+
+            return 2;
+        }
+
+        return $count === 1 ? 0 : 1;
     }
 }

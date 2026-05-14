@@ -145,6 +145,21 @@ class BackendActionTest extends TestCase
         $this->assertSame('Цена сравнения', $action->view->assigned['texts']['compare_price']);
     }
 
+    public function testManualEnglishLanguageControlsHeaderWhenWebasystLocaleIsRussian(): void
+    {
+        $GLOBALS['fake_wa_system']->locale = 'ru_RU';
+        $GLOBALS['fake_wa_system']->plugins['masseditor']->saveSettings(array(
+            'interface_language' => 'en_US',
+        ));
+
+        $action = new shopMasseditorPluginBackendAction();
+        $action->execute();
+
+        $this->assertSame('Массовый редактор', $action->view->assigned['page_title']);
+        $this->assertSame('Mass Editor', $action->view->assigned['plugin_name']);
+        $this->assertSame('Bulk product editing.', $action->view->assigned['texts']['subtitle']);
+    }
+
     public function testPluginSettingsNormalizationAndThemeMode(): void
     {
         $action = new shopMasseditorPluginBackendAction();
@@ -154,6 +169,8 @@ class BackendActionTest extends TestCase
         $this->assertSame(50, $settings['page_size']);
         $this->assertSame('auto', $settings['theme_mode']);
         $this->assertSame(0, $settings['show_soon_operations']);
+        $this->assertSame('ru_RU', $settings['interface_language']);
+        $this->assertSame('', $settings['interface_language_setting']);
         $this->assertSame('auto', $this->invokePrivate($action, 'normalizeThemeMode', array('broken')));
         $this->assertSame('d.m.Y H:i', $this->invokePrivate($action, 'normalizeDateFormat', array('wrong')));
         $this->assertSame(200, $this->invokePrivate($action, 'normalizeIntSetting', array(999, 50, 10, 200)));
@@ -186,6 +203,39 @@ class BackendActionTest extends TestCase
         $this->assertSame('SKU generator', $this->invokePrivate($action, 'getOperationsLibrary', array(1))[0]['items'][2]['label']);
     }
 
+    public function testManualLanguageSettingOverridesWebasystLocaleWithoutAutoOption(): void
+    {
+        $action = new shopMasseditorPluginBackendAction();
+        $plugin = $GLOBALS['fake_wa_system']->plugins['masseditor'];
+        $GLOBALS['fake_wa_system']->locale = 'ru_RU';
+
+        waRequest::$post = array(
+            'page_size' => 50,
+            'operation_limit' => 100,
+            'log_retention_days' => 90,
+            'date_format' => 'd.m.Y H:i',
+            'theme_mode' => 'auto',
+            'interface_language' => 'en_US',
+        );
+
+        $settings = $this->invokePrivate($action, 'getPluginSettings', array($plugin));
+        $settings = $this->invokePrivate($action, 'savePluginSettings', array($plugin, $settings));
+
+        $this->assertSame('en_US', $settings['interface_language']);
+        $this->assertSame('en_US', $settings['interface_language_setting']);
+        $this->assertSame('Products found', shopMasseditorPluginI18nService::t('stats_found', $settings['interface_language']));
+        $this->assertSame(array('ru_RU' => 'Russian', 'en_US' => 'English'), shopMasseditorPluginI18nService::getLanguageOptions($settings['interface_language']));
+
+        $library = $this->invokePrivate($action, 'getOperationsLibrary', array(0, $settings['interface_language']));
+        $this->assertSame('Prices and SKU', $library[0]['title']);
+
+        $GLOBALS['fake_wa_system']->locale = 'en_US';
+        $plugin = new shopMasseditorPlugin(array('interface_language' => 'auto'));
+        $settings = $this->invokePrivate($action, 'getPluginSettings', array($plugin));
+        $this->assertSame('en_US', $settings['interface_language']);
+        $this->assertSame('', $settings['interface_language_setting']);
+    }
+
     public function testTemplateUsesLocalizedCompareAndPrimaryFilterButton(): void
     {
         $template = file_get_contents(__DIR__ . '/../../wa-apps/shop/plugins/masseditor/templates/actions/backend/Backend.html');
@@ -194,7 +244,8 @@ class BackendActionTest extends TestCase
         $this->assertStringContainsString('aria-label="{$texts.tabs_aria_label|escape}"', $template);
         $this->assertStringContainsString('<th>{$texts.compare_price|escape}</th>', $template);
         $this->assertStringContainsString('class="button masseditor-button masseditor-button_primary" type="submit" form="masseditor-filter-form"', $template);
-        $this->assertStringNotContainsString('name="interface_language"', $template);
+        $this->assertStringContainsString('name="interface_language"', $template);
+        $this->assertStringNotContainsString('value="auto"{if $settings.interface_language', $template);
     }
 }
 

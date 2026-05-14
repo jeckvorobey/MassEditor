@@ -12,6 +12,7 @@ class shopMasseditorPluginMassOperationService
     private $log_service;
     private $model;
     private $operation_limit;
+    private $language;
 
     public function __construct(
         shopMasseditorPluginProductSelectionService $selection_service = null,
@@ -24,6 +25,7 @@ class shopMasseditorPluginMassOperationService
         $this->log_service = $log_service ?: new shopMasseditorPluginLogService();
         $this->model = $model ?: new waModel();
         $this->operation_limit = $this->normalizeOperationLimit($operation_limit);
+        $this->language = $language;
     }
 
     public function apply(array $raw_request)
@@ -600,15 +602,11 @@ class shopMasseditorPluginMassOperationService
 
     private function t($key)
     {
-        return shopMasseditorPluginI18nService::t($key);
+        return shopMasseditorPluginI18nService::t($key, $this->language);
     }
 
     private function tp($singular, $plural, $count)
     {
-        if (function_exists('_wp')) {
-            return _wp($singular, $plural, $count);
-        }
-
-        return (int) $count === 1 ? $singular : $plural;
+        return shopMasseditorPluginI18nService::tp($singular, $plural, $count, $this->language);
     }
 }
