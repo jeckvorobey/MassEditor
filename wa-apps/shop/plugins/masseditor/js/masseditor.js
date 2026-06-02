@@ -134,7 +134,14 @@
     var operationFieldGroups = Array.prototype.slice.call(document.querySelectorAll('[data-operation-fields]'));
     var comparePriceMode = document.getElementById('masseditor-compare-price-mode');
     var comparePriceValueField = document.querySelector('[data-compare-mode-field]');
+    var stockId = document.getElementById('masseditor-stock-id');
+    var stockMode = document.getElementById('masseditor-stock-mode');
+    var stockValueField = document.querySelector('[data-stock-value-field]');
+    var featureMode = document.getElementById('masseditor-feature-mode');
+    var featureValueField = document.querySelector('[data-feature-value-field]');
     var selectAll = document.querySelector('[data-role="select-all"]');
+    var selectFilter = document.querySelector('[data-role="select-filter"]');
+    var selectionModeInput = document.querySelector('[data-role="selection-mode"]');
     var productCheckboxes = Array.prototype.slice.call(document.querySelectorAll('[data-role="product-checkbox"]'));
     var selectedCount = document.querySelector('[data-role="selected-count"]');
     var selectionCounterPill = document.querySelector('[data-role="selection-counter-pill"]');
@@ -150,8 +157,13 @@
     var modalOperation = document.querySelector('[data-role="modal-operation"]');
     var modalMode = document.querySelector('[data-role="modal-mode"]');
     var modalValue = document.querySelector('[data-role="modal-value"]');
+    var productSearchInput = document.querySelector('[data-role="product-search-input"]');
+    var productSearchClear = document.querySelector('[data-role="product-search-clear"]');
+    var productSearchSuggestions = document.querySelector('[data-role="product-search-suggestions"]');
+    var filterForm = document.getElementById('masseditor-filter-form');
     var selectionStorageKey = buildSelectionStorageKey();
     var selectedProductsMap = loadSelectedProductsMap();
+    var searchSuggestionsRequestId = 0;
 
     var operationLabels = {
         price: t('operation_price', 'Change price'),
@@ -160,11 +172,167 @@
         availability: t('operation_availability', 'Change availability'),
         description: t('operation_description', 'Description'),
         tags: t('operation_tags', 'Tags'),
-        url: t('operation_url', 'Product URLs')
+        url: t('operation_url', 'Product URLs'),
+        stock: t('operation_stock', 'Stock'),
+        features: t('operation_features', 'Basic feature editing'),
+        categories: t('operation_categories', 'Categories')
     };
 
     function currentOperation() {
         return operationInput ? operationInput.value : 'price';
+    }
+
+    function updateSearchClearButton() {
+        if (!productSearchInput || !productSearchClear) {
+            return;
+        }
+        productSearchClear.hidden = productSearchInput.value === '';
+    }
+
+    function setSearchSuggestionsExpanded(expanded) {
+        if (productSearchInput) {
+            productSearchInput.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        }
+        if (productSearchSuggestions) {
+            productSearchSuggestions.hidden = !expanded;
+        }
+    }
+
+    function clearSearchSuggestions() {
+        if (!productSearchSuggestions) {
+            return;
+        }
+        while (productSearchSuggestions.children.length) {
+            productSearchSuggestions.removeChild(productSearchSuggestions.children[0]);
+        }
+        setSearchSuggestionsExpanded(false);
+    }
+
+    function appendSearchSuggestionState(message) {
+        var state = document.createElement('div');
+        state.className = 'masseditor-searchbox__state';
+        state.textContent = message;
+        productSearchSuggestions.appendChild(state);
+        setSearchSuggestionsExpanded(true);
+    }
+
+    function currentFilterValue(id, fallback) {
+        var field = document.getElementById(id);
+        return field ? field.value : fallback;
+    }
+
+    function buildSearchSuggestionsUrl(query) {
+        var baseUrl = productSearchInput.getAttribute('data-suggestions-url') || '';
+        var separator = baseUrl.indexOf('?') === -1 ? '?' : '&';
+
+        return baseUrl
+            + separator + 'query=' + encodeURIComponent(query)
+            + '&status=' + encodeURIComponent(currentFilterValue('masseditor-status', 'all'))
+            + '&availability=' + encodeURIComponent(currentFilterValue('masseditor-availability-filter', 'all'))
+            + '&category_id=' + encodeURIComponent(currentFilterValue('masseditor-category', '0'));
+    }
+
+    function submitFilterForm() {
+        if (!filterForm) {
+            return;
+        }
+        if (typeof filterForm.submit === 'function') {
+            filterForm.submit();
+            return;
+        }
+        filterForm.dispatchEvent({ type: 'submit', defaultPrevented: false, preventDefault: function () { this.defaultPrevented = true; } });
+    }
+
+    function renderSearchSuggestions(suggestions) {
+        clearSearchSuggestions();
+        if (!productSearchSuggestions || !suggestions.length) {
+            return;
+        }
+
+        suggestions.forEach(function (suggestion) {
+            var option = document.createElement('button');
+            option.type = 'button';
+            option.className = 'masseditor-searchbox__option';
+            option.setAttribute('data-role', 'product-search-suggestion');
+            option.setAttribute('role', 'option');
+            option.textContent = suggestion;
+            option.addEventListener('click', function () {
+                productSearchInput.value = suggestion;
+                clearSearchSuggestions();
+                submitFilterForm();
+            });
+            productSearchSuggestions.appendChild(option);
+        });
+        setSearchSuggestionsExpanded(true);
+    }
+
+    function initProductSearchSuggestions() {
+        if (!productSearchInput || !productSearchSuggestions || !filterForm) {
+            return;
+        }
+
+        updateSearchClearButton();
+
+        if (productSearchClear) {
+            productSearchClear.addEventListener('click', function () {
+                var hadValue = productSearchInput.value !== '';
+                productSearchInput.value = '';
+                clearSearchSuggestions();
+                updateSearchClearButton();
+                if (typeof productSearchInput.focus === 'function') {
+                    productSearchInput.focus();
+                }
+                if (hadValue) {
+                    submitFilterForm();
+                }
+            });
+        }
+
+        productSearchInput.addEventListener('input', function () {
+            var query = productSearchInput.value ? productSearchInput.value.trim() : '';
+            var requestId = 0;
+
+            updateSearchClearButton();
+
+            if (query.length < 2) {
+                clearSearchSuggestions();
+                return;
+            }
+
+            if (typeof window.fetch !== 'function') {
+                return;
+            }
+
+            requestId = ++searchSuggestionsRequestId;
+            clearSearchSuggestions();
+            appendSearchSuggestionState(t('search_suggestions_loading', 'Loading...'));
+
+            window.fetch(buildSearchSuggestionsUrl(query), {
+                credentials: 'same-origin',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            }).then(function (response) {
+                if (!response.ok) {
+                    throw new Error('Request failed');
+                }
+                return response.json();
+            }).then(function (payload) {
+                var suggestions = payload && payload.data && Array.isArray(payload.data.suggestions)
+                    ? payload.data.suggestions
+                    : (payload && Array.isArray(payload.suggestions) ? payload.suggestions : []);
+
+                if (requestId !== searchSuggestionsRequestId) {
+                    return;
+                }
+                renderSearchSuggestions(suggestions);
+            }).catch(function () {
+                if (requestId !== searchSuggestionsRequestId) {
+                    return;
+                }
+                clearSearchSuggestions();
+            });
+        });
     }
 
     function buildSelectionStorageKey() {
@@ -238,13 +406,30 @@
     }
 
     function selectedProductsCount() {
+        if (isFilterSelection()) {
+            return filterSelectionTotal();
+        }
         return Object.keys(selectedProductsMap).length;
+    }
+
+    function isFilterSelection() {
+        return selectionModeInput && selectionModeInput.value === 'filter';
+    }
+
+    function filterSelectionTotal() {
+        return selectFilter ? parseInt(selectFilter.getAttribute('data-total') || '0', 10) : 0;
+    }
+
+    function useIdsSelection() {
+        if (selectionModeInput) {
+            selectionModeInput.value = 'ids';
+        }
     }
 
     function syncCheckboxesFromSelection() {
         productCheckboxes.forEach(function (checkbox) {
             var productId = toProductId(checkbox.value);
-            checkbox.checked = !!selectedProductsMap[productId];
+            checkbox.checked = isFilterSelection() || !!selectedProductsMap[productId];
         });
     }
 
@@ -264,6 +449,7 @@
     }
 
     function setProductSelection(productId, isSelected) {
+        useIdsSelection();
         if (!productId) {
             return;
         }
@@ -282,6 +468,10 @@
                 input.parentNode.removeChild(input);
             }
         });
+
+        if (isFilterSelection()) {
+            return;
+        }
 
         Object.keys(selectedProductsMap).forEach(function (key) {
             var productId = toProductId(key);
@@ -314,12 +504,12 @@
         }
 
         if (selectionCounterPill) {
-            selectionCounterPill.textContent = totalSelected + ' ' + t('selected_counter_separator', 'of') + ' ' + total;
+            selectionCounterPill.textContent = t('stats_selected', 'Selected') + ' ' + totalSelected + ' ' + t('selected_counter_separator', 'of') + ' ' + total;
         }
 
         if (readyCopy) {
             readyCopy.textContent = totalSelected > 0
-                ? totalSelected + ' ' + t('products_word', 'products') + ' · ' + t('ready_selected_suffix', 'action will be written to the log')
+                ? (isFilterSelection() ? t('filter_selection_summary', 'All products by current filter') + ': ' : '') + totalSelected + ' ' + t('products_word', 'products') + ' · ' + t('ready_selected_suffix', 'action will be written to the log')
                 : t('ready_empty', 'Select products to process.');
         }
 
@@ -365,6 +555,8 @@
         });
 
         updateComparePriceVisibility();
+        updateStockValueVisibility();
+        updateFeatureValueVisibility();
     }
 
     function updateComparePriceVisibility() {
@@ -376,6 +568,30 @@
         comparePriceValueField.hidden = !active;
 
         Array.prototype.slice.call(comparePriceValueField.querySelectorAll('input')).forEach(function (input) {
+            input.disabled = !active;
+        });
+    }
+
+    function updateStockValueVisibility() {
+        if (!stockMode || !stockValueField) {
+            return;
+        }
+
+        var active = currentOperation() === 'stock' && stockMode.value !== 'infinite';
+        stockValueField.hidden = !active;
+        Array.prototype.slice.call(stockValueField.querySelectorAll('input')).forEach(function (input) {
+            input.disabled = !active;
+        });
+    }
+
+    function updateFeatureValueVisibility() {
+        if (!featureMode || !featureValueField) {
+            return;
+        }
+
+        var active = currentOperation() === 'features' && featureMode.value !== 'clear';
+        featureValueField.hidden = !active;
+        Array.prototype.slice.call(featureValueField.querySelectorAll('input')).forEach(function (input) {
             input.disabled = !active;
         });
     }
@@ -405,6 +621,20 @@
             var urlMode = document.getElementById('masseditor-url-mode');
             return urlMode ? urlMode.options[urlMode.selectedIndex].text : '—';
         }
+        if (operation === 'stock') {
+            var stockModeText = stockMode ? stockMode.options[stockMode.selectedIndex].text : '—';
+            if (stockId && stockId.value !== '0') {
+                return stockModeText + ' · ' + stockId.options[stockId.selectedIndex].text;
+            }
+            return stockModeText;
+        }
+        if (operation === 'features') {
+            return featureMode ? featureMode.options[featureMode.selectedIndex].text : '—';
+        }
+        if (operation === 'categories') {
+            var categoriesMode = document.getElementById('masseditor-categories-mode');
+            return categoriesMode ? categoriesMode.options[categoriesMode.selectedIndex].text : '—';
+        }
 
         return '—';
     }
@@ -429,6 +659,18 @@
                 return t('value_from_product_name', 'From product name');
             }
             return url && url.value ? url.value : '—';
+        }
+        if (operation === 'stock') {
+            var stockValue = document.getElementById('masseditor-stock-value');
+            return stockMode && stockMode.value === 'infinite' ? t('stock_infinite', 'Make infinite') : (stockValue && stockValue.value ? stockValue.value : '—');
+        }
+        if (operation === 'features') {
+            var featureValue = document.getElementById('masseditor-feature-value');
+            return featureMode && featureMode.value === 'clear' ? t('clear', 'Clear') : (featureValue && featureValue.value ? featureValue.value.substring(0, 80) : '—');
+        }
+        if (operation === 'categories') {
+            var category = document.getElementById('masseditor-operation-category-id');
+            return category ? category.options[category.selectedIndex].text : '—';
         }
 
         return '—';
@@ -463,6 +705,35 @@
             var value = document.getElementById('masseditor-url-value');
             if (mode && mode.value === 'template' && value && !value.value.trim()) {
                 showErrorToast(t('validation_url_template', 'Enter a URL template.'));
+                return false;
+            }
+        }
+
+        if (operation === 'stock') {
+            var stockValue = document.getElementById('masseditor-stock-value');
+            if (stockMode && stockMode.value !== 'infinite' && (!stockValue || !stockValue.value.trim())) {
+                showErrorToast(t('invalid_stock_value', 'Enter a valid stock value.'));
+                return false;
+            }
+        }
+
+        if (operation === 'features') {
+            var feature = document.getElementById('masseditor-feature-id');
+            var featureValue = document.getElementById('masseditor-feature-value');
+            if (!feature || feature.value === '0') {
+                showErrorToast(t('validation_feature', 'Select a feature.'));
+                return false;
+            }
+            if (featureMode && featureMode.value !== 'clear' && (!featureValue || !featureValue.value.trim())) {
+                showErrorToast(t('validation_feature_value', 'Enter a feature value.'));
+                return false;
+            }
+        }
+
+        if (operation === 'categories') {
+            var category = document.getElementById('masseditor-operation-category-id');
+            if (!category || category.value === '0') {
+                showErrorToast(t('validation_category', 'Select a category.'));
                 return false;
             }
         }
@@ -526,6 +797,14 @@
         comparePriceMode.addEventListener('change', updateComparePriceVisibility);
     }
 
+    if (stockMode) {
+        stockMode.addEventListener('change', updateStockValueVisibility);
+    }
+
+    if (featureMode) {
+        featureMode.addEventListener('change', updateFeatureValueVisibility);
+    }
+
     if (selectAll) {
         selectAll.addEventListener('change', function () {
             productCheckboxes.forEach(function (checkbox) {
@@ -533,6 +812,18 @@
                 setProductSelection(toProductId(checkbox.value), checkbox.checked);
             });
             saveSelectedProductsMap();
+            updateSelectionState();
+        });
+    }
+
+    if (selectFilter) {
+        selectFilter.addEventListener('click', function () {
+            if (selectionModeInput) {
+                selectionModeInput.value = 'filter';
+            }
+            selectedProductsMap = {};
+            saveSelectedProductsMap();
+            syncCheckboxesFromSelection();
             updateSelectionState();
         });
     }
@@ -566,12 +857,15 @@
                 return;
             }
             appendPersistedProductInputs();
-            saveSelectedProductsMap();
+            if (!isFilterSelection()) {
+                saveSelectedProductsMap();
+            }
             confirmApply.value = '1';
         }
     });
 
     resetSelectionIfRequested();
+    initProductSearchSuggestions();
     syncCheckboxesFromSelection();
     setOperation(currentOperation());
     updateSelectionState();

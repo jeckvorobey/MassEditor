@@ -16,6 +16,8 @@ class FakeSelectionService extends shopMasseditorPluginProductSelectionService
     public $products = array();
     public $pages = array();
     public $categories = array();
+    public $filterIds = array();
+    public $lastFilterRequest = null;
 
     public function __construct()
     {
@@ -38,6 +40,12 @@ class FakeSelectionService extends shopMasseditorPluginProductSelectionService
     public function getCategories()
     {
         return $this->categories;
+    }
+
+    public function getIdsByFilters(array $raw_filters, $limit)
+    {
+        $this->lastFilterRequest = array('filters' => $raw_filters, 'limit' => $limit);
+        return $this->filterIds;
     }
 }
 

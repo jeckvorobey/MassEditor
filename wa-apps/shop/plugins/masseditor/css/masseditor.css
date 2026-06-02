@@ -246,6 +246,141 @@
     resize: vertical;
 }
 
+.masseditor-searchbox {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.masseditor-table-search {
+    width: min(960px, 100%);
+    min-width: 480px;
+    justify-self: center;
+}
+
+.masseditor-searchbox [data-role="product-search-input"] {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding-right: 40px;
+    padding-left: 14px;
+}
+
+.masseditor-searchbox__icon {
+    flex: 0 0 auto;
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--me-muted);
+    border-radius: 50%;
+    opacity: 0.75;
+    transform: translateY(-1px);
+    pointer-events: none;
+}
+
+.masseditor-searchbox__icon::after {
+    content: "";
+    position: absolute;
+    right: -7px;
+    bottom: -6px;
+    width: 8px;
+    height: 2px;
+    border-radius: 999px;
+    background: var(--me-muted);
+    transform: rotate(45deg);
+}
+
+.masseditor-searchbox__clear {
+    position: absolute;
+    z-index: 3;
+    top: 50%;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+    transform: translateY(-50%);
+}
+
+.masseditor-searchbox__clear[hidden] {
+    display: none !important;
+}
+
+.masseditor-searchbox__clear::before,
+.masseditor-searchbox__clear::after {
+    content: "";
+    position: absolute;
+    top: 13px;
+    left: 8px;
+    width: 12px;
+    height: 2px;
+    border-radius: 999px;
+    background: var(--me-muted);
+}
+
+.masseditor-searchbox__clear::before {
+    transform: rotate(45deg);
+}
+
+.masseditor-searchbox__clear::after {
+    transform: rotate(-45deg);
+}
+
+.masseditor-searchbox__clear:hover,
+.masseditor-searchbox__clear:focus {
+    background: var(--me-surface-soft);
+    outline: none;
+}
+
+.masseditor-searchbox__suggestions {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% + 4px);
+    right: 0;
+    left: 0;
+    max-height: 240px;
+    overflow: auto;
+    padding: 6px;
+    border: 1px solid var(--me-border);
+    border-radius: 8px;
+    background: var(--me-surface);
+    box-shadow: var(--me-shadow);
+}
+
+.masseditor-searchbox__suggestions[hidden] {
+    display: none !important;
+}
+
+.masseditor-searchbox__option,
+.masseditor-searchbox__state {
+    width: 100%;
+    min-height: 34px;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--me-text);
+    font: inherit;
+    line-height: 1.3;
+    text-align: left;
+}
+
+.masseditor-searchbox__option {
+    cursor: pointer;
+}
+
+.masseditor-searchbox__option:hover,
+.masseditor-searchbox__option:focus {
+    background: var(--me-surface-soft);
+    outline: none;
+}
+
+.masseditor-searchbox__state {
+    color: var(--me-muted);
+}
+
 .masseditor input::placeholder,
 .masseditor textarea::placeholder {
     color: var(--me-soft);
@@ -279,6 +414,20 @@
     border-color: var(--me-border);
     background: var(--me-surface-soft);
     color: var(--me-text);
+}
+
+.masseditor-button_compact {
+    min-height: 32px;
+    padding: 0 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 30px;
+}
+
+.masseditor-panel__actions_centered {
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
 }
 
 .masseditor-button_ghost {
@@ -405,8 +554,22 @@
 }
 
 .masseditor-table-card__head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 360px) minmax(0, 1fr);
     align-items: center;
     margin-bottom: 16px;
+}
+
+.masseditor-table-card__actions {
+    justify-self: end;
+    margin-top: 0;
+}
+
+.masseditor-table-card__heading {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
 }
 
 .masseditor-table-wrap {
@@ -477,6 +640,21 @@
 .masseditor-product-categories {
     color: var(--me-muted);
     font-size: 12px;
+}
+
+.masseditor-stock-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 120px;
+    color: var(--me-muted);
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.masseditor-stock-details__item {
+    display: block;
+    white-space: nowrap;
 }
 
 .masseditor-product-description {
@@ -882,6 +1060,18 @@
     .masseditor-modal__head,
     .masseditor-modal__footer {
         flex-direction: column;
+    }
+
+    .masseditor-table-card__head {
+        display: flex;
+        align-items: stretch;
+    }
+
+    .masseditor-table-search,
+    .masseditor-table-card__actions {
+        width: 100%;
+        min-width: 0;
+        justify-self: auto;
     }
 
     .masseditor-tabs {

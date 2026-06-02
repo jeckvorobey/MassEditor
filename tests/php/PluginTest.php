@@ -108,4 +108,12 @@ class PluginTest extends TestCase
         $this->assertFileExists(__DIR__ . '/../../wa-apps/shop/plugins/masseditor/locale/ru_RU/LC_MESSAGES/shop_masseditor.po');
         $this->assertFileExists(__DIR__ . '/../../wa-apps/shop/plugins/masseditor/locale/en_US/LC_MESSAGES/shop_masseditor.po');
     }
+
+    public function testBackendTemplateContainsWarehouseStockColumn(): void
+    {
+        $template = file_get_contents(__DIR__ . '/../../wa-apps/shop/plugins/masseditor/templates/actions/backend/Backend.html');
+
+        $this->assertStringContainsString('$texts.stock_warehouses', $template);
+        $this->assertStringContainsString('$product.stock_details', $template);
+    }
 }

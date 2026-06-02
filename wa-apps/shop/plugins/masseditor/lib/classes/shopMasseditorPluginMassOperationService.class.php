@@ -4,9 +4,10 @@ class shopMasseditorPluginMassOperationService
 {
     const DEFAULT_OPERATION_LIMIT = 100;
     const APPLY_BATCH_SIZE = 20;
-    const SKU_OPERATIONS = array('price', 'compare_price', 'availability');
+    const SKU_OPERATIONS = array('price', 'compare_price', 'availability', 'stock');
     const PRICE_OPERATIONS = array('price', 'compare_price');
-    const ALL_OPERATIONS = array('price', 'compare_price', 'visibility', 'availability', 'description', 'tags', 'url');
+    const PRICE_MODES = array('set', 'add', 'subtract', 'increase_percent', 'decrease_percent');
+    const ALL_OPERATIONS = array('price', 'compare_price', 'visibility', 'availability', 'description', 'tags', 'url', 'stock', 'features', 'categories');
 
     private $selection_service;
     private $log_service;
@@ -70,15 +71,13 @@ class shopMasseditorPluginMassOperationService
     {
         $this->assertAdminRights();
 
-        $product_ids = array();
-        if (isset($raw_request['product_ids']) && is_array($raw_request['product_ids'])) {
-            foreach ($raw_request['product_ids'] as $product_id) {
-                $product_id = (int) $product_id;
-                if ($product_id > 0) {
-                    $product_ids[$product_id] = $product_id;
-                }
-            }
+        $operation = isset($raw_request['operation']) ? trim((string) $raw_request['operation']) : '';
+        if (!in_array($operation, self::ALL_OPERATIONS, true)) {
+            throw new InvalidArgumentException($this->t('unknown_operation'));
         }
+
+        $selection = $this->resolveSelection($raw_request);
+        $product_ids = $selection['product_ids'];
 
         if (!$product_ids) {
             throw new InvalidArgumentException($this->t('validation_select_product'));
@@ -90,13 +89,10 @@ class shopMasseditorPluginMassOperationService
             );
         }
 
-        $operation = isset($raw_request['operation']) ? trim((string) $raw_request['operation']) : '';
-        if (!in_array($operation, self::ALL_OPERATIONS, true)) {
-            throw new InvalidArgumentException($this->t('unknown_operation'));
-        }
-
         $request = array(
             'product_ids' => array_values($product_ids),
+            'selection_mode' => $selection['selection_mode'],
+            'filters' => $selection['filters'],
             'operation' => $operation,
             'mode' => 'set',
             'numeric_value' => null,
@@ -112,16 +108,30 @@ class shopMasseditorPluginMassOperationService
             'tags_value' => '',
             'url_mode' => 'regenerate',
             'url_value' => '',
+            'stock_id' => 0,
+            'stock_name' => '',
+            'stock_mode' => 'set',
+            'stock_value' => null,
+            'stock_ids' => array(),
+            'feature_id' => 0,
+            'feature_name' => '',
+            'feature_type' => '',
+            'feature_value_id' => null,
+            'feature_value' => '',
+            'feature_mode' => 'set',
+            'category_id' => 0,
+            'category_name' => '',
+            'categories_mode' => 'add',
         );
 
         if (in_array($operation, self::PRICE_OPERATIONS, true)) {
             $mode = isset($raw_request['mode']) ? (string) $raw_request['mode'] : 'set';
-            if (!in_array($mode, array('set', 'percent'), true)) {
+            if (!in_array($mode, self::PRICE_MODES, true)) {
                 throw new InvalidArgumentException($this->t('unknown_price_mode'));
             }
 
             $value = isset($raw_request['numeric_value']) ? str_replace(',', '.', trim((string) $raw_request['numeric_value'])) : '';
-            if ($value === '' || !is_numeric($value)) {
+            if ($value === '' || !is_numeric($value) || (float) $value < 0) {
                 throw new InvalidArgumentException($this->t('invalid_numeric'));
             }
 
@@ -178,6 +188,40 @@ class shopMasseditorPluginMassOperationService
             if ($request['url_mode'] === 'template' && $request['url_value'] === '') {
                 throw new InvalidArgumentException($this->t('validation_url_template'));
             }
+        } elseif ($operation === 'stock') {
+            $stock_id = isset($raw_request['stock_id']) ? (int) $raw_request['stock_id'] : 0;
+            $stocks = $stock_id > 0 ? $this->resolveStocks($stock_id) : array(
+                'selected' => array('id' => 0, 'name' => $this->t('stock_no_warehouse')),
+                'ids' => array(),
+            );
+            $stock = $stocks['selected'];
+            $stock_mode = $this->normalizeStockMode(isset($raw_request['stock_mode']) ? $raw_request['stock_mode'] : 'set');
+            $request['stock_id'] = (int) $stock['id'];
+            $request['stock_name'] = (string) $stock['name'];
+            $request['stock_mode'] = $stock_mode;
+            $request['stock_value'] = $stock_mode === 'infinite'
+                ? null
+                : $this->normalizeNonNegativeNumber(isset($raw_request['stock_value']) ? $raw_request['stock_value'] : '', 'invalid_stock_value');
+            $request['stock_ids'] = $stocks['ids'];
+        } elseif ($operation === 'features') {
+            $feature = $this->resolveFeature(isset($raw_request['feature_id']) ? (int) $raw_request['feature_id'] : 0);
+            $feature_mode = $this->normalizeFeatureMode(isset($raw_request['feature_mode']) ? $raw_request['feature_mode'] : 'set');
+            $request['feature_id'] = (int) $feature['id'];
+            $request['feature_name'] = (string) $feature['name'];
+            $request['feature_type'] = (string) $feature['type'];
+            $request['feature_mode'] = $feature_mode;
+            $request['feature_value'] = isset($raw_request['feature_value']) ? trim((string) $raw_request['feature_value']) : '';
+            if ($feature_mode === 'set') {
+                if ($request['feature_value'] === '') {
+                    throw new InvalidArgumentException($this->t('validation_feature_value'));
+                }
+                $request['feature_value_id'] = $this->resolveFeatureValueId($feature, $request['feature_value']);
+            }
+        } elseif ($operation === 'categories') {
+            $category = $this->resolveCategory(isset($raw_request['category_id']) ? (int) $raw_request['category_id'] : 0);
+            $request['category_id'] = (int) $category['id'];
+            $request['category_name'] = (string) $category['name'];
+            $request['categories_mode'] = $this->normalizeCategoriesMode(isset($raw_request['categories_mode']) ? $raw_request['categories_mode'] : 'add');
         }
 
         if ($require_confirmation && empty($raw_request['confirm_apply'])) {
@@ -187,16 +231,58 @@ class shopMasseditorPluginMassOperationService
         return $request;
     }
 
+
+    private function resolveSelection(array $raw_request)
+    {
+        $mode = isset($raw_request['selection_mode']) ? (string) $raw_request['selection_mode'] : 'ids';
+        if ($mode === 'filter') {
+            $filters = isset($raw_request['filters']) && is_array($raw_request['filters'])
+                ? $raw_request['filters']
+                : array(
+                    'query' => isset($raw_request['query']) ? $raw_request['query'] : '',
+                    'status' => isset($raw_request['status']) ? $raw_request['status'] : 'all',
+                    'availability' => isset($raw_request['availability']) ? $raw_request['availability'] : 'all',
+                    'category_id' => isset($raw_request['filter_category_id']) ? $raw_request['filter_category_id'] : (isset($raw_request['category_filter_id']) ? $raw_request['category_filter_id'] : 0),
+                );
+            $ids = $this->selection_service->getIdsByFilters($filters, $this->operation_limit + 1);
+
+            return array(
+                'selection_mode' => 'filter',
+                'filters' => $filters,
+                'product_ids' => $this->normalizeProductIds($ids),
+            );
+        }
+
+        return array(
+            'selection_mode' => 'ids',
+            'filters' => array(),
+            'product_ids' => $this->normalizeProductIds(isset($raw_request['product_ids']) && is_array($raw_request['product_ids']) ? $raw_request['product_ids'] : array()),
+        );
+    }
+
+    private function normalizeProductIds(array $raw_ids)
+    {
+        $product_ids = array();
+        foreach ($raw_ids as $product_id) {
+            $product_id = (int) $product_id;
+            if ($product_id > 0) {
+                $product_ids[$product_id] = $product_id;
+            }
+        }
+
+        return array_values($product_ids);
+    }
+
     private function resolveSkusByProducts(array $products, $operation)
     {
         if (in_array($operation, self::SKU_OPERATIONS, true)) {
-            return $this->loadSkusByProducts($products);
+            return $this->loadSkusByProducts($products, $operation === 'stock');
         }
 
         return array();
     }
 
-    private function loadSkusByProducts(array $products)
+    private function loadSkusByProducts(array $products, $with_stock = false)
     {
         if (!$products) {
             return array();
@@ -206,7 +292,7 @@ class shopMasseditorPluginMassOperationService
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
         $rows = $this->model
             ->query(
-                'SELECT id, product_id, price, compare_price, available
+                'SELECT id, product_id, price, compare_price, available, count
                  FROM shop_product_skus
                  WHERE product_id IN (' . $placeholders . ')',
                 $ids
@@ -214,8 +300,33 @@ class shopMasseditorPluginMassOperationService
             ->fetchAll();
 
         $result = array();
+        $sku_ids = array();
+        $sku_product_ids = array();
         foreach ($rows as $sku) {
             $result[$sku['product_id']][$sku['id']] = $sku;
+            $sku_ids[] = (int) $sku['id'];
+            $sku_product_ids[(int) $sku['id']] = (int) $sku['product_id'];
+        }
+
+        if ($with_stock && $sku_ids) {
+            $stock_placeholders = implode(',', array_fill(0, count($sku_ids), '?'));
+            $stock_rows = $this->model
+                ->query(
+                    'SELECT sku_id, stock_id, count
+                     FROM shop_product_stocks
+                     WHERE sku_id IN (' . $stock_placeholders . ')',
+                    $sku_ids
+                )
+                ->fetchAll();
+
+            foreach ($stock_rows as $stock_row) {
+                $sku_id = (int) $stock_row['sku_id'];
+                $stock_id = (int) $stock_row['stock_id'];
+                if (isset($sku_product_ids[$sku_id])) {
+                    $product_id = $sku_product_ids[$sku_id];
+                    $result[$product_id][$sku_id]['stock'][$stock_id] = $stock_row['count'];
+                }
+            }
         }
 
         return $result;
@@ -247,6 +358,21 @@ class shopMasseditorPluginMassOperationService
 
         if ($request['operation'] === 'tags') {
             $this->applyTagsOperation((int) $product_data['id'], $request);
+            return;
+        }
+
+        if ($request['operation'] === 'categories') {
+            $this->applyCategoryOperation((int) $product_data['id'], $request);
+            return;
+        }
+
+        if ($request['operation'] === 'features') {
+            $this->applyFeatureOperation((int) $product_data['id'], $request);
+            return;
+        }
+
+        if ($request['operation'] === 'stock' && $request['stock_id'] > 0) {
+            $this->applyWarehouseStockOperation((int) $product_data['id'], $request, $skus);
             return;
         }
 
@@ -294,11 +420,131 @@ class shopMasseditorPluginMassOperationService
                 );
             } elseif ($request['operation'] === 'availability') {
                 $product_skus[$sku_id]['available'] = $request['availability_value'];
+            } elseif ($request['operation'] === 'stock') {
+                if ($request['stock_id'] > 0) {
+                    $product_skus[$sku_id]['stock'][$request['stock_id']] = $this->calculateStockValue(
+                        isset($sku['stock'][$request['stock_id']]) ? $sku['stock'][$request['stock_id']] : null,
+                        $request
+                    );
+                } else {
+                    $product_skus[$sku_id]['count'] = $this->calculateStockValue(
+                        isset($sku['count']) ? $sku['count'] : null,
+                        $request
+                    );
+                }
             }
         }
 
         $product['skus'] = $product_skus;
         $product->save();
+        if ($request['operation'] === 'stock') {
+            $this->correctProductStockCounts((int) $product_data['id']);
+        }
+    }
+
+    private function applyWarehouseStockOperation($product_id, array $request, array $skus)
+    {
+        $rows = array();
+        $stock_ids = isset($request['stock_ids']) && $request['stock_ids'] ? $request['stock_ids'] : array($request['stock_id']);
+
+        foreach ($skus as $sku_id => $sku) {
+            foreach ($stock_ids as $stock_id) {
+                $stock_id = (int) $stock_id;
+                $old_value = isset($sku['stock']) && array_key_exists($stock_id, $sku['stock'])
+                    ? $sku['stock'][$stock_id]
+                    : 0;
+                $new_value = $stock_id === (int) $request['stock_id']
+                    ? $this->calculateStockValue($old_value, $request)
+                    : $old_value;
+
+                $rows[] = array(
+                    'sku_id' => (int) $sku_id,
+                    'stock_id' => $stock_id,
+                    'count' => $new_value === null ? null : (float) $new_value,
+                );
+            }
+        }
+
+        if (!$rows) {
+            return;
+        }
+
+        $values = array();
+        $params = array();
+        foreach ($rows as $index => $row) {
+            $values[] = '(i:sku_id_' . $index . ', i:stock_id_' . $index . ', :count_' . $index . ')';
+            $params['sku_id_' . $index] = (int) $row['sku_id'];
+            $params['stock_id_' . $index] = (int) $row['stock_id'];
+            $params['count_' . $index] = $row['count'];
+        }
+
+        $this->model->exec(
+            'REPLACE INTO shop_product_stocks (sku_id, stock_id, count) VALUES ' . implode(', ', $values),
+            $params
+        );
+        $this->model->exec(
+            'UPDATE shop_product SET edit_datetime = s:edited_at WHERE id = i:product_id',
+            array('edited_at' => date('Y-m-d H:i:s'), 'product_id' => (int) $product_id)
+        );
+        $this->correctProductStockCounts((int) $product_id);
+    }
+
+    private function correctProductStockCounts($product_id)
+    {
+        $product_model = new shopProductModel();
+        $product_model->correct((int) $product_id);
+    }
+
+    private function applyCategoryOperation($product_id, array $request)
+    {
+        $product_id = (int) $product_id;
+        $category_id = (int) $request['category_id'];
+
+        if ($request['categories_mode'] === 'remove') {
+            $this->model->exec(
+                'DELETE FROM shop_category_products WHERE product_id = i:product_id AND category_id = i:category_id',
+                array('product_id' => $product_id, 'category_id' => $category_id)
+            );
+            return;
+        }
+
+        if ($request['categories_mode'] === 'replace_main') {
+            $this->model->exec(
+                'UPDATE shop_product SET category_id = i:category_id, edit_datetime = s:edited_at WHERE id = i:product_id',
+                array('category_id' => $category_id, 'edited_at' => date('Y-m-d H:i:s'), 'product_id' => $product_id)
+            );
+        }
+
+        $this->model->exec(
+            'INSERT IGNORE INTO shop_category_products (category_id, product_id) VALUES (i:category_id, i:product_id)',
+            array('category_id' => $category_id, 'product_id' => $product_id)
+        );
+    }
+
+    private function applyFeatureOperation($product_id, array $request)
+    {
+        $params = array(
+            'product_id' => (int) $product_id,
+            'feature_id' => (int) $request['feature_id'],
+        );
+
+        $this->model->exec(
+            'DELETE FROM shop_product_features WHERE product_id = i:product_id AND feature_id = i:feature_id',
+            $params
+        );
+
+        if ($request['feature_mode'] === 'clear') {
+            return;
+        }
+
+        $this->model->exec(
+            'INSERT INTO shop_product_features (product_id, feature_id, feature_value_id) VALUES (i:product_id, i:feature_id, i:feature_value_id)',
+            array(
+                'product_id' => (int) $product_id,
+                'feature_id' => (int) $request['feature_id'],
+                'feature_value_id' => (int) $request['feature_value_id'],
+            )
+        );
     }
 
     private function applyTagsOperation($product_id, array $request)
@@ -371,13 +617,42 @@ class shopMasseditorPluginMassOperationService
         throw new RuntimeException(sprintf($this->t('unique_url_failed'), $product_id));
     }
 
+    private function calculateStockValue($old_value, array $request)
+    {
+        if ($request['stock_mode'] === 'infinite') {
+            return null;
+        }
+
+        $input_value = (float) $request['stock_value'];
+        if ($request['stock_mode'] === 'set') {
+            return $input_value;
+        }
+
+        $old_value = $old_value === null ? 0.0 : (float) $old_value;
+        $new_value = $request['stock_mode'] === 'increase'
+            ? $old_value + $input_value
+            : $old_value - $input_value;
+
+        if ($new_value < 0) {
+            throw new InvalidArgumentException($this->t('negative_stock_value'));
+        }
+
+        return round($new_value, 4);
+    }
+
     private function calculateNumericValue($old_value, $mode, $input_value)
     {
         $old_value = (float) $old_value;
         $input_value = (float) $input_value;
 
-        if ($mode === 'percent') {
+        if ($mode === 'add') {
+            $new_value = $old_value + $input_value;
+        } elseif ($mode === 'subtract') {
+            $new_value = $old_value - $input_value;
+        } elseif ($mode === 'increase_percent') {
             $new_value = $old_value + ($old_value * $input_value / 100);
+        } elseif ($mode === 'decrease_percent') {
+            $new_value = $old_value - ($old_value * $input_value / 100);
         } else {
             $new_value = $input_value;
         }
@@ -391,22 +666,24 @@ class shopMasseditorPluginMassOperationService
 
     private function applyRounding($value, $step, $direction)
     {
-        $step = (float) $step;
         $value = (float) $value;
-        if ($step <= 0) {
+        if ($step === '') {
             return round($value, 4);
         }
 
-        $ratio = $value / $step;
+        $digits = (int) $step;
+        $multiplier = pow(10, $digits);
+        $scaled_value = $value * $multiplier;
+
         if ($direction === 'up') {
-            $ratio = ceil($ratio);
+            $rounded_value = ceil($scaled_value);
         } elseif ($direction === 'down') {
-            $ratio = floor($ratio);
+            $rounded_value = floor($scaled_value);
         } else {
-            $ratio = round($ratio);
+            $rounded_value = round($scaled_value);
         }
 
-        return round($ratio * $step, 4);
+        return round($rounded_value / $multiplier, 4);
     }
 
     private function calculatePriceComparePrice($old_price, $old_compare_price, $new_price, array $request)
@@ -439,6 +716,9 @@ class shopMasseditorPluginMassOperationService
             'description' => $this->t('operation_description'),
             'tags' => $this->t('operation_tags'),
             'url' => $this->t('operation_url'),
+            'stock' => $this->t('operation_stock'),
+            'features' => $this->t('operation_features'),
+            'categories' => $this->t('operation_categories'),
         );
 
         return isset($labels[$operation]) ? $labels[$operation] : (string) $operation;
@@ -471,7 +751,7 @@ class shopMasseditorPluginMassOperationService
     private function buildDescription(array $request, $count)
     {
         if (in_array($request['operation'], self::PRICE_OPERATIONS, true)) {
-            $key = $request['mode'] === 'percent' ? 'description_price_percent' : 'description_price_set';
+            $key = $this->priceDescriptionKey($request['mode']);
             return sprintf($this->t($key), $this->getOperationLabel($request['operation']), $this->formatNumber($request['numeric_value']), (int) $count);
         }
 
@@ -491,7 +771,32 @@ class shopMasseditorPluginMassOperationService
             return sprintf($this->t('description_tags'), $request['tags_mode'], (int) $count);
         }
 
-        return sprintf($this->t('description_url'), $request['url_mode'], (int) $count);
+        if ($request['operation'] === 'url') {
+            return sprintf($this->t('description_url'), $request['url_mode'], (int) $count);
+        }
+
+        if ($request['operation'] === 'stock') {
+            return sprintf($this->t('description_stock'), $request['stock_name'], $request['stock_mode'], (int) $count);
+        }
+
+        if ($request['operation'] === 'features') {
+            return sprintf($this->t('description_features'), $request['feature_name'], $request['feature_mode'], (int) $count);
+        }
+
+        return sprintf($this->t('description_categories'), $request['category_name'], $request['categories_mode'], (int) $count);
+    }
+
+    private function priceDescriptionKey($mode)
+    {
+        $keys = array(
+            'set' => 'description_price_set',
+            'add' => 'description_price_add',
+            'subtract' => 'description_price_subtract',
+            'increase_percent' => 'description_price_increase_percent',
+            'decrease_percent' => 'description_price_decrease_percent',
+        );
+
+        return isset($keys[$mode]) ? $keys[$mode] : 'description_price_set';
     }
 
     private function formatNumber($value)
@@ -501,6 +806,155 @@ class shopMasseditorPluginMassOperationService
         }
 
         return rtrim(rtrim(number_format((float) $value, 4, '.', ''), '0'), '.');
+    }
+
+    private function normalizeNonNegativeNumber($value, $message_key)
+    {
+        $value = str_replace(',', '.', trim((string) $value));
+        if ($value === '' || !is_numeric($value) || (float) $value < 0) {
+            throw new InvalidArgumentException($this->t($message_key));
+        }
+
+        return (float) $value;
+    }
+
+    private function normalizeStockMode($value)
+    {
+        $value = (string) $value;
+        if (!in_array($value, array('set', 'increase', 'decrease', 'infinite'), true)) {
+            throw new InvalidArgumentException($this->t('invalid_stock_mode'));
+        }
+
+        return $value;
+    }
+
+    private function normalizeFeatureMode($value)
+    {
+        $value = (string) $value;
+        if (!in_array($value, array('set', 'clear'), true)) {
+            throw new InvalidArgumentException($this->t('invalid_feature_mode'));
+        }
+
+        return $value;
+    }
+
+    private function normalizeCategoriesMode($value)
+    {
+        $value = (string) $value;
+        if (!in_array($value, array('add', 'remove', 'replace_main'), true)) {
+            throw new InvalidArgumentException($this->t('invalid_categories_mode'));
+        }
+
+        return $value;
+    }
+
+    private function resolveStocks($stock_id)
+    {
+        if ((int) $stock_id <= 0) {
+            throw new InvalidArgumentException($this->t('validation_stock'));
+        }
+
+        $rows = $this->model
+            ->query('SELECT id, name FROM shop_stock ORDER BY sort ASC, id ASC')
+            ->fetchAll();
+        $selected = null;
+        $ids = array();
+        foreach ($rows as $row) {
+            $id = isset($row['id']) ? (int) $row['id'] : 0;
+            if ($id <= 0) {
+                continue;
+            }
+            $ids[] = $id;
+            if ($id === (int) $stock_id) {
+                $selected = $row;
+            }
+        }
+
+        if (!$selected) {
+            throw new InvalidArgumentException($this->t('validation_stock'));
+        }
+
+        return array(
+            'selected' => $selected,
+            'ids' => $ids,
+        );
+    }
+
+    private function resolveCategory($category_id)
+    {
+        if ((int) $category_id <= 0) {
+            throw new InvalidArgumentException($this->t('validation_category'));
+        }
+
+        $rows = $this->model
+            ->query('SELECT id, name FROM shop_category WHERE id = i:category_id', array('category_id' => (int) $category_id))
+            ->fetchAll();
+        if (!$rows) {
+            throw new InvalidArgumentException($this->t('validation_category'));
+        }
+
+        return reset($rows);
+    }
+
+    private function resolveFeature($feature_id)
+    {
+        if ((int) $feature_id <= 0) {
+            throw new InvalidArgumentException($this->t('validation_feature'));
+        }
+
+        $rows = $this->model
+            ->query('SELECT id, name, type, selectable, multiple FROM shop_feature WHERE id = i:feature_id', array('feature_id' => (int) $feature_id))
+            ->fetchAll();
+        if (!$rows) {
+            throw new InvalidArgumentException($this->t('validation_feature'));
+        }
+
+        $feature = reset($rows);
+        $type = isset($feature['type']) ? (string) $feature['type'] : '';
+        $multiple = !empty($feature['multiple']);
+        if ($multiple || !$this->featureValueTableSuffix($type)) {
+            throw new InvalidArgumentException($this->t('unsupported_feature_type'));
+        }
+
+        return $feature;
+    }
+
+    private function resolveFeatureValueId(array $feature, $value)
+    {
+        $suffix = $this->featureValueTableSuffix(isset($feature['type']) ? $feature['type'] : '');
+        if (!$suffix) {
+            throw new InvalidArgumentException($this->t('unsupported_feature_type'));
+        }
+
+        $rows = $this->model
+            ->query(
+                'SELECT id FROM shop_feature_values_' . $suffix . ' WHERE feature_id = i:feature_id AND value = s:value',
+                array('feature_id' => (int) $feature['id'], 'value' => (string) $value)
+            )
+            ->fetchAll();
+        if (!$rows) {
+            throw new InvalidArgumentException($this->t('validation_feature_existing_value'));
+        }
+
+        $row = reset($rows);
+        return (int) $row['id'];
+    }
+
+    private function featureValueTableSuffix($type)
+    {
+        $type = strtolower((string) $type);
+        if (strpos($type, '.') !== false) {
+            $type = substr($type, 0, strpos($type, '.'));
+        }
+
+        $allowed = array(
+            'varchar' => 'varchar',
+            'text' => 'text',
+            'double' => 'double',
+            'int' => 'double',
+        );
+
+        return isset($allowed[$type]) ? $allowed[$type] : '';
     }
 
     private function normalizeOperationLimit($operation_limit)
@@ -515,7 +969,7 @@ class shopMasseditorPluginMassOperationService
 
     private function normalizeRoundStep($value)
     {
-        $allowed = array('', '1', '10', '100');
+        $allowed = array('', '0', '1', '2', '3', '4');
         $value = (string) $value;
         if (!in_array($value, $allowed, true)) {
             return '';

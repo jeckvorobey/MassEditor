@@ -81,6 +81,7 @@ class shopMasseditorPluginProductSelectionService
                 $conditions['params']
             )
             ->fetchAll();
+        $products = $this->attachStockDetails($products);
 
         return array(
             'products' => $products,
@@ -100,6 +101,171 @@ class shopMasseditorPluginProductSelectionService
             ->query(
                 'SELECT id, name
                  FROM shop_category
+                 ORDER BY name ASC'
+            )
+            ->fetchAll();
+    }
+
+    public function getIdsByFilters(array $raw_filters, $limit)
+    {
+        $filters = $this->normalizeFilters($raw_filters);
+        $conditions = $this->buildConditions($filters);
+        $limit = max(1, min(1001, (int) $limit));
+
+        $rows = $this->product_model
+            ->query(
+                'SELECT DISTINCT p.id
+                 FROM shop_product p ' . $conditions['joins'] . ' ' . $conditions['sql'] . '
+                 ORDER BY p.id DESC
+                 LIMIT ' . (int) $limit,
+                $conditions['params']
+            )
+            ->fetchAll();
+
+        $ids = array();
+        foreach ($rows as $row) {
+            $id = isset($row['id']) ? (int) $row['id'] : 0;
+            if ($id > 0) {
+                $ids[$id] = $id;
+            }
+        }
+
+        return array_values($ids);
+    }
+
+    public function getSearchSuggestions(array $raw_filters, $query, $limit = 10)
+    {
+        $query = trim((string) $query);
+        $limit = max(1, min(20, (int) $limit));
+        if ($query === '') {
+            return array();
+        }
+
+        $filters = $this->normalizeFilters($raw_filters);
+        $filters['query'] = '';
+        $conditions = $this->buildConditions($filters);
+        $search = $this->buildSearchCondition($query);
+        $sql_limit = $limit * 10;
+
+        $rows = $this->product_model
+            ->query(
+                'SELECT DISTINCT p.id, p.name, p.url, p.summary, p.description,
+                        s.sku,
+                        t_search.name AS tag_name,
+                        c_search.name AS category_name
+                 FROM shop_product p
+                 ' . $search['joins'] . '
+                 ' . $conditions['joins'] . ' ' . $conditions['sql'] . '
+                 ' . ($conditions['sql'] === '' ? 'WHERE ' : 'AND ') . $search['sql'] . '
+                 ORDER BY p.id DESC
+                 LIMIT ' . (int) $sql_limit,
+                array_merge($conditions['params'], $search['params'])
+            )
+            ->fetchAll();
+
+        return $this->extractSuggestions($rows, $query, $limit);
+    }
+
+    public function getStocks()
+    {
+        return $this->product_model
+            ->query(
+                'SELECT id, name
+                 FROM shop_stock
+                 ORDER BY sort ASC, id ASC'
+            )
+            ->fetchAll();
+    }
+
+    private function attachStockDetails(array $products)
+    {
+        if (!$products) {
+            return $products;
+        }
+
+        $stocks = $this->getStocks();
+        foreach ($products as &$product) {
+            $product['stock_details'] = array();
+        }
+        unset($product);
+
+        if (!$stocks) {
+            return $products;
+        }
+
+        $product_ids = array();
+        foreach ($products as $product) {
+            if (isset($product['id']) && (int) $product['id'] > 0) {
+                $product_ids[] = (int) $product['id'];
+            }
+        }
+        if (!$product_ids) {
+            return $products;
+        }
+
+        $placeholders = implode(',', array_fill(0, count($product_ids), '?'));
+        $rows = $this->product_model
+            ->query(
+                'SELECT sku.product_id, ps.stock_id, SUM(ps.count) AS count
+                 FROM shop_product_skus sku
+                 LEFT JOIN shop_product_stocks ps ON ps.sku_id = sku.id
+                 WHERE sku.product_id IN (' . $placeholders . ')
+                 GROUP BY sku.product_id, ps.stock_id',
+                $product_ids
+            )
+            ->fetchAll();
+
+        $stock_counts = array();
+        foreach ($rows as $row) {
+            $product_id = isset($row['product_id']) ? (int) $row['product_id'] : 0;
+            $stock_id = isset($row['stock_id']) ? (int) $row['stock_id'] : 0;
+            if ($product_id <= 0 || $stock_id <= 0) {
+                continue;
+            }
+            $stock_counts[$product_id][$stock_id] = array_key_exists('count', $row) && $row['count'] === null
+                ? null
+                : (float) $row['count'];
+        }
+
+        foreach ($products as &$product) {
+            $product_id = isset($product['id']) ? (int) $product['id'] : 0;
+            foreach ($stocks as $stock) {
+                $stock_id = isset($stock['id']) ? (int) $stock['id'] : 0;
+                if ($stock_id <= 0) {
+                    continue;
+                }
+                $count = isset($stock_counts[$product_id]) && array_key_exists($stock_id, $stock_counts[$product_id])
+                    ? $stock_counts[$product_id][$stock_id]
+                    : 0.0;
+                $product['stock_details'][] = array(
+                    'stock_id' => $stock_id,
+                    'stock_name' => isset($stock['name']) ? (string) $stock['name'] : '',
+                    'count' => $count,
+                    'count_view' => $this->formatStockCount($count),
+                );
+            }
+        }
+        unset($product);
+
+        return $products;
+    }
+
+    private function formatStockCount($value)
+    {
+        if ($value === null) {
+            return '∞';
+        }
+
+        return rtrim(rtrim(number_format((float) $value, 4, '.', ''), '0'), '.');
+    }
+
+    public function getEditableFeatures()
+    {
+        return $this->product_model
+            ->query(
+                'SELECT id, name, type, selectable, multiple
+                 FROM shop_feature
+                 WHERE parent_id IS NULL OR parent_id = 0
                  ORDER BY name ASC'
             )
             ->fetchAll();
@@ -168,11 +334,10 @@ class shopMasseditorPluginProductSelectionService
         $joins = '';
 
         if ($filters['query'] !== '') {
-            $joins .= '
-                LEFT JOIN shop_product_skus s ON s.product_id = p.id
-            ';
-            $where[] = '(p.name LIKE s:query OR s.sku LIKE s:query)';
-            $params['query'] = '%' . $filters['query'] . '%';
+            $search = $this->buildSearchCondition($filters['query']);
+            $joins .= $search['joins'];
+            $where[] = $search['sql'];
+            $params = array_merge($params, $search['params']);
         }
 
         if ($filters['status'] === 'published') {
@@ -213,5 +378,96 @@ class shopMasseditorPluginProductSelectionService
             'sql' => $where ? 'WHERE ' . implode(' AND ', $where) : '',
             'params' => $params,
         );
+    }
+
+    private function buildSearchCondition($query)
+    {
+        return array(
+            'joins' => '
+                LEFT JOIN shop_product_skus s ON s.product_id = p.id
+                LEFT JOIN shop_product_tags pt_search ON pt_search.product_id = p.id
+                LEFT JOIN shop_tag t_search ON t_search.id = pt_search.tag_id
+                LEFT JOIN shop_category_products cp_search ON cp_search.product_id = p.id
+                LEFT JOIN shop_category c_search ON c_search.id = cp_search.category_id
+            ',
+            'sql' => '(p.name LIKE s:query
+                OR p.url LIKE s:query
+                OR p.summary LIKE s:query
+                OR p.description LIKE s:query
+                OR s.sku LIKE s:query
+                OR t_search.name LIKE s:query
+                OR c_search.name LIKE s:query)',
+            'params' => array(
+                'query' => '%' . trim((string) $query) . '%',
+            ),
+        );
+    }
+
+    private function extractSuggestions(array $rows, $query, $limit)
+    {
+        $suggestions = array();
+        $seen = array();
+        $fields = array('sku', 'name', 'url', 'category_name', 'tag_name', 'summary', 'description');
+
+        foreach ($rows as $row) {
+            foreach ($fields as $field) {
+                if (!isset($row[$field])) {
+                    continue;
+                }
+                $value = $this->normalizeSuggestionValue($row[$field]);
+                if ($value === '' || !$this->containsText($value, $query)) {
+                    continue;
+                }
+
+                $key = $this->lowerText($value);
+                if (isset($seen[$key])) {
+                    continue;
+                }
+
+                $seen[$key] = true;
+                $suggestions[] = $value;
+                if (count($suggestions) >= $limit) {
+                    return $suggestions;
+                }
+            }
+        }
+
+        return $suggestions;
+    }
+
+    private function containsText($value, $query)
+    {
+        if (function_exists('mb_strtolower') && function_exists('mb_strpos')) {
+            return mb_strpos(
+                mb_strtolower((string) $value, 'UTF-8'),
+                mb_strtolower((string) $query, 'UTF-8'),
+                0,
+                'UTF-8'
+            ) !== false;
+        }
+
+        return stripos((string) $value, (string) $query) !== false;
+    }
+
+    private function lowerText($value)
+    {
+        if (function_exists('mb_strtolower')) {
+            return mb_strtolower((string) $value, 'UTF-8');
+        }
+
+        return strtolower((string) $value);
+    }
+
+    private function normalizeSuggestionValue($value)
+    {
+        $value = trim(preg_replace('/\s+/u', ' ', strip_tags((string) $value)));
+        if (function_exists('mb_strlen') && mb_strlen($value, 'UTF-8') > 120) {
+            return mb_substr($value, 0, 117, 'UTF-8') . '...';
+        }
+        if (!function_exists('mb_strlen') && strlen($value) > 120) {
+            return substr($value, 0, 117) . '...';
+        }
+
+        return $value;
     }
 }

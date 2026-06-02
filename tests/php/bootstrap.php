@@ -288,6 +288,11 @@ class waViewAction
     }
 }
 
+class waJsonController
+{
+    public $response = array();
+}
+
 class waLog
 {
     public static $logs = array();
@@ -484,6 +489,21 @@ class shopProduct implements ArrayAccess
     }
 }
 
+class shopProductModel
+{
+    public static $corrected = array();
+
+    public static function reset()
+    {
+        self::$corrected = array();
+    }
+
+    public function correct($product_id)
+    {
+        self::$corrected[] = (int) $product_id;
+    }
+}
+
 class shopProductTagsModel
 {
     public static $calls = array();
@@ -540,4 +560,5 @@ require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/classes/shopM
 require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginLogService.class.php';
 require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginMassOperationService.class.php';
 require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/actions/shopMasseditorPluginBackend.action.php';
+require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/actions/shopMasseditorPluginBackendSearchSuggestions.controller.php';
 require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/shopMasseditor.plugin.php';

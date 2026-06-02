@@ -58,6 +58,16 @@ class Element {
     this.selectedIndex = 0;
   }
 
+  focus() {
+    let root = this;
+    while (root.parentNode) {
+      root = root.parentNode;
+    }
+    if (root && Object.prototype.hasOwnProperty.call(root, 'activeElement')) {
+      root.activeElement = this;
+    }
+  }
+
   appendChild(child) {
     child.parentNode = this;
     this.children.push(child);
@@ -183,6 +193,12 @@ function matchesSelector(node, selector) {
   if (selector === '[data-compare-mode-field]') {
     return node.getAttribute('data-compare-mode-field') !== null;
   }
+  if (selector === '[data-stock-value-field]') {
+    return node.getAttribute('data-stock-value-field') !== null;
+  }
+  if (selector === '[data-feature-value-field]') {
+    return node.getAttribute('data-feature-value-field') !== null;
+  }
   if (selector === '[data-toast-source="true"]') {
     return node.getAttribute('data-toast-source') === 'true';
   }
@@ -232,9 +248,40 @@ function buildAppDom() {
   const document = new Document();
   const form = createNode(document, 'form', { 'data-role': 'workspace-form', 'data-selection-reset': '0' });
   document.body.appendChild(form);
+  const filterForm = createNode(document, 'form', { id: 'masseditor-filter-form' });
+  document.body.appendChild(filterForm);
 
   const pluginInput = createNode(document, 'input', { name: 'plugin', value: 'masseditor' });
   form.appendChild(pluginInput);
+  filterForm.appendChild(createNode(document, 'input', { name: 'plugin', value: 'masseditor' }));
+  const queryInput = createNode(document, 'input', {
+    id: 'masseditor-query',
+    name: 'query',
+    value: '',
+    'data-role': 'product-search-input',
+    'data-suggestions-url': '?plugin=masseditor&action=searchSuggestions',
+  });
+  filterForm.appendChild(queryInput);
+  const clearSearch = createNode(document, 'button', {
+    'data-role': 'product-search-clear',
+    type: 'button',
+  });
+  clearSearch.hidden = true;
+  filterForm.appendChild(clearSearch);
+  const suggestions = createNode(document, 'div', { 'data-role': 'product-search-suggestions' });
+  filterForm.appendChild(suggestions);
+  filterForm.appendChild(createSelect(document, 'masseditor-status', null, [
+    { value: 'all', text: 'All' },
+    { value: 'published', text: 'Published' },
+  ], 'published'));
+  filterForm.appendChild(createSelect(document, 'masseditor-availability-filter', null, [
+    { value: 'all', text: 'All' },
+    { value: 'available', text: 'Available' },
+  ], 'available'));
+  filterForm.appendChild(createSelect(document, 'masseditor-category', null, [
+    { value: '0', text: 'All categories' },
+    { value: '9', text: 'Dresses' },
+  ], '9'));
 
   const toastStack = createNode(document, 'div', { 'data-role': 'toast-stack' });
   document.body.appendChild(toastStack);
@@ -253,7 +300,7 @@ function buildAppDom() {
   const operationTitle = createNode(document, 'div', { 'data-role': 'operation-title' });
   form.appendChild(operationTitle);
 
-  ['price', 'tags', 'url'].forEach((operation) => {
+  ['price', 'tags', 'url', 'stock', 'features', 'categories'].forEach((operation) => {
     const button = createNode(document, 'button', { 'data-role': 'operation-trigger', 'data-operation': operation });
     form.appendChild(button);
   });
@@ -261,9 +308,15 @@ function buildAppDom() {
   const priceFields = createNode(document, 'div', { 'data-operation-fields': 'price,compare_price' });
   const tagsFields = createNode(document, 'div', { 'data-operation-fields': 'tags' });
   const urlFields = createNode(document, 'div', { 'data-operation-fields': 'url' });
+  const stockFields = createNode(document, 'div', { 'data-operation-fields': 'stock' });
+  const featureFields = createNode(document, 'div', { 'data-operation-fields': 'features' });
+  const categoryFields = createNode(document, 'div', { 'data-operation-fields': 'categories' });
   form.appendChild(priceFields);
   form.appendChild(tagsFields);
   form.appendChild(urlFields);
+  form.appendChild(stockFields);
+  form.appendChild(featureFields);
+  form.appendChild(categoryFields);
 
   const numericValue = createNode(document, 'input', { id: 'masseditor-numeric-value', value: '' });
   priceFields.appendChild(numericValue);
@@ -289,9 +342,53 @@ function buildAppDom() {
   const urlValue = createNode(document, 'input', { id: 'masseditor-url-value', value: '' });
   urlFields.appendChild(urlValue);
 
+  const stockId = createSelect(document, 'masseditor-stock-id', null, [
+    { value: '0', text: 'Select stock' },
+    { value: '3', text: 'Main' },
+  ], '3');
+  stockFields.appendChild(stockId);
+  const stockMode = createSelect(document, 'masseditor-stock-mode', null, [
+    { value: 'set', text: 'Set' },
+    { value: 'infinite', text: 'Infinite' },
+  ], 'set');
+  stockFields.appendChild(stockMode);
+  const stockValueWrap = createNode(document, 'div', { 'data-stock-value-field': '1' });
+  const stockValue = createNode(document, 'input', { id: 'masseditor-stock-value', value: '' });
+  stockValueWrap.appendChild(stockValue);
+  stockFields.appendChild(stockValueWrap);
+
+  const featureId = createSelect(document, 'masseditor-feature-id', null, [
+    { value: '0', text: 'Select feature' },
+    { value: '7', text: 'Material' },
+  ], '7');
+  featureFields.appendChild(featureId);
+  const featureMode = createSelect(document, 'masseditor-feature-mode', null, [
+    { value: 'set', text: 'Set' },
+    { value: 'clear', text: 'Clear' },
+  ], 'set');
+  featureFields.appendChild(featureMode);
+  const featureValueWrap = createNode(document, 'div', { 'data-feature-value-field': '1' });
+  const featureValue = createNode(document, 'input', { id: 'masseditor-feature-value', value: '' });
+  featureValueWrap.appendChild(featureValue);
+  featureFields.appendChild(featureValueWrap);
+
+  const categoryId = createSelect(document, 'masseditor-operation-category-id', null, [
+    { value: '0', text: 'Select category' },
+    { value: '5', text: 'Sale' },
+  ], '5');
+  categoryFields.appendChild(categoryId);
+  const categoriesMode = createSelect(document, 'masseditor-categories-mode', null, [
+    { value: 'add', text: 'Add' },
+    { value: 'replace_main', text: 'Replace main' },
+  ], 'add');
+  categoryFields.appendChild(categoriesMode);
+
   const modeSelect = createSelect(document, 'masseditor-mode', null, [
     { value: 'set', text: 'Set' },
-    { value: 'percent', text: 'Percent' },
+    { value: 'add', text: 'Add' },
+    { value: 'subtract', text: 'Subtract' },
+    { value: 'increase_percent', text: 'Increase percent' },
+    { value: 'decrease_percent', text: 'Decrease percent' },
   ], 'set');
   form.appendChild(modeSelect);
   const tagsMode = createSelect(document, 'masseditor-tags-mode', null, [
@@ -300,8 +397,12 @@ function buildAppDom() {
   ], 'add');
   form.appendChild(tagsMode);
 
+  const selectionMode = createNode(document, 'input', { 'data-role': 'selection-mode', value: 'ids' });
+  form.appendChild(selectionMode);
   const selectAll = createNode(document, 'input', { 'data-role': 'select-all', type: 'checkbox' });
   document.body.appendChild(selectAll);
+  const selectFilter = createNode(document, 'button', { 'data-role': 'select-filter', 'data-total': '8' });
+  document.body.appendChild(selectFilter);
   const selectedCount = createNode(document, 'span', { 'data-role': 'selected-count' });
   document.body.appendChild(selectedCount);
   const selectionCounterPill = createNode(document, 'span', { 'data-role': 'selection-counter-pill', 'data-total': '2' });
@@ -342,7 +443,7 @@ function buildAppDom() {
     table.appendChild(row);
   });
 
-  return { document, form, modal, confirmApply, toastStack };
+  return { document, form, filterForm, modal, confirmApply, toastStack };
 }
 
 function createLocalStorage(seed = {}) {

@@ -36,6 +36,53 @@ class BackendActionTest extends TestCase
         $action->execute();
     }
 
+    public function testSearchSuggestionsControllerRejectsNonAdmin(): void
+    {
+        $GLOBALS['fake_wa_system']->user = new FakeUser(9, false);
+        $controller = new shopMasseditorPluginBackendSearchSuggestionsController();
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Недостаточно прав');
+
+        $controller->execute();
+    }
+
+    public function testSearchSuggestionsControllerNormalizesInputAndReturnsSuggestions(): void
+    {
+        waRequest::$get = array(
+            'query' => '  sku  ',
+            'status' => 'published',
+            'availability' => 'available',
+            'category_id' => 4,
+        );
+        $selection_service = new ControllerFakeProductSelectionService();
+        $selection_service->suggestions = array('SKU-1', 'Summer dress');
+        $controller = new shopMasseditorPluginBackendSearchSuggestionsController($selection_service);
+
+        $controller->execute();
+
+        $this->assertSame(array('suggestions' => array('SKU-1', 'Summer dress')), $controller->response);
+        $this->assertSame('sku', $selection_service->lastQuery);
+        $this->assertSame(array(
+            'status' => 'published',
+            'availability' => 'available',
+            'category_id' => 4,
+        ), $selection_service->lastFilters);
+        $this->assertSame(10, $selection_service->lastLimit);
+    }
+
+    public function testSearchSuggestionsControllerSkipsShortInput(): void
+    {
+        waRequest::$get = array('query' => 's');
+        $selection_service = new ControllerFakeProductSelectionService();
+        $controller = new shopMasseditorPluginBackendSearchSuggestionsController($selection_service);
+
+        $controller->execute();
+
+        $this->assertSame(array('suggestions' => array()), $controller->response);
+        $this->assertNull($selection_service->lastQuery);
+    }
+
     public function testUnexpectedPostExceptionIsLoggedAndHiddenFromUi(): void
     {
         $GLOBALS['fake_wa_system']->plugins['masseditor'] = new ThrowingSettingsShopMasseditorPlugin(array(
@@ -89,8 +136,40 @@ class BackendActionTest extends TestCase
         $action = new shopMasseditorPluginBackendAction();
 
         $this->assertSame('10.5', $this->invokePrivate($action, 'formatDecimalForView', array('10.5000')));
+        $this->assertSame('10.50', $this->invokePrivate($action, 'formatDecimalForView', array('10.5', '2')));
         $this->assertSame('-0', $this->invokePrivate($action, 'formatDecimalForView', array('-0')));
         $this->assertSame('26.04.2026 14:30', $this->invokePrivate($action, 'formatDateForView', array('2026-04-26 14:30:00', 'd.m.Y H:i')));
+    }
+
+    public function testDecorateProductsFormatsStockForTableView(): void
+    {
+        $action = new shopMasseditorPluginBackendAction();
+
+        $products = $this->invokePrivate($action, 'decorateProducts', array(array(
+            array(
+                'count' => '12.000',
+                'price' => '10.000',
+                'compare_price' => '',
+                'description' => '',
+                'edit_datetime' => '2026-04-26 14:30:00',
+                'stock_details' => array(
+                    array('stock_id' => 3, 'stock_name' => 'Main', 'count' => '5.000'),
+                    array('stock_id' => 4, 'stock_name' => 'Reserve', 'count' => null),
+                ),
+            ),
+            array(
+                'count' => '1.250',
+                'price' => '10.000',
+                'compare_price' => '',
+                'description' => '',
+                'edit_datetime' => '2026-04-26 14:30:00',
+            ),
+        )));
+
+        $this->assertSame('12', $products[0]['count_view']);
+        $this->assertSame('1.25', $products[1]['count_view']);
+        $this->assertSame('5', $products[0]['stock_details'][0]['count_view']);
+        $this->assertSame('∞', $products[0]['stock_details'][1]['count_view']);
     }
 
     public function testSelectedIdsAndOperationFormMerge(): void
@@ -102,6 +181,10 @@ class BackendActionTest extends TestCase
             array('operation' => 'price', 'mode' => 'set'),
             array('operation' => 'tags', 'other' => 'ignored'),
         )));
+        $this->assertSame('Остатки · 2 товара · Операция выполнена.', $this->invokePrivate($action, 'formatResultMessage', array(array(
+            'summary' => 'Остатки · 2 товара',
+            'message' => 'Операция выполнена.',
+        ))));
     }
 
     public function testDecorateLogsSettingsAndOperationsLibrary(): void
@@ -200,7 +283,9 @@ class BackendActionTest extends TestCase
         $library = $this->invokePrivate($action, 'getOperationsLibrary', array(0));
         $this->assertSame('Prices and SKU', $library[0]['title']);
         $this->assertSame('Change price', $library[0]['items'][0]['label']);
-        $this->assertSame('SKU generator', $this->invokePrivate($action, 'getOperationsLibrary', array(1))[0]['items'][2]['label']);
+$soon_library = $this->invokePrivate($action, 'getOperationsLibrary', array(1));
+        $this->assertSame('Stock', $soon_library[0]['items'][2]['label']);
+        $this->assertSame('SKU generator', $soon_library[0]['items'][3]['label']);
     }
 
     public function testManualLanguageSettingOverridesWebasystLocaleWithoutAutoOption(): void
@@ -238,6 +323,8 @@ class BackendActionTest extends TestCase
 
     public function testTemplateUsesLocalizedCompareAndPrimaryFilterButton(): void
     {
+        $action = new shopMasseditorPluginBackendAction();
+        $action->execute();
         $template = file_get_contents(__DIR__ . '/../../wa-apps/shop/plugins/masseditor/templates/actions/backend/Backend.html');
 
         $this->assertStringContainsString('<h1>{$plugin_name|escape}</h1>', $template);
@@ -245,7 +332,39 @@ class BackendActionTest extends TestCase
         $this->assertStringContainsString('<th>{$texts.compare_price|escape}</th>', $template);
         $this->assertStringContainsString('class="button masseditor-button masseditor-button_primary" type="submit" form="masseditor-filter-form"', $template);
         $this->assertStringContainsString('name="interface_language"', $template);
+        $this->assertStringContainsString('{if $product.count === null}∞{else}{$product.count_view|escape}{/if}', $template);
         $this->assertStringNotContainsString('value="auto"{if $settings.interface_language', $template);
+        $this->assertSame('Установить значение', $action->view->assigned['texts']['set_value']);
+        $this->assertSame('Добавить значение', $action->view->assigned['texts']['add_value']);
+        $this->assertSame('Отнять значение', $action->view->assigned['texts']['subtract_value']);
+        $this->assertSame('Увеличить на процент', $action->view->assigned['texts']['increase_percent']);
+        $this->assertSame('Убавить на процент', $action->view->assigned['texts']['decrease_percent']);
+        $this->assertStringContainsString('<option value="set"{if $operation_form.mode === \'set\'} selected{/if}>{$texts.set_value|escape}</option>', $template);
+        $this->assertStringContainsString('<option value="add"{if $operation_form.mode === \'add\'} selected{/if}>{$texts.add_value|escape}</option>', $template);
+        $this->assertStringContainsString('<option value="subtract"{if $operation_form.mode === \'subtract\'} selected{/if}>{$texts.subtract_value|escape}</option>', $template);
+        $this->assertStringContainsString('<option value="increase_percent"{if $operation_form.mode === \'increase_percent\'} selected{/if}>{$texts.increase_percent|escape}</option>', $template);
+        $this->assertStringContainsString('<option value="decrease_percent"{if $operation_form.mode === \'decrease_percent\'} selected{/if}>{$texts.decrease_percent|escape}</option>', $template);
+    }
+}
+
+class ControllerFakeProductSelectionService extends shopMasseditorPluginProductSelectionService
+{
+    public $suggestions = array();
+    public $lastFilters = null;
+    public $lastQuery = null;
+    public $lastLimit = null;
+
+    public function __construct()
+    {
+    }
+
+    public function getSearchSuggestions(array $raw_filters, $query, $limit = 10)
+    {
+        $this->lastFilters = $raw_filters;
+        $this->lastQuery = $query;
+        $this->lastLimit = $limit;
+
+        return $this->suggestions;
     }
 }
 

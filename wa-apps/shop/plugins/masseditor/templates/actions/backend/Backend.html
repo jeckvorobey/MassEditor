@@ -53,16 +53,17 @@
             {$wa->csrf()}
             <input type="hidden" name="view" value="products">
             <input type="hidden" name="operation" value="{$operation_form.operation|escape}" data-role="operation-input">
+            <input type="hidden" name="selection_mode" value="{$operation_form.selection_mode|escape}" data-role="selection-mode">
+            <input type="hidden" name="filters[query]" value="{$filters.query|escape}">
+            <input type="hidden" name="filters[status]" value="{$filters.status|escape}">
+            <input type="hidden" name="filters[availability]" value="{$filters.availability|escape}">
+            <input type="hidden" name="filters[category_id]" value="{$filters.category_id|escape}">
             <input type="hidden" name="confirm_apply" value="0" data-role="confirm-apply">
 
             <section class="masseditor-workspace">
                 <aside class="masseditor-panel masseditor-panel_filters">
                     <div class="masseditor-panel__head"><h2>{$texts.filters|escape}</h2></div>
                     <div class="masseditor-field-stack">
-                        <div class="masseditor-field">
-                            <label for="masseditor-query">{$texts.search|escape}</label>
-                            <input id="masseditor-query" type="text" name="query" value="{$filters.query|escape}" form="masseditor-filter-form" placeholder="{$texts.search_placeholder|escape}">
-                        </div>
                         <div class="masseditor-field">
                             <label for="masseditor-status">{$texts.status|escape}</label>
                             <select id="masseditor-status" name="status" form="masseditor-filter-form">
@@ -126,7 +127,10 @@
                             <label for="masseditor-mode">{$texts.mode|escape}</label>
                             <select id="masseditor-mode" name="mode">
                                 <option value="set"{if $operation_form.mode === 'set'} selected{/if}>{$texts.set_value|escape}</option>
-                                <option value="percent"{if $operation_form.mode === 'percent'} selected{/if}>{$texts.increase_percent|escape}</option>
+                                <option value="add"{if $operation_form.mode === 'add'} selected{/if}>{$texts.add_value|escape}</option>
+                                <option value="subtract"{if $operation_form.mode === 'subtract'} selected{/if}>{$texts.subtract_value|escape}</option>
+                                <option value="increase_percent"{if $operation_form.mode === 'increase_percent'} selected{/if}>{$texts.increase_percent|escape}</option>
+                                <option value="decrease_percent"{if $operation_form.mode === 'decrease_percent'} selected{/if}>{$texts.decrease_percent|escape}</option>
                             </select>
                         </div>
                         <div class="masseditor-field" data-operation-fields="price,compare_price">
@@ -137,9 +141,11 @@
                             <label for="masseditor-round-step">{$texts.rounding|escape}</label>
                             <select id="masseditor-round-step" name="round_step">
                                 <option value=""{if $operation_form.round_step === ''} selected{/if}>{$texts.no_rounding|escape}</option>
-                                <option value="1"{if $operation_form.round_step == '1'} selected{/if}>{$texts.round_to_1|escape}</option>
-                                <option value="10"{if $operation_form.round_step == '10'} selected{/if}>{$texts.round_to_10|escape}</option>
-                                <option value="100"{if $operation_form.round_step == '100'} selected{/if}>{$texts.round_to_100|escape}</option>
+                                <option value="0"{if $operation_form.round_step === '0'} selected{/if}>{$texts.round_digits_0|escape}</option>
+                                <option value="1"{if $operation_form.round_step === '1'} selected{/if}>{$texts.round_digits_1|escape}</option>
+                                <option value="2"{if $operation_form.round_step === '2'} selected{/if}>{$texts.round_digits_2|escape}</option>
+                                <option value="3"{if $operation_form.round_step === '3'} selected{/if}>{$texts.round_digits_3|escape}</option>
+                                <option value="4"{if $operation_form.round_step === '4'} selected{/if}>{$texts.round_digits_4|escape}</option>
                             </select>
                         </div>
                         <div class="masseditor-field" data-operation-fields="price,compare_price">
@@ -213,6 +219,66 @@
                             <label for="masseditor-url-value">{$texts.url_template|escape}</label>
                             <textarea id="masseditor-url-value" name="url_value" rows="3" placeholder="&#123;name&#125;, &#123;id&#125;, &#123;current_url&#125;">{$operation_form.url_value|escape}</textarea>
                         </div>
+
+                        <div class="masseditor-field" data-operation-fields="stock">
+                            <label for="masseditor-stock-id">{$texts.stock_warehouse|escape}</label>
+                            <select id="masseditor-stock-id" name="stock_id">
+                                <option value="0">{$texts.select_stock|escape}</option>
+                                {foreach $stocks as $stock}
+                                    <option value="{$stock.id|escape}"{if $operation_form.stock_id == $stock.id} selected{/if}>{$stock.name|escape}</option>
+                                {/foreach}
+                            </select>
+                        </div>
+                        <div class="masseditor-field" data-operation-fields="stock">
+                            <label for="masseditor-stock-mode">{$texts.stock_mode|escape}</label>
+                            <select id="masseditor-stock-mode" name="stock_mode">
+                                <option value="set"{if $operation_form.stock_mode === 'set'} selected{/if}>{$texts.stock_set|escape}</option>
+                                <option value="increase"{if $operation_form.stock_mode === 'increase'} selected{/if}>{$texts.stock_increase|escape}</option>
+                                <option value="decrease"{if $operation_form.stock_mode === 'decrease'} selected{/if}>{$texts.stock_decrease|escape}</option>
+                                <option value="infinite"{if $operation_form.stock_mode === 'infinite'} selected{/if}>{$texts.stock_infinite|escape}</option>
+                            </select>
+                        </div>
+                        <div class="masseditor-field" data-operation-fields="stock" data-stock-value-field>
+                            <label for="masseditor-stock-value">{$texts.stock_value|escape}</label>
+                            <input id="masseditor-stock-value" type="text" name="stock_value" value="{$operation_form.stock_value|escape}" inputmode="decimal">
+                        </div>
+                        <div class="masseditor-field" data-operation-fields="features">
+                            <label for="masseditor-feature-id">{$texts.feature|escape}</label>
+                            <select id="masseditor-feature-id" name="feature_id">
+                                <option value="0">{$texts.select_feature|escape}</option>
+                                {foreach $features as $feature}
+                                    <option value="{$feature.id|escape}"{if $operation_form.feature_id == $feature.id} selected{/if}>{$feature.name|escape}</option>
+                                {/foreach}
+                            </select>
+                        </div>
+                        <div class="masseditor-field" data-operation-fields="features">
+                            <label for="masseditor-feature-mode">{$texts.feature_mode|escape}</label>
+                            <select id="masseditor-feature-mode" name="feature_mode">
+                                <option value="set"{if $operation_form.feature_mode === 'set'} selected{/if}>{$texts.set_value|escape}</option>
+                                <option value="clear"{if $operation_form.feature_mode === 'clear'} selected{/if}>{$texts.clear|escape}</option>
+                            </select>
+                        </div>
+                        <div class="masseditor-field" data-operation-fields="features" data-feature-value-field>
+                            <label for="masseditor-feature-value">{$texts.feature_value|escape}</label>
+                            <input id="masseditor-feature-value" type="text" name="feature_value" value="{$operation_form.feature_value|escape}">
+                        </div>
+                        <div class="masseditor-field" data-operation-fields="categories">
+                            <label for="masseditor-operation-category-id">{$texts.category|escape}</label>
+                            <select id="masseditor-operation-category-id" name="category_id">
+                                <option value="0">{$texts.select_category|escape}</option>
+                                {foreach $categories as $category}
+                                    <option value="{$category.id|escape}"{if $operation_form.category_id == $category.id} selected{/if}>{$category.name|escape}</option>
+                                {/foreach}
+                            </select>
+                        </div>
+                        <div class="masseditor-field" data-operation-fields="categories">
+                            <label for="masseditor-categories-mode">{$texts.category_mode|escape}</label>
+                            <select id="masseditor-categories-mode" name="categories_mode">
+                                <option value="add"{if $operation_form.categories_mode === 'add'} selected{/if}>{$texts.add_to_category|escape}</option>
+                                <option value="remove"{if $operation_form.categories_mode === 'remove'} selected{/if}>{$texts.remove_from_category|escape}</option>
+                                <option value="replace_main"{if $operation_form.categories_mode === 'replace_main'} selected{/if}>{$texts.replace_main_category|escape}</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="masseditor-ready">
@@ -228,8 +294,21 @@
 
             <section class="masseditor-table-card">
                 <div class="masseditor-table-card__head">
-                    <h2>{$texts.nav_products|escape}</h2>
-                    <span class="masseditor-counter" data-role="selection-counter-pill" data-total="{$pagination.total|escape}">0 {$texts.selected_counter_separator|escape} {$pagination.total|escape}</span>
+                    <div class="masseditor-table-card__heading">
+                        <h2>{$texts.nav_products|escape}</h2>
+                        <span class="masseditor-counter" data-role="selection-counter-pill" data-total="{$pagination.total|escape}">{$texts.stats_selected|escape} 0 {$texts.selected_counter_separator|escape} {$pagination.total|escape}</span>
+                    </div>
+                    <div class="masseditor-searchbox masseditor-table-search">
+                        <span class="masseditor-searchbox__icon" aria-hidden="true"></span>
+                        <input id="masseditor-query" type="text" name="query" value="{$filters.query|escape}" form="masseditor-filter-form" placeholder="{$texts.search_placeholder|escape}" autocomplete="off" data-role="product-search-input" data-suggestions-url="{$search_suggestions_url|escape}" aria-label="{$texts.search|escape}" aria-autocomplete="list" aria-expanded="false" aria-controls="masseditor-search-suggestions">
+                        <button class="masseditor-searchbox__clear" type="button" data-role="product-search-clear" aria-label="{$texts.clear|escape}" hidden></button>
+                        <div id="masseditor-search-suggestions" class="masseditor-searchbox__suggestions" data-role="product-search-suggestions" role="listbox" hidden></div>
+                    </div>
+                    <div class="masseditor-panel__actions masseditor-table-card__actions">
+                        {if $can_select_filter}
+                            <button class="button masseditor-button masseditor-button_primary masseditor-button_compact" type="button" data-role="select-filter" data-total="{$pagination.total|escape}">{$texts.select_all_found|escape}</button>
+                        {/if}
+                    </div>
                 </div>
                 {if $products}
                     <div class="masseditor-table-wrap">
@@ -248,6 +327,7 @@
                                     <th>{$texts.price|escape}</th>
                                     <th>{$texts.compare_price|escape}</th>
                                     <th>{$texts.stock|escape}</th>
+                                    <th>{$texts.stock_warehouses|escape}</th>
                                     <th>{$texts.changed|escape}</th>
                                 </tr>
                             </thead>
@@ -269,7 +349,8 @@
                                                 <div class="masseditor-product-mobile-details__row"><span>{$texts.availability|escape}</span><strong>{if $product.availability == 1}{$texts.available|escape}{else}{$texts.unavailable|escape}{/if}</strong></div>
                                                 <div class="masseditor-product-mobile-details__row"><span>{$texts.price|escape}</span><strong>{$product.price_view|escape}</strong></div>
                                                 <div class="masseditor-product-mobile-details__row"><span>{$texts.compare_price|escape}</span><strong>{if $product.compare_price_view !== ''}{$product.compare_price_view|escape}{else}-{/if}</strong></div>
-                                                <div class="masseditor-product-mobile-details__row"><span>{$texts.stock|escape}</span><strong>{if $product.count === null}∞{else}{$product.count|escape}{/if}</strong></div>
+                                                <div class="masseditor-product-mobile-details__row"><span>{$texts.stock|escape}</span><strong>{if $product.count === null}∞{else}{$product.count_view|escape}{/if}</strong></div>
+                                                <div class="masseditor-product-mobile-details__row"><span>{$texts.stock_warehouses|escape}</span><strong>{if !empty($product.stock_details)}<span class="masseditor-stock-details">{foreach $product.stock_details as $stock}<span class="masseditor-stock-details__item">{$stock.stock_name|escape}: {$stock.count_view|escape}</span>{/foreach}</span>{else}-{/if}</strong></div>
                                                 <div class="masseditor-product-mobile-details__row"><span>{$texts.changed|escape}</span><strong>{$product.edit_datetime_view|escape}</strong></div>
                                             </div>
                                         </td>
@@ -283,7 +364,8 @@
                                         <td>{if $product.availability == 1}<span class="masseditor-badge masseditor-badge_success">{$texts.available|escape}</span>{else}<span class="masseditor-badge masseditor-badge_warning">{$texts.unavailable|escape}</span>{/if}</td>
                                         <td>{$product.price_view|escape}</td>
                                         <td>{if $product.compare_price_view !== ''}{$product.compare_price_view|escape}{else}-{/if}</td>
-                                        <td>{if $product.count === null}∞{else}{$product.count|escape}{/if}</td>
+                                        <td>{if $product.count === null}∞{else}{$product.count_view|escape}{/if}</td>
+                                        <td>{if !empty($product.stock_details)}<span class="masseditor-stock-details">{foreach $product.stock_details as $stock}<span class="masseditor-stock-details__item">{$stock.stock_name|escape}: {$stock.count_view|escape}</span>{/foreach}</span>{else}-{/if}</td>
                                         <td>{$product.edit_datetime_view|escape}</td>
                                     </tr>
                                 {/foreach}

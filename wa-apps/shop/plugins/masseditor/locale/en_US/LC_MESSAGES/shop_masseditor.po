@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: shop_masseditor 1.0.0\n"
+"Project-Id-Version: shop_masseditor 1.1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: en_US\n"
@@ -54,8 +54,11 @@ msgstr "Filters"
 msgid "Search"
 msgstr "Search"
 
-msgid "Name or SKU"
-msgstr "Name or SKU"
+msgid "Name, SKU, URL, description, tag, or category"
+msgstr "Name, SKU, URL, description, tag, or category"
+
+msgid "Loading suggestions..."
+msgstr "Loading suggestions..."
 
 msgid "Status"
 msgstr "Status"
@@ -111,26 +114,41 @@ msgstr "Mode"
 msgid "Set value"
 msgstr "Set value"
 
+msgid "Add value"
+msgstr "Add value"
+
+msgid "Subtract value"
+msgstr "Subtract value"
+
 msgid "Increase by percent"
 msgstr "Increase by percent"
+
+msgid "Decrease by percent"
+msgstr "Decrease by percent"
 
 msgid "Value"
 msgstr "Value"
 
-msgid "Rounding"
-msgstr "Rounding"
+msgid "Decimal places"
+msgstr "Decimal places"
 
 msgid "No rounding"
 msgstr "No rounding"
 
-msgid "To 1"
-msgstr "To 1"
+msgid "0 digits after decimal point"
+msgstr "0 digits after decimal point"
 
-msgid "To 10"
-msgstr "To 10"
+msgid "1 digit after decimal point"
+msgstr "1 digit after decimal point"
 
-msgid "To 100"
-msgstr "To 100"
+msgid "2 digits after decimal point"
+msgstr "2 digits after decimal point"
+
+msgid "3 digits after decimal point"
+msgstr "3 digits after decimal point"
+
+msgid "4 digits after decimal point"
+msgstr "4 digits after decimal point"
 
 msgid "Direction"
 msgstr "Direction"
@@ -239,6 +257,9 @@ msgstr "Price"
 
 msgid "Stock"
 msgstr "Stock"
+
+msgid "Warehouses"
+msgstr "Warehouses"
 
 msgid "Changed"
 msgstr "Changed"
@@ -519,11 +540,20 @@ msgstr "The final value cannot be negative."
 msgid " · "
 msgstr " · "
 
-msgid "%s: change by %s%% for %d products"
-msgstr "%s: change by %s%% for %d products"
-
 msgid "%s: value %s for %d products"
 msgstr "%s: value %s for %d products"
+
+msgid "%s: add value %s for %d products"
+msgstr "%s: add value %s for %d products"
+
+msgid "%s: subtract value %s for %d products"
+msgstr "%s: subtract value %s for %d products"
+
+msgid "%s: increase by %s%% for %d products"
+msgstr "%s: increase by %s%% for %d products"
+
+msgid "%s: decrease by %s%% for %d products"
+msgstr "%s: decrease by %s%% for %d products"
 
 msgid "Visibility: %s for %d products"
 msgstr "Visibility: %s for %d products"
@@ -568,3 +598,111 @@ msgstr "Hidden products"
 
 msgid "Unpublished products"
 msgstr "Unpublished products"
+
+msgid "Stock by warehouse"
+msgstr "Stock"
+
+msgid "Basic feature editing"
+msgstr "Basic feature editing"
+
+msgid "Warehouse"
+msgstr "Warehouse"
+
+msgid "Select warehouse"
+msgstr "No warehouse"
+
+msgid "No warehouse"
+msgstr "No warehouse"
+
+msgid "Stock mode"
+msgstr "Stock mode"
+
+msgid "Set stock"
+msgstr "Set stock"
+
+msgid "Increase stock"
+msgstr "Increase stock"
+
+msgid "Decrease stock"
+msgstr "Decrease stock"
+
+msgid "Make infinite"
+msgstr "Make infinite"
+
+msgid "Stock value"
+msgstr "Stock value"
+
+msgid "Feature"
+msgstr "Feature"
+
+msgid "Select feature"
+msgstr "Select feature"
+
+msgid "Feature mode"
+msgstr "Feature mode"
+
+msgid "Feature value"
+msgstr "Feature value"
+
+msgid "Select category"
+msgstr "Select category"
+
+msgid "Category mode"
+msgstr "Category mode"
+
+msgid "Add to category"
+msgstr "Add to category"
+
+msgid "Remove from category"
+msgstr "Remove from category"
+
+msgid "Replace main category"
+msgstr "Replace main category"
+
+msgid "Select all found products"
+msgstr "Select all found products"
+
+msgid "All products by current filter"
+msgstr "All products by current filter"
+
+msgid "Select a warehouse."
+msgstr "Select a warehouse."
+
+msgid "Invalid stock mode."
+msgstr "Invalid stock mode."
+
+msgid "Enter a valid stock value."
+msgstr "Enter a valid stock value."
+
+msgid "Stock cannot become negative."
+msgstr "Stock cannot become negative."
+
+msgid "Select a feature."
+msgstr "Select a feature."
+
+msgid "Invalid feature mode."
+msgstr "Invalid feature mode."
+
+msgid "Enter a feature value."
+msgstr "Enter a feature value."
+
+msgid "Feature type is not supported in this version."
+msgstr "Feature type is not supported in this version."
+
+msgid "Select an existing feature value."
+msgstr "Select an existing feature value."
+
+msgid "Select a category."
+msgstr "Select a category."
+
+msgid "Invalid category mode."
+msgstr "Invalid category mode."
+
+msgid "Stock: %s, mode %s for %d products"
+msgstr "Stock: %s, mode %s for %d products"
+
+msgid "Feature: %s, mode %s for %d products"
+msgstr "Feature: %s, mode %s for %d products"
+
+msgid "Category: %s, mode %s for %d products"
+msgstr "Category: %s, mode %s for %d products"
