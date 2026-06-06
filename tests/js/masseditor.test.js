@@ -9,6 +9,8 @@ const scriptPath = path.join(__dirname, '../../wa-apps/shop/plugins/masseditor/j
 const scriptSource = fs.readFileSync(scriptPath, 'utf8');
 const templatePath = path.join(__dirname, '../../wa-apps/shop/plugins/masseditor/templates/actions/backend/Backend.html');
 const templateSource = fs.readFileSync(templatePath, 'utf8');
+const cssPath = path.join(__dirname, '../../wa-apps/shop/plugins/masseditor/css/masseditor.css');
+const cssSource = fs.readFileSync(cssPath, 'utf8');
 
 function boot(options = {}) {
   const app = buildAppDom();
@@ -255,6 +257,19 @@ test('stock operation allows regular count when warehouse is not selected', () =
   assert.equal(app.modal.hidden, false);
   assert.equal(app.document.querySelector('[data-role="modal-operation"]').textContent, 'Stock');
   assert.equal(app.document.querySelector('[data-role="modal-value"]').textContent, '12');
+});
+
+test('mobile product cards hide all desktop-only columns through changed date', () => {
+  const mobileBlock = cssSource.slice(cssSource.indexOf('@media (max-width: 1024px)'));
+
+  assert.match(
+    mobileBlock,
+    /\.masseditor-table_products td:nth-child\(13\)\s*\{\s*display:\s*none;\s*\}/
+  );
+  assert.doesNotMatch(
+    mobileBlock,
+    /\.masseditor-table_products td:nth-child\(7\)\s*\{[\s\S]*?grid-column:/
+  );
 });
 
 test('select all by filter switches payload mode without losing checkbox mode', () => {
