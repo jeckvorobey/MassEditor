@@ -689,6 +689,9 @@ msgstr "Invalid feature mode."
 msgid "Enter a feature value."
 msgstr "Enter a feature value."
 
+msgid "Enter a valid feature value."
+msgstr "Enter a valid feature value."
+
 msgid "Feature type is not supported in this version."
 msgstr "Feature type is not supported in this version."
 

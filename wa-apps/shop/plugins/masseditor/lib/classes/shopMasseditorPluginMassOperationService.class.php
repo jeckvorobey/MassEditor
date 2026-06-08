@@ -216,7 +216,7 @@ class shopMasseditorPluginMassOperationService
                 if ($request['feature_value'] === '') {
                     throw new InvalidArgumentException($this->t('validation_feature_value'));
                 }
-                $request['feature_value_id'] = $this->resolveFeatureValueId($feature, $request['feature_value']);
+                $request['feature_value'] = $this->normalizeFeatureValue($feature, $request['feature_value']);
             }
         } elseif ($operation === 'categories') {
             $category = $this->resolveCategory(isset($raw_request['category_id']) ? (int) $raw_request['category_id'] : 0);
@@ -553,12 +553,20 @@ class shopMasseditorPluginMassOperationService
             return;
         }
 
+        $feature_value_id = $this->resolveOrCreateFeatureValueId(
+            array(
+                'id' => (int) $request['feature_id'],
+                'type' => isset($request['feature_type']) ? (string) $request['feature_type'] : '',
+            ),
+            $request['feature_value']
+        );
+
         $this->model->exec(
             'INSERT INTO shop_product_features (product_id, feature_id, feature_value_id) VALUES (i:product_id, i:feature_id, i:feature_value_id)',
             array(
                 'product_id' => (int) $product_id,
                 'feature_id' => (int) $request['feature_id'],
-                'feature_value_id' => (int) $request['feature_value_id'],
+                'feature_value_id' => $feature_value_id,
             )
         );
     }
@@ -935,7 +943,32 @@ class shopMasseditorPluginMassOperationService
         return $feature;
     }
 
-    private function resolveFeatureValueId(array $feature, $value)
+    private function resolveOrCreateFeatureValueId(array $feature, $value)
+    {
+        $id = $this->findFeatureValueId($feature, $value);
+        if ($id > 0) {
+            return $id;
+        }
+
+        $suffix = $this->featureValueTableSuffix(isset($feature['type']) ? $feature['type'] : '');
+        if (!$suffix) {
+            throw new InvalidArgumentException($this->t('unsupported_feature_type'));
+        }
+
+        $this->model->exec(
+            'INSERT INTO shop_feature_values_' . $suffix . ' (feature_id, value) VALUES (i:feature_id, :value)',
+            array('feature_id' => (int) $feature['id'], 'value' => $value)
+        );
+
+        $id = $this->findFeatureValueId($feature, $value);
+        if ($id <= 0) {
+            throw new InvalidArgumentException($this->t('validation_feature_existing_value'));
+        }
+
+        return $id;
+    }
+
+    private function findFeatureValueId(array $feature, $value)
     {
         $suffix = $this->featureValueTableSuffix(isset($feature['type']) ? $feature['type'] : '');
         if (!$suffix) {
@@ -944,24 +977,46 @@ class shopMasseditorPluginMassOperationService
 
         $rows = $this->model
             ->query(
-                'SELECT id FROM shop_feature_values_' . $suffix . ' WHERE feature_id = i:feature_id AND value = s:value',
-                array('feature_id' => (int) $feature['id'], 'value' => (string) $value)
+                'SELECT id FROM shop_feature_values_' . $suffix . ' WHERE feature_id = i:feature_id AND value = :value',
+                array('feature_id' => (int) $feature['id'], 'value' => $value)
             )
             ->fetchAll();
         if (!$rows) {
-            throw new InvalidArgumentException($this->t('validation_feature_existing_value'));
+            return 0;
         }
 
         $row = reset($rows);
-        return (int) $row['id'];
+        return isset($row['id']) ? (int) $row['id'] : 0;
     }
 
-    private function featureValueTableSuffix($type)
+    private function normalizeFeatureValue(array $feature, $value)
+    {
+        $type = $this->featureBaseType(isset($feature['type']) ? $feature['type'] : '');
+        if (in_array($type, array('double', 'int'), true)) {
+            $value = str_replace(',', '.', trim((string) $value));
+            if ($value === '' || !is_numeric($value)) {
+                throw new InvalidArgumentException($this->t('validation_feature_numeric_value'));
+            }
+
+            return (float) $value;
+        }
+
+        return trim((string) $value);
+    }
+
+    private function featureBaseType($type)
     {
         $type = strtolower((string) $type);
         if (strpos($type, '.') !== false) {
             $type = substr($type, 0, strpos($type, '.'));
         }
+
+        return $type;
+    }
+
+    private function featureValueTableSuffix($type)
+    {
+        $type = $this->featureBaseType($type);
 
         $allowed = array(
             'varchar' => 'varchar',

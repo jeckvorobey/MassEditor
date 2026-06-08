@@ -693,6 +693,9 @@ msgstr "Некорректный режим характеристики."
 msgid "Enter a feature value."
 msgstr "Укажите значение характеристики."
 
+msgid "Enter a valid feature value."
+msgstr "Укажите корректное значение характеристики."
+
 msgid "Feature type is not supported in this version."
 msgstr "Тип характеристики не поддерживается в этой версии."
 

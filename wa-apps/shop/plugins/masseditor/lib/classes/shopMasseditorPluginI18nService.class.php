@@ -214,6 +214,7 @@ class shopMasseditorPluginI18nService
         'validation_feature' => 'Select a feature.',
         'invalid_feature_mode' => 'Invalid feature mode.',
         'validation_feature_value' => 'Enter a feature value.',
+        'validation_feature_numeric_value' => 'Enter a valid feature value.',
         'unsupported_feature_type' => 'Feature type is not supported in this version.',
         'validation_feature_existing_value' => 'Select an existing feature value.',
         'validation_category' => 'Select a category.',

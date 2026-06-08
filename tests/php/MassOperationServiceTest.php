@@ -715,6 +715,66 @@ class MassOperationServiceTest extends TestCase
         ));
     }
 
+    public function testApplyFeatureOperationCreatesMissingBasicValueBeforeAssigning(): void
+    {
+        $selection = new FakeSelectionService();
+        $selection->products = array(15 => array('id' => 15, 'name' => 'Feature Product'));
+        $model = new waModel();
+        $model->queueResponse('FROM shop_feature WHERE', new FakeQueryResult(array(array(
+            'id' => 7,
+            'name' => 'Material',
+            'type' => 'varchar',
+            'selectable' => 0,
+            'multiple' => 0,
+        ))));
+        $model->queueResponse('FROM shop_feature_values_varchar', new FakeQueryResult(array()));
+        $model->queueResponse('FROM shop_feature_values_varchar', new FakeQueryResult(array(array('id' => 88))));
+
+        $service = new shopMasseditorPluginMassOperationService($selection, new FakeLogService(), $model, 100);
+        $service->apply(array(
+            'product_ids' => array(15),
+            'operation' => 'features',
+            'feature_id' => 7,
+            'feature_mode' => 'set',
+            'feature_value' => 'linen',
+            'confirm_apply' => 1,
+        ));
+
+        $this->assertStringContainsString('DELETE FROM shop_product_features', $model->execs[1]['sql']);
+        $this->assertStringContainsString('INSERT INTO shop_feature_values_varchar', $model->execs[2]['sql']);
+        $this->assertSame(7, $model->execs[2]['params']['feature_id']);
+        $this->assertSame('linen', $model->execs[2]['params']['value']);
+        $this->assertStringContainsString('INSERT INTO shop_product_features', $model->execs[3]['sql']);
+        $this->assertSame(88, $model->execs[3]['params']['feature_value_id']);
+    }
+
+    public function testApplyFeatureOperationValidatesNumericBasicValue(): void
+    {
+        $selection = new FakeSelectionService();
+        $selection->products = array(15 => array('id' => 15, 'name' => 'Feature Product'));
+        $model = new waModel();
+        $model->queueResponse('FROM shop_feature WHERE', new FakeQueryResult(array(array(
+            'id' => 9,
+            'name' => 'Weight',
+            'type' => 'double',
+            'selectable' => 0,
+            'multiple' => 0,
+        ))));
+
+        $service = new shopMasseditorPluginMassOperationService($selection, new FakeLogService(), $model, 100);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Укажите корректное значение характеристики.');
+        $service->apply(array(
+            'product_ids' => array(15),
+            'operation' => 'features',
+            'feature_id' => 9,
+            'feature_mode' => 'set',
+            'feature_value' => 'heavy',
+            'confirm_apply' => 1,
+        ));
+    }
+
     public function testApplyCategoriesOperationAddsRemovesAndReplacesMainCategory(): void
     {
         $selection = new FakeSelectionService();

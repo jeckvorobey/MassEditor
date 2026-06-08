@@ -61,8 +61,8 @@ class ProductSelectionServiceTest extends TestCase
         $model = new shopMasseditorPluginProductModel();
         $model->queueResponse('SELECT COUNT(DISTINCT p.id)', new FakeQueryResult(array(), 2));
         $model->queueResponse('SELECT p.id, p.name, p.status', new FakeQueryResult(array(
-            array('id' => 10, 'name' => 'One'),
-            array('id' => 11, 'name' => 'Two'),
+            array('id' => 10, 'name' => 'One', 'count' => null),
+            array('id' => 11, 'name' => 'Two', 'count' => '1.5000'),
         )));
         $model->queueResponse('FROM shop_stock', new FakeQueryResult(array(
             array('id' => 3, 'name' => 'Main'),
@@ -81,11 +81,14 @@ class ProductSelectionServiceTest extends TestCase
             array('stock_id' => 3, 'stock_name' => 'Main', 'count' => 5.0, 'count_view' => '5'),
             array('stock_id' => 4, 'stock_name' => 'Reserve', 'count' => null, 'count_view' => '∞'),
         ), $result['products'][0]['stock_details']);
+        $this->assertNull($result['products'][0]['count']);
         $this->assertSame(array(
             array('stock_id' => 3, 'stock_name' => 'Main', 'count' => 1.5, 'count_view' => '1.5'),
             array('stock_id' => 4, 'stock_name' => 'Reserve', 'count' => 0.0, 'count_view' => '0'),
         ), $result['products'][1]['stock_details']);
+        $this->assertSame('1.5000', $result['products'][1]['count']);
         $this->assertStringContainsString('sku.product_id IN', $model->queries[3]['sql']);
+        $this->assertStringContainsString('CASE', $model->queries[3]['sql']);
     }
 
     public function testGetPageKeepsProductCountAndTreatsAnyNullWarehouseSkuAsInfinite(): void
