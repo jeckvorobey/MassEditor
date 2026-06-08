@@ -1,4 +1,4 @@
-# Mass Editor
+# Массовый редактор
 
 ## Назначение
 
@@ -191,7 +191,7 @@ docker compose up -d --build
 
 - Webasyst: `http://localhost:8080`
 - backend: `http://localhost:8080/webasyst/`
-- Mass Editor после входа: `http://localhost:8080/webasyst/shop/?plugin=masseditor`
+- «Массовый редактор» после входа: `http://localhost:8080/webasyst/shop/?plugin=masseditor`
 
 Подробная инструкция и проверочные команды лежат в [docker/README.md](docker/README.md).
 
