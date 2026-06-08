@@ -184,6 +184,9 @@ function walk(node, callback) {
 }
 
 function matchesSelector(node, selector) {
+  if (selector.startsWith('.')) {
+    return node.classList.contains(selector.slice(1));
+  }
   if (selector.startsWith('[data-role="')) {
     return node.getAttribute('data-role') === selector.slice(12, -2);
   }
@@ -439,7 +442,15 @@ function buildAppDom() {
   [1, 2].forEach((id) => {
     const row = createNode(document, 'tr');
     const checkbox = createNode(document, 'input', { 'data-role': 'product-checkbox', type: 'checkbox', value: String(id) });
+    const stockSummary = createNode(document, 'span', { class: 'masseditor-stock-summary' });
+    const stockToggle = createNode(document, 'button', { 'data-role': 'stock-popover-toggle', 'aria-expanded': 'false' }, 'Warehouses');
+    const stockPopover = createNode(document, 'span', { 'data-role': 'stock-popover' });
+    stockPopover.hidden = true;
+    stockPopover.appendChild(createNode(document, 'span', { class: 'masseditor-stock-popover__item' }, 'Main: 5'));
+    stockSummary.appendChild(stockToggle);
+    stockSummary.appendChild(stockPopover);
     row.appendChild(checkbox);
+    row.appendChild(stockSummary);
     table.appendChild(row);
   });
 

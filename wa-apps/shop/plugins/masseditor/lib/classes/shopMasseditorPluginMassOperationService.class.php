@@ -35,6 +35,7 @@ class shopMasseditorPluginMassOperationService
         $products = $this->selection_service->getByIds($request['product_ids']);
         $this->assertSelectedProductsLoaded($products, $request['product_ids']);
         $skus_by_product = $this->resolveSkusByProducts($products, $request['operation']);
+        $this->assertStockRequestMatchesProductAccounting($request, $skus_by_product);
         $count = count($products);
 
         $this->model->exec('START TRANSACTION');
@@ -336,6 +337,21 @@ class shopMasseditorPluginMassOperationService
     {
         if (count($products) !== count($requested_ids)) {
             throw new InvalidArgumentException($this->t('missing_products'));
+        }
+    }
+
+    private function assertStockRequestMatchesProductAccounting(array $request, array $skus_by_product)
+    {
+        if ($request['operation'] !== 'stock' || (int) $request['stock_id'] > 0) {
+            return;
+        }
+
+        foreach ($skus_by_product as $skus) {
+            foreach ($skus as $sku) {
+                if (!empty($sku['stock']) && is_array($sku['stock'])) {
+                    throw new InvalidArgumentException($this->t('validation_stock_required_for_accounted_products'));
+                }
+            }
         }
     }
 

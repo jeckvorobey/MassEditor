@@ -207,6 +207,7 @@ class shopMasseditorPluginI18nService
         'validation_url_template' => 'Enter a URL template.',
         'validation_compare_coefficient' => 'Enter a compare price coefficient.',
         'validation_stock' => 'Select a warehouse.',
+        'validation_stock_required_for_accounted_products' => 'For products with warehouse stock accounting, select a specific warehouse.',
         'invalid_stock_mode' => 'Invalid stock mode.',
         'invalid_stock_value' => 'Enter a valid stock value.',
         'negative_stock_value' => 'Stock cannot become negative.',

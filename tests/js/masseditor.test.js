@@ -259,6 +259,41 @@ test('stock operation allows regular count when warehouse is not selected', () =
   assert.equal(app.document.querySelector('[data-role="modal-value"]').textContent, '12');
 });
 
+test('warehouse stock popover toggles and keeps confirmation flow intact', () => {
+  const app = boot({
+    localStorage: {
+      'masseditor:selected-products:masseditor': '[1]',
+    },
+  });
+  const toggle = app.document.querySelector('[data-role="stock-popover-toggle"]');
+  const popover = app.document.querySelector('[data-role="stock-popover"]');
+  const numeric = app.document.getElementById('masseditor-numeric-value');
+  const openConfirm = app.document.querySelector('[data-role="open-confirm"]');
+
+  assert.equal(popover.hidden, true);
+
+  toggle.click();
+  assert.equal(popover.hidden, false);
+  assert.equal(toggle.getAttribute('aria-expanded'), 'true');
+
+  toggle.click();
+  assert.equal(popover.hidden, true);
+  assert.equal(toggle.getAttribute('aria-expanded'), 'false');
+
+  toggle.click();
+  app.document.dispatchEvent({ type: 'click', target: app.document.body, defaultPrevented: false, preventDefault() { this.defaultPrevented = true; } });
+  assert.equal(popover.hidden, true);
+
+  toggle.click();
+  app.document.dispatchEvent({ type: 'keydown', key: 'Escape', defaultPrevented: false, preventDefault() { this.defaultPrevented = true; } });
+  assert.equal(popover.hidden, true);
+
+  numeric.value = '120';
+  openConfirm.click();
+  assert.equal(app.modal.hidden, false);
+  assert.equal(app.document.querySelector('[data-role="modal-operation"]').textContent, 'Change price');
+});
+
 test('mobile product cards hide all desktop-only columns through changed date', () => {
   const mobileBlock = cssSource.slice(cssSource.indexOf('@media (max-width: 1024px)'));
 

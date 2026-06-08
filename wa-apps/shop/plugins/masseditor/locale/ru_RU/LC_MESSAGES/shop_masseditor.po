@@ -672,6 +672,9 @@ msgstr "Все товары по текущему фильтру"
 msgid "Select a warehouse."
 msgstr "Выберите склад."
 
+msgid "For products with warehouse stock accounting, select a specific warehouse."
+msgstr "Для товаров со складским учетом выберите конкретный склад."
+
 msgid "Invalid stock mode."
 msgstr "Некорректный режим остатка."
 

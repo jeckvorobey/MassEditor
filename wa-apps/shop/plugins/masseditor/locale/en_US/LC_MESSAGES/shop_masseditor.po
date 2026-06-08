@@ -668,6 +668,9 @@ msgstr "All products by current filter"
 msgid "Select a warehouse."
 msgstr "Select a warehouse."
 
+msgid "For products with warehouse stock accounting, select a specific warehouse."
+msgstr "For products with warehouse stock accounting, select a specific warehouse."
+
 msgid "Invalid stock mode."
 msgstr "Invalid stock mode."
 

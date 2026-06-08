@@ -88,6 +88,32 @@ class ProductSelectionServiceTest extends TestCase
         $this->assertStringContainsString('sku.product_id IN', $model->queries[3]['sql']);
     }
 
+    public function testGetPageKeepsProductCountAndTreatsAnyNullWarehouseSkuAsInfinite(): void
+    {
+        $model = new shopMasseditorPluginProductModel();
+        $model->queueResponse('SELECT COUNT(DISTINCT p.id)', new FakeQueryResult(array(), 1));
+        $model->queueResponse('SELECT p.id, p.name, p.status', new FakeQueryResult(array(
+            array('id' => 10, 'name' => 'One', 'count' => '12.0000'),
+        )));
+        $model->queueResponse('FROM shop_stock', new FakeQueryResult(array(
+            array('id' => 3, 'name' => 'Main'),
+            array('id' => 4, 'name' => 'Reserve'),
+        )));
+        $model->queueResponse('FROM shop_product_skus sku', new FakeQueryResult(array(
+            array('product_id' => 10, 'stock_id' => 3, 'count' => '5.0000', 'has_infinite' => 1),
+            array('product_id' => 10, 'stock_id' => 4, 'count' => '7.0000', 'has_infinite' => 0),
+        )));
+
+        $service = new shopMasseditorPluginProductSelectionService($model);
+        $result = $service->getPage(array(), 50);
+
+        $this->assertSame('12.0000', $result['products'][0]['count']);
+        $this->assertSame(array(
+            array('stock_id' => 3, 'stock_name' => 'Main', 'count' => null, 'count_view' => '∞'),
+            array('stock_id' => 4, 'stock_name' => 'Reserve', 'count' => 7.0, 'count_view' => '7'),
+        ), $result['products'][0]['stock_details']);
+    }
+
     public function testBuildConditionsCoversExtendedSearchStatusAvailabilityAndCategory(): void
     {
         $service = new shopMasseditorPluginProductSelectionService(new shopMasseditorPluginProductModel());

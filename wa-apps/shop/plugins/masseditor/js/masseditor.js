@@ -160,6 +160,7 @@
     var productSearchInput = document.querySelector('[data-role="product-search-input"]');
     var productSearchClear = document.querySelector('[data-role="product-search-clear"]');
     var productSearchSuggestions = document.querySelector('[data-role="product-search-suggestions"]');
+    var stockPopoverToggles = Array.prototype.slice.call(document.querySelectorAll('[data-role="stock-popover-toggle"]'));
     var filterForm = document.getElementById('masseditor-filter-form');
     var selectionStorageKey = buildSelectionStorageKey();
     var selectedProductsMap = loadSelectedProductsMap();
@@ -332,6 +333,57 @@
                 }
                 clearSearchSuggestions();
             });
+        });
+    }
+
+    function closeStockPopovers(exceptPopover) {
+        stockPopoverToggles.forEach(function (toggle) {
+            var summary = toggle.closest('.masseditor-stock-summary');
+            var popover = summary ? summary.querySelector('[data-role="stock-popover"]') : null;
+            if (!popover || popover === exceptPopover) {
+                return;
+            }
+            popover.hidden = true;
+            toggle.setAttribute('aria-expanded', 'false');
+        });
+    }
+
+    function initStockPopovers() {
+        if (!stockPopoverToggles.length) {
+            return;
+        }
+
+        stockPopoverToggles.forEach(function (toggle) {
+            toggle.addEventListener('click', function (event) {
+                var summary = toggle.closest('.masseditor-stock-summary');
+                var popover = summary ? summary.querySelector('[data-role="stock-popover"]') : null;
+                var shouldOpen = false;
+
+                if (event && typeof event.stopPropagation === 'function') {
+                    event.stopPropagation();
+                }
+                if (!popover) {
+                    return;
+                }
+
+                shouldOpen = popover.hidden;
+                closeStockPopovers(popover);
+                popover.hidden = !shouldOpen;
+                toggle.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+            });
+        });
+
+        document.addEventListener('click', function (event) {
+            if (event.target && event.target.closest && event.target.closest('.masseditor-stock-summary')) {
+                return;
+            }
+            closeStockPopovers();
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                closeStockPopovers();
+            }
         });
     }
 
@@ -866,6 +918,7 @@
 
     resetSelectionIfRequested();
     initProductSearchSuggestions();
+    initStockPopovers();
     syncCheckboxesFromSelection();
     setOperation(currentOperation());
     updateSelectionState();

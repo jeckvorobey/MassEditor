@@ -634,6 +634,37 @@ class MassOperationServiceTest extends TestCase
         $this->assertArrayNotHasKey('stock', shopProduct::$saved[11]['skus'][101]);
     }
 
+    public function testApplyStockOperationWithoutWarehouseRejectsProductsWithWarehouseStocks(): void
+    {
+        $selection = new FakeSelectionService();
+        $selection->products = array(11 => array('id' => 11, 'name' => 'Stock Product'));
+        $model = new waModel();
+        $model->queueResponse('FROM shop_product_skus', new FakeQueryResult(array(
+            array('id' => 101, 'product_id' => 11, 'count' => 7, 'price' => 100, 'compare_price' => 0, 'available' => 1),
+        )));
+        $model->queueResponse('FROM shop_product_stocks', new FakeQueryResult(array(
+            array('sku_id' => 101, 'stock_id' => 3, 'count' => 5),
+        )));
+
+        $service = new shopMasseditorPluginMassOperationService($selection, new FakeLogService(), $model, 100);
+
+        try {
+            $service->apply(array(
+                'product_ids' => array(11),
+                'operation' => 'stock',
+                'stock_id' => 0,
+                'stock_mode' => 'increase',
+                'stock_value' => '2',
+                'confirm_apply' => 1,
+            ));
+            $this->fail('Exception was not thrown');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame('Для товаров со складским учетом выберите конкретный склад.', $e->getMessage());
+        }
+
+        $this->assertCount(0, $model->execs);
+    }
+
     public function testApplyFeatureOperationAllowsOnlyBasicExistingValues(): void
     {
         $selection = new FakeSelectionService();

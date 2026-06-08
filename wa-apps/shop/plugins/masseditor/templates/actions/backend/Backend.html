@@ -327,7 +327,6 @@
                                     <th>{$texts.price|escape}</th>
                                     <th>{$texts.compare_price|escape}</th>
                                     <th>{$texts.stock|escape}</th>
-                                    <th>{$texts.stock_warehouses|escape}</th>
                                     <th>{$texts.changed|escape}</th>
                                 </tr>
                             </thead>
@@ -349,8 +348,22 @@
                                                 <div class="masseditor-product-mobile-details__row"><span>{$texts.availability|escape}</span><strong>{if $product.availability == 1}{$texts.available|escape}{else}{$texts.unavailable|escape}{/if}</strong></div>
                                                 <div class="masseditor-product-mobile-details__row"><span>{$texts.price|escape}</span><strong>{$product.price_view|escape}</strong></div>
                                                 <div class="masseditor-product-mobile-details__row"><span>{$texts.compare_price|escape}</span><strong>{if $product.compare_price_view !== ''}{$product.compare_price_view|escape}{else}-{/if}</strong></div>
-                                                <div class="masseditor-product-mobile-details__row"><span>{$texts.stock|escape}</span><strong>{if $product.count === null}∞{else}{$product.count_view|escape}{/if}</strong></div>
-                                                <div class="masseditor-product-mobile-details__row"><span>{$texts.stock_warehouses|escape}</span><strong>{if !empty($product.stock_details)}<span class="masseditor-stock-details">{foreach $product.stock_details as $stock}<span class="masseditor-stock-details__item">{$stock.stock_name|escape}: {$stock.count_view|escape}</span>{/foreach}</span>{else}-{/if}</strong></div>
+                                                <div class="masseditor-product-mobile-details__row">
+                                                    <span>{$texts.stock|escape}</span>
+                                                    <strong>
+                                                        <span class="masseditor-stock-summary">
+                                                            <span class="masseditor-stock-summary__count">{if $product.count === null}∞{else}{$product.count_view|escape}{/if}</span>
+                                                            {if !empty($product.stock_details)}
+                                                                <button type="button" class="masseditor-stock-popover__toggle" data-role="stock-popover-toggle" aria-expanded="false">{$texts.stock_warehouses|escape}</button>
+                                                                <span class="masseditor-stock-popover" data-role="stock-popover" hidden>
+                                                                    {foreach $product.stock_details as $stock}
+                                                                        <span class="masseditor-stock-popover__item"><span>{$stock.stock_name|escape}</span><strong>{$stock.count_view|escape}</strong></span>
+                                                                    {/foreach}
+                                                                </span>
+                                                            {/if}
+                                                        </span>
+                                                    </strong>
+                                                </div>
                                                 <div class="masseditor-product-mobile-details__row"><span>{$texts.changed|escape}</span><strong>{$product.edit_datetime_view|escape}</strong></div>
                                             </div>
                                         </td>
@@ -364,8 +377,19 @@
                                         <td>{if $product.availability == 1}<span class="masseditor-badge masseditor-badge_success">{$texts.available|escape}</span>{else}<span class="masseditor-badge masseditor-badge_warning">{$texts.unavailable|escape}</span>{/if}</td>
                                         <td>{$product.price_view|escape}</td>
                                         <td>{if $product.compare_price_view !== ''}{$product.compare_price_view|escape}{else}-{/if}</td>
-                                        <td>{if $product.count === null}∞{else}{$product.count_view|escape}{/if}</td>
-                                        <td>{if !empty($product.stock_details)}<span class="masseditor-stock-details">{foreach $product.stock_details as $stock}<span class="masseditor-stock-details__item">{$stock.stock_name|escape}: {$stock.count_view|escape}</span>{/foreach}</span>{else}-{/if}</td>
+                                        <td>
+                                            <span class="masseditor-stock-summary">
+                                                <span class="masseditor-stock-summary__count">{if $product.count === null}∞{else}{$product.count_view|escape}{/if}</span>
+                                                {if !empty($product.stock_details)}
+                                                    <button type="button" class="masseditor-stock-popover__toggle" data-role="stock-popover-toggle" aria-expanded="false">{$texts.stock_warehouses|escape}</button>
+                                                    <span class="masseditor-stock-popover" data-role="stock-popover" hidden>
+                                                        {foreach $product.stock_details as $stock}
+                                                            <span class="masseditor-stock-popover__item"><span>{$stock.stock_name|escape}</span><strong>{$stock.count_view|escape}</strong></span>
+                                                        {/foreach}
+                                                    </span>
+                                                {/if}
+                                            </span>
+                                        </td>
                                         <td>{$product.edit_datetime_view|escape}</td>
                                     </tr>
                                 {/foreach}

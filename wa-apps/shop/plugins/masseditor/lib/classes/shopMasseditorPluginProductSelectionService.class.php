@@ -206,9 +206,12 @@ class shopMasseditorPluginProductSelectionService
         $placeholders = implode(',', array_fill(0, count($product_ids), '?'));
         $rows = $this->product_model
             ->query(
-                'SELECT sku.product_id, ps.stock_id, SUM(ps.count) AS count
+                'SELECT sku.product_id,
+                        ps.stock_id,
+                        SUM(CASE WHEN ps.count IS NULL THEN 0 ELSE ps.count END) AS count,
+                        MAX(CASE WHEN ps.count IS NULL THEN 1 ELSE 0 END) AS has_infinite
                  FROM shop_product_skus sku
-                 LEFT JOIN shop_product_stocks ps ON ps.sku_id = sku.id
+                 INNER JOIN shop_product_stocks ps ON ps.sku_id = sku.id
                  WHERE sku.product_id IN (' . $placeholders . ')
                  GROUP BY sku.product_id, ps.stock_id',
                 $product_ids
@@ -216,19 +219,26 @@ class shopMasseditorPluginProductSelectionService
             ->fetchAll();
 
         $stock_counts = array();
+        $products_with_stock_details = array();
         foreach ($rows as $row) {
             $product_id = isset($row['product_id']) ? (int) $row['product_id'] : 0;
             $stock_id = isset($row['stock_id']) ? (int) $row['stock_id'] : 0;
             if ($product_id <= 0 || $stock_id <= 0) {
                 continue;
             }
-            $stock_counts[$product_id][$stock_id] = array_key_exists('count', $row) && $row['count'] === null
+            $products_with_stock_details[$product_id] = true;
+            $has_infinite = !empty($row['has_infinite'])
+                || (array_key_exists('count', $row) && $row['count'] === null);
+            $stock_counts[$product_id][$stock_id] = $has_infinite
                 ? null
                 : (float) $row['count'];
         }
 
         foreach ($products as &$product) {
             $product_id = isset($product['id']) ? (int) $product['id'] : 0;
+            if (empty($products_with_stock_details[$product_id])) {
+                continue;
+            }
             foreach ($stocks as $stock) {
                 $stock_id = isset($stock['id']) ? (int) $stock['id'] : 0;
                 if ($stock_id <= 0) {

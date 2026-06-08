@@ -647,19 +647,73 @@
     line-height: 1.4;
 }
 
-.masseditor-stock-details {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 120px;
-    color: var(--me-muted);
-    font-size: 12px;
-    line-height: 1.35;
+.masseditor-stock-summary {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 92px;
 }
 
-.masseditor-stock-details__item {
-    display: block;
+.masseditor-stock-summary__count {
+    font-weight: 600;
+}
+
+.masseditor-stock-popover__toggle {
+    min-height: 24px;
+    padding: 0 8px;
+    border: 1px solid var(--me-border);
+    border-radius: 6px;
+    background: var(--me-surface-soft);
+    color: var(--me-muted);
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 22px;
+}
+
+.masseditor-stock-popover__toggle:hover,
+.masseditor-stock-popover__toggle:focus {
+    border-color: var(--me-primary);
+    color: var(--me-primary);
+    outline: none;
+}
+
+.masseditor-stock-popover {
+    position: absolute;
+    z-index: 30;
+    top: calc(100% + 6px);
+    right: 0;
+    min-width: 180px;
+    padding: 8px;
+    border: 1px solid var(--me-border);
+    border-radius: 8px;
+    background: var(--me-surface);
+    box-shadow: var(--me-shadow);
+}
+
+.masseditor-stock-popover[hidden] {
+    display: none !important;
+}
+
+.masseditor-stock-popover__item {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    color: var(--me-muted);
+    font-size: 13px;
+    line-height: 1.45;
     white-space: nowrap;
+}
+
+.masseditor-stock-popover__item + .masseditor-stock-popover__item {
+    margin-top: 4px;
+}
+
+.masseditor-stock-popover__item strong {
+    color: var(--me-text);
+    font-weight: 700;
 }
 
 .masseditor-product-description {
@@ -1258,6 +1312,16 @@
         color: var(--me-muted);
         font-size: 13px;
         line-height: 1.35;
+    }
+
+    .masseditor-stock-popover__toggle {
+        font-size: 12px;
+        line-height: 24px;
+    }
+
+    .masseditor-stock-popover__item {
+        font-size: 12px;
+        line-height: 1.45;
     }
 
     .masseditor-table_log,
