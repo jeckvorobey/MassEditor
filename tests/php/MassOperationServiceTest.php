@@ -587,7 +587,7 @@ class MassOperationServiceTest extends TestCase
         $this->assertSame(2.0, $model->execs[1]['params']['count_1']);
     }
 
-    public function testApplyStockOperationRejectsDecreaseFromMissingWarehouseStockBelowZero(): void
+    public function testApplyStockOperationWithWarehouseSelectionDecreasesSkuCountForProductsWithoutWarehouseAccounting(): void
     {
         $selection = new FakeSelectionService();
         $selection->products = array(11 => array('id' => 11, 'name' => 'Stock Product'));
@@ -597,11 +597,11 @@ class MassOperationServiceTest extends TestCase
             array('id' => 101, 'product_id' => 11, 'count' => 7, 'price' => 100, 'compare_price' => 0, 'available' => 1),
         )));
         $model->queueResponse('FROM shop_product_stocks', new FakeQueryResult(array()));
+        shopProduct::seed(11, array('name' => 'Stock Product'), array(
+            101 => array('id' => 101, 'product_id' => 11, 'count' => 7),
+        ));
 
         $service = new shopMasseditorPluginMassOperationService($selection, new FakeLogService(), $model, 100);
-
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Остаток не может стать отрицательным');
         $service->apply(array(
             'product_ids' => array(11),
             'operation' => 'stock',
@@ -610,6 +610,9 @@ class MassOperationServiceTest extends TestCase
             'stock_value' => '1',
             'confirm_apply' => 1,
         ));
+
+        $this->assertSame(6.0, shopProduct::$saved[11]['skus'][101]['count']);
+        $this->assertCount(2, $model->execs);
     }
 
     public function testApplyStockOperationWithoutWarehouseUpdatesSkuCount(): void
@@ -632,6 +635,35 @@ class MassOperationServiceTest extends TestCase
 
         $this->assertSame(7.0, shopProduct::$saved[11]['skus'][101]['count']);
         $this->assertArrayNotHasKey('stock', shopProduct::$saved[11]['skus'][101]);
+    }
+
+    public function testApplyStockOperationWithWarehouseSelectionFallsBackToSkuCountForProductsWithoutWarehouseAccounting(): void
+    {
+        $selection = new FakeSelectionService();
+        $selection->products = array(11 => array('id' => 11, 'name' => 'Stock Product'));
+        $model = new waModel();
+        $model->queueResponse('FROM shop_stock', new FakeQueryResult(array(array('id' => 3, 'name' => 'Main'))));
+        $model->queueResponse('FROM shop_product_skus', new FakeQueryResult(array(
+            array('id' => 101, 'product_id' => 11, 'count' => 5, 'price' => 100, 'compare_price' => 0, 'available' => 1),
+        )));
+        $model->queueResponse('FROM shop_product_stocks', new FakeQueryResult(array()));
+        shopProduct::seed(11, array('name' => 'Stock Product'), array(
+            101 => array('id' => 101, 'product_id' => 11, 'count' => 5),
+        ));
+
+        $service = new shopMasseditorPluginMassOperationService($selection, new FakeLogService(), $model, 100);
+        $service->apply(array(
+            'product_ids' => array(11),
+            'operation' => 'stock',
+            'stock_id' => 3,
+            'stock_mode' => 'set',
+            'stock_value' => '333',
+            'confirm_apply' => 1,
+        ));
+
+        $this->assertSame(333.0, shopProduct::$saved[11]['skus'][101]['count']);
+        $this->assertArrayNotHasKey('stock', shopProduct::$saved[11]['skus'][101]);
+        $this->assertCount(2, $model->execs);
     }
 
     public function testApplyStockOperationWithoutWarehouseRejectsProductsWithWarehouseStocks(): void

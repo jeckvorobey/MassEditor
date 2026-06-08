@@ -387,7 +387,11 @@ class shopMasseditorPluginMassOperationService
             return;
         }
 
-        if ($request['operation'] === 'stock' && $request['stock_id'] > 0) {
+        $use_warehouse_stock = $request['operation'] === 'stock'
+            && $request['stock_id'] > 0
+            && $this->usesWarehouseStockAccounting($skus);
+
+        if ($use_warehouse_stock) {
             $this->applyWarehouseStockOperation((int) $product_data['id'], $request, $skus);
             return;
         }
@@ -437,7 +441,7 @@ class shopMasseditorPluginMassOperationService
             } elseif ($request['operation'] === 'availability') {
                 $product_skus[$sku_id]['available'] = $request['availability_value'];
             } elseif ($request['operation'] === 'stock') {
-                if ($request['stock_id'] > 0) {
+                if ($use_warehouse_stock) {
                     $product_skus[$sku_id]['stock'][$request['stock_id']] = $this->calculateStockValue(
                         isset($sku['stock'][$request['stock_id']]) ? $sku['stock'][$request['stock_id']] : null,
                         $request
@@ -509,6 +513,17 @@ class shopMasseditorPluginMassOperationService
     {
         $product_model = new shopProductModel();
         $product_model->correct((int) $product_id);
+    }
+
+    private function usesWarehouseStockAccounting(array $skus)
+    {
+        foreach ($skus as $sku) {
+            if (!empty($sku['stock']) && is_array($sku['stock'])) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function applyCategoryOperation($product_id, array $request)
