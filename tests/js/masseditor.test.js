@@ -78,11 +78,10 @@ async function flushPromises() {
   await Promise.resolve();
 }
 
-test('initializes toast sources and toggle label', () => {
+test('initializes toast sources and default operation title', () => {
   const app = boot();
-  const toggleLabel = app.document.querySelector('[data-role="soon-operations-toggle-label"]');
 
-  assert.equal(toggleLabel.textContent, 'Disabled');
+  assert.equal(app.document.querySelector('[data-role="operation-title"]').textContent, 'Change price');
   assert.equal(app.toastStack.children.length, 1);
   assert.equal(app.toastStack.children[0].getAttribute('role'), 'status');
   assert.equal(app.timeouts[0].timeout, 4000);
@@ -95,8 +94,6 @@ test('fallback strings stay English when i18n dictionary is missing', () => {
 test('uses provided English i18n dictionary for labels and validation', () => {
   const app = boot({
     i18n: {
-      enabled: 'Enabled',
-      disabled: 'Disabled',
       toast_success: 'Success',
       toast_error: 'Error',
       toast_info: 'Message',
@@ -114,10 +111,8 @@ test('uses provided English i18n dictionary for labels and validation', () => {
       validation_url_template: 'Enter a URL template.',
     },
   });
-  const toggleLabel = app.document.querySelector('[data-role="soon-operations-toggle-label"]');
   const openConfirm = app.document.querySelector('[data-role="open-confirm"]');
 
-  assert.equal(toggleLabel.textContent, 'Disabled');
   assert.equal(app.document.querySelector('[data-role="operation-title"]').textContent, 'Change price');
   assert.equal(app.toastStack.children[0].querySelector('button').getAttribute('aria-label'), 'Close notification');
 

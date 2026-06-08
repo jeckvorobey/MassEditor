@@ -52,10 +52,4 @@ return array(
             array('value' => 'en_US', 'title' => _wp('English')),
         ),
     ),
-    'show_soon_operations' => array(
-        'title' => _wp('Show "Soon" operations'),
-        'description' => _wp('Controls future operations visibility in the library.'),
-        'value' => '0',
-        'control_type' => waHtmlControl::CHECKBOX,
-    ),
 );

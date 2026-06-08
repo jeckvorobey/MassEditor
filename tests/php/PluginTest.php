@@ -68,12 +68,11 @@ class PluginTest extends TestCase
         $this->assertStringNotContainsString('Russian and English interface', $plugin->getDescription());
     }
 
-    public function testPluginSettingsDefaultHideSoonOperations(): void
+    public function testPluginSettingsDoNotExposeSoonOperationsToggle(): void
     {
         $settings_source = file_get_contents(__DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/config/settings.php');
 
-        $this->assertStringContainsString("'show_soon_operations' => array(", $settings_source);
-        $this->assertStringContainsString("'value' => '0'", $settings_source);
+        $this->assertStringNotContainsString("'show_soon_operations' => array(", $settings_source);
         $this->assertStringContainsString("'interface_language' => array(", $settings_source);
         $this->assertStringContainsString("'value' => ''", $settings_source);
         $this->assertDoesNotMatchRegularExpression("/'interface_language' => array\\([\\s\\S]*array\\('value' => 'auto'/", $settings_source);

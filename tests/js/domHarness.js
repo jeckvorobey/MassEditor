@@ -293,11 +293,6 @@ function buildAppDom() {
   notice.appendChild(createNode(document, 'p', {}, 'Сохранено'));
   document.body.appendChild(notice);
 
-  const toggle = createNode(document, 'input', { 'data-role': 'soon-operations-toggle', type: 'checkbox' });
-  const toggleLabel = createNode(document, 'span', { 'data-role': 'soon-operations-toggle-label' });
-  document.body.appendChild(toggle);
-  document.body.appendChild(toggleLabel);
-
   const operationInput = createNode(document, 'input', { 'data-role': 'operation-input', value: 'price' });
   form.appendChild(operationInput);
   const operationTitle = createNode(document, 'div', { 'data-role': 'operation-title' });

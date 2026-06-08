@@ -137,10 +137,6 @@ class shopMasseditorPluginI18nService
         'interface_language_hint' => 'Defaults to the current Webasyst locale until you choose a language.',
         'language_ru' => 'Russian',
         'language_en' => 'English',
-        'show_soon_operations' => 'Show "Soon" operations',
-        'show_soon_operations_hint' => 'Controls future operations visibility in the library.',
-        'enabled' => 'Enabled',
-        'disabled' => 'Disabled',
         'save_settings' => 'Save settings',
         'settings_saved' => 'Settings saved.',
         'generic_operation_error' => 'The operation could not be completed. Try again or check the error log.',
@@ -248,8 +244,6 @@ class shopMasseditorPluginI18nService
     );
 
     private static $jsKeys = array(
-        'enabled',
-        'disabled',
         'toast_success',
         'toast_error',
         'toast_info',

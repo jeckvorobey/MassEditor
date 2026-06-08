@@ -104,7 +104,7 @@ class shopMasseditorPluginBackendAction extends waViewAction
         $recent_logs = $this->decorateLogs($log_selection['logs'], $language);
         $last_log = $this->decorateLogs($log_service->getLatest(1), $language);
         $last_log = $last_log ? reset($last_log) : null;
-        $operations = $this->getOperationsLibrary($settings['show_soon_operations'], $language);
+        $operations = $this->getOperationsLibrary($language);
 
         $this->view->assign(array(
             'page_title' => $plugin->getName(),
@@ -516,7 +516,6 @@ class shopMasseditorPluginBackendAction extends waViewAction
             'log_retention_days' => $this->normalizeIntSetting($plugin->getSettings('log_retention_days'), 90, 1, 3650),
             'date_format' => $this->normalizeDateFormat($plugin->getSettings('date_format')),
             'theme_mode' => $this->normalizeThemeMode($plugin->getSettings('theme_mode')),
-            'show_soon_operations' => (int) !!$plugin->getSettings('show_soon_operations'),
             'interface_language_setting' => shopMasseditorPluginI18nService::normalizeLanguageSetting($plugin->getSettings('interface_language')),
             'interface_language' => shopMasseditorPluginI18nService::resolveLanguage($plugin->getSettings('interface_language')),
         );
@@ -530,7 +529,6 @@ class shopMasseditorPluginBackendAction extends waViewAction
             'log_retention_days' => $this->normalizeIntSetting(waRequest::post('log_retention_days', $current_settings['log_retention_days'], waRequest::TYPE_INT), 90, 1, 3650),
             'date_format' => $this->normalizeDateFormat(waRequest::post('date_format', $current_settings['date_format'], waRequest::TYPE_STRING_TRIM)),
             'theme_mode' => $this->normalizeThemeMode(waRequest::post('theme_mode', $current_settings['theme_mode'], waRequest::TYPE_STRING_TRIM)),
-            'show_soon_operations' => waRequest::post('show_soon_operations', 0, waRequest::TYPE_INT) ? 1 : 0,
             'interface_language' => shopMasseditorPluginI18nService::normalizeLanguageSetting(waRequest::post('interface_language', $current_settings['interface_language_setting'], waRequest::TYPE_STRING_TRIM)),
         );
 
@@ -622,7 +620,7 @@ class shopMasseditorPluginBackendAction extends waViewAction
         );
     }
 
-    private function getOperationsLibrary($show_soon_operations, $language = null)
+    private function getOperationsLibrary($language = null)
     {
         $groups = array(
             array(
@@ -672,10 +670,6 @@ class shopMasseditorPluginBackendAction extends waViewAction
                 ),
             ),
         );
-
-        if ($show_soon_operations) {
-            return $groups;
-        }
 
         foreach ($groups as &$group) {
             $group['items'] = array_values(array_filter($group['items'], wa_lambda('$item', 'return !empty($item["enabled"]);')));

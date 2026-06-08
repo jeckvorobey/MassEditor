@@ -251,7 +251,6 @@ class BackendActionTest extends TestCase
 
         $this->assertSame(50, $settings['page_size']);
         $this->assertSame('auto', $settings['theme_mode']);
-        $this->assertSame(0, $settings['show_soon_operations']);
         $this->assertSame('ru_RU', $settings['interface_language']);
         $this->assertSame('', $settings['interface_language_setting']);
         $this->assertSame('auto', $this->invokePrivate($action, 'normalizeThemeMode', array('broken')));
@@ -280,12 +279,11 @@ class BackendActionTest extends TestCase
         $settings = $this->invokePrivate($action, 'savePluginSettings', array($plugin, $settings));
         $this->assertSame(50, $settings['page_size']);
 
-        $library = $this->invokePrivate($action, 'getOperationsLibrary', array(0));
+        $library = $this->invokePrivate($action, 'getOperationsLibrary');
         $this->assertSame('Prices and SKU', $library[0]['title']);
         $this->assertSame('Change price', $library[0]['items'][0]['label']);
-$soon_library = $this->invokePrivate($action, 'getOperationsLibrary', array(1));
-        $this->assertSame('Stock', $soon_library[0]['items'][2]['label']);
-        $this->assertSame('SKU generator', $soon_library[0]['items'][3]['label']);
+        $this->assertSame('Stock', $library[0]['items'][2]['label']);
+        $this->assertCount(3, $library[0]['items']);
     }
 
     public function testManualLanguageSettingOverridesWebasystLocaleWithoutAutoOption(): void
@@ -311,7 +309,7 @@ $soon_library = $this->invokePrivate($action, 'getOperationsLibrary', array(1));
         $this->assertSame('Products found', shopMasseditorPluginI18nService::t('stats_found', $settings['interface_language']));
         $this->assertSame(array('ru_RU' => 'Russian', 'en_US' => 'English'), shopMasseditorPluginI18nService::getLanguageOptions($settings['interface_language']));
 
-        $library = $this->invokePrivate($action, 'getOperationsLibrary', array(0, $settings['interface_language']));
+        $library = $this->invokePrivate($action, 'getOperationsLibrary', array($settings['interface_language']));
         $this->assertSame('Prices and SKU', $library[0]['title']);
 
         $GLOBALS['fake_wa_system']->locale = 'en_US';

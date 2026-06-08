@@ -560,7 +560,6 @@
                             {/foreach}
                         </select>
                     </div>
-                    <div class="masseditor-settings-row"><div><strong>{$texts.show_soon_operations|escape}</strong><p class="hint">{$texts.show_soon_operations_hint|escape}</p></div><label class="masseditor-toggle"><input type="checkbox" name="show_soon_operations" value="1"{if $settings.show_soon_operations} checked{/if} data-role="soon-operations-toggle"><span data-role="soon-operations-toggle-label">{if $settings.show_soon_operations}{$texts.enabled|escape}{else}{$texts.disabled|escape}{/if}</span></label></div>
                 </div>
                 <div class="masseditor-panel__actions"><button class="button masseditor-button masseditor-button_primary" type="submit">{$texts.save_settings|escape}</button></div>
             </section>

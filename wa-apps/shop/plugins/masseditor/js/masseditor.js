@@ -1,8 +1,6 @@
 (function () {
     'use strict';
 
-    var soonOperationsToggle = document.querySelector('[data-role="soon-operations-toggle"]');
-    var soonOperationsToggleLabel = document.querySelector('[data-role="soon-operations-toggle-label"]');
     var workspaceForm = document.querySelector('[data-role="workspace-form"]');
     var toastStack = document.querySelector('[data-role="toast-stack"]');
     var toastSourceNotices = Array.prototype.slice.call(document.querySelectorAll('[data-toast-source="true"]'));
@@ -10,19 +8,6 @@
 
     function t(key, fallback) {
         return i18n[key] || fallback || key;
-    }
-
-    function updateSoonOperationsToggleLabel() {
-        if (!soonOperationsToggle || !soonOperationsToggleLabel) {
-            return;
-        }
-
-        soonOperationsToggleLabel.textContent = soonOperationsToggle.checked ? t('enabled', 'Enabled') : t('disabled', 'Disabled');
-    }
-
-    if (soonOperationsToggle) {
-        soonOperationsToggle.addEventListener('change', updateSoonOperationsToggleLabel);
-        updateSoonOperationsToggleLabel();
     }
 
     function toastTitle(type) {
