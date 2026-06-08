@@ -8,5 +8,6 @@ return array(
     'img' => 'img/plugin.png',
     'handlers' => [
         'backend_menu' => 'backendMenu',
+        'backend_extended_menu' => 'backendExtendedMenu',
     ],
 );

@@ -13,6 +13,14 @@ if (!class_exists('waHtmlControl', false)) {
 
 class PluginTest extends TestCase
 {
+    public function testPluginConfigRegistersBackendMenuHooks(): void
+    {
+        $config = require __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/config/plugin.php';
+
+        $this->assertSame('backendMenu', $config['handlers']['backend_menu']);
+        $this->assertSame('backendExtendedMenu', $config['handlers']['backend_extended_menu']);
+    }
+
     public function testShopSupportJsonDeclaresLocalizedPremiumDescriptions(): void
     {
         $path = __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/config/shop_support.json';
@@ -46,6 +54,17 @@ class PluginTest extends TestCase
         $this->assertArrayHasKey('core_li', $menu);
         $this->assertStringContainsString('/backend/shop/?plugin=masseditor', $menu['core_li']);
         $this->assertStringContainsString('Массовый редактор', $menu['core_li']);
+
+        $params = array('menu' => array('products' => array('name' => 'Products')));
+
+        $plugin->backendExtendedMenu($params);
+
+        $this->assertArrayHasKey('products', $params['menu']);
+        $this->assertArrayHasKey('masseditor_item', $params['menu']);
+        $this->assertSame('Массовый редактор', $params['menu']['masseditor_item']['name']);
+        $this->assertSame('/backend/shop/?plugin=masseditor', $params['menu']['masseditor_item']['url']);
+        $this->assertSame('body', $params['menu']['masseditor_item']['placement']);
+        $this->assertStringContainsString('fa-edit', $params['menu']['masseditor_item']['icon']);
 
         $GLOBALS['fake_wa_system']->locale = 'en_US';
         $menu = $plugin->backendMenu();

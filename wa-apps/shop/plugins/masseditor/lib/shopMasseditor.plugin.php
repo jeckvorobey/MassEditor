@@ -16,9 +16,26 @@ class shopMasseditorPlugin extends shopPlugin
 
     public function backendMenu()
     {
-        $url = wa()->getAppUrl('shop') . '?plugin=masseditor';
+        $url = htmlspecialchars($this->getBackendUrl(), ENT_QUOTES, 'UTF-8');
+        $name = htmlspecialchars($this->getName(), ENT_QUOTES, 'UTF-8');
+
         return [
-            'core_li' => '<li class="no-tab"><a href="' . $url . '">' . htmlspecialchars($this->getName(), ENT_QUOTES, 'UTF-8') . '</a></li>',
+            'core_li' => '<li class="no-tab"><a href="' . $url . '">' . $name . '</a></li>',
         ];
+    }
+
+    public function backendExtendedMenu(&$params)
+    {
+        $params['menu'][$this->getId() . '_item'] = [
+            'name' => $this->getName(),
+            'icon' => '<i class="fas fa-edit"></i>',
+            'url' => $this->getBackendUrl(),
+            'placement' => 'body',
+        ];
+    }
+
+    private function getBackendUrl()
+    {
+        return wa()->getAppUrl('shop') . '?plugin=' . $this->getId();
     }
 }
