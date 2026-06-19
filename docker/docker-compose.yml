@@ -4,7 +4,7 @@ services:
     container_name: wa-php
     working_dir: /webasyst
     ports:
-      - "8080:8080"
+      - "8088:8080"
     volumes:
       - webasyst:/webasyst
       - ../wa-apps/shop/plugins/masseditor:/webasyst/wa-apps/shop/plugins/masseditor
