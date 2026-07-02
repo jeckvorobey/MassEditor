@@ -229,6 +229,14 @@
                                 {/foreach}
                             </select>
                         </div>
+                        <div class="masseditor-field" data-operation-fields="stock" data-stock-type-filter-field>
+                            <label for="masseditor-stock-type-filter">{$texts.stock_type_filter|escape}</label>
+                            <select id="masseditor-stock-type-filter" name="stock_type_filter">
+                                <option value="all"{if $operation_form.stock_type_filter === 'all'} selected{/if}>{$texts.stock_type_all|escape}</option>
+                                <option value="without_warehouse"{if $operation_form.stock_type_filter === 'without_warehouse'} selected{/if}>{$texts.stock_type_without_warehouse|escape}</option>
+                                <option value="with_warehouse"{if $operation_form.stock_type_filter === 'with_warehouse'} selected{/if}>{$texts.stock_type_with_warehouse|escape}</option>
+                            </select>
+                        </div>
                         <div class="masseditor-field" data-operation-fields="stock">
                             <label for="masseditor-stock-mode">{$texts.stock_mode|escape}</label>
                             <select id="masseditor-stock-mode" name="stock_mode">

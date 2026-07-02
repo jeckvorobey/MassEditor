@@ -632,6 +632,21 @@ msgstr "Make infinite"
 msgid "Stock value"
 msgstr "Stock value"
 
+msgid "Stock accounting type"
+msgstr "Stock accounting type"
+
+msgid "All products"
+msgstr "All products"
+
+msgid "Without warehouse accounting"
+msgstr "Without warehouse accounting"
+
+msgid "With warehouse accounting"
+msgstr "With warehouse accounting"
+
+msgid "%d products skipped by stock type filter"
+msgstr "%d products skipped by stock type filter"
+
 msgid "Feature"
 msgstr "Feature"
 

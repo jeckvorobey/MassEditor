@@ -122,6 +122,7 @@
     var stockId = document.getElementById('masseditor-stock-id');
     var stockMode = document.getElementById('masseditor-stock-mode');
     var stockValueField = document.querySelector('[data-stock-value-field]');
+    var stockTypeFilterField = document.querySelector('[data-stock-type-filter-field]');
     var featureMode = document.getElementById('masseditor-feature-mode');
     var featureValueField = document.querySelector('[data-feature-value-field]');
     var selectAll = document.querySelector('[data-role="select-all"]');
@@ -593,6 +594,7 @@
 
         updateComparePriceVisibility();
         updateStockValueVisibility();
+        updateStockTypeFilterVisibility();
         updateFeatureValueVisibility();
     }
 
@@ -619,6 +621,15 @@
         Array.prototype.slice.call(stockValueField.querySelectorAll('input')).forEach(function (input) {
             input.disabled = !active;
         });
+    }
+
+    function updateStockTypeFilterVisibility() {
+        if (!stockTypeFilterField || !stockId) {
+            return;
+        }
+
+        var visible = currentOperation() === 'stock' && stockId.value === '0';
+        stockTypeFilterField.hidden = !visible;
     }
 
     function updateFeatureValueVisibility() {
@@ -836,6 +847,10 @@
 
     if (stockMode) {
         stockMode.addEventListener('change', updateStockValueVisibility);
+    }
+
+    if (stockId) {
+        stockId.addEventListener('change', updateStockTypeFilterVisibility);
     }
 
     if (featureMode) {
