@@ -403,6 +403,8 @@ function buildAppDom() {
   form.appendChild(selectionMode);
   const selectAll = createNode(document, 'input', { 'data-role': 'select-all', type: 'checkbox' });
   document.body.appendChild(selectAll);
+  const selectAllPageMobile = createNode(document, 'input', { 'data-role': 'select-all-page-mobile', type: 'checkbox' });
+  document.body.appendChild(selectAllPageMobile);
   const selectFilter = createNode(document, 'button', { 'data-role': 'select-filter', 'data-total': '8' });
   document.body.appendChild(selectFilter);
   const selectedCount = createNode(document, 'span', { 'data-role': 'selected-count' });

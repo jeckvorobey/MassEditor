@@ -125,6 +125,7 @@
     var featureMode = document.getElementById('masseditor-feature-mode');
     var featureValueField = document.querySelector('[data-feature-value-field]');
     var selectAll = document.querySelector('[data-role="select-all"]');
+    var selectAllPageMobile = document.querySelector('[data-role="select-all-page-mobile"]');
     var selectFilter = document.querySelector('[data-role="select-filter"]');
     var selectionModeInput = document.querySelector('[data-role="selection-mode"]');
     var productCheckboxes = Array.prototype.slice.call(document.querySelectorAll('[data-role="product-checkbox"]'));
@@ -556,6 +557,11 @@
             selectAll.indeterminate = checkedCount > 0 && checkedCount < productCheckboxes.length;
         }
 
+        if (selectAllPageMobile) {
+            selectAllPageMobile.checked = checkedCount > 0 && checkedCount === productCheckboxes.length;
+            selectAllPageMobile.indeterminate = checkedCount > 0 && checkedCount < productCheckboxes.length;
+        }
+
         if (mobileApplyCount) {
             mobileApplyCount.textContent = totalSelected + ' ' + t('products_word', 'products');
         }
@@ -666,9 +672,16 @@
 
         var active = currentOperation() === 'features' && featureMode.value !== 'clear';
         featureValueField.hidden = !active;
-        Array.prototype.slice.call(featureValueField.querySelectorAll('input')).forEach(function (input) {
-            input.disabled = !active;
-        });
+
+        if (active) {
+            showFeatureWidget();
+        } else {
+            var widgets = featureValueField.querySelectorAll('[data-widget]');
+            Array.prototype.slice.call(widgets).forEach(function (widget) {
+                widget.hidden = true;
+                widget.disabled = true;
+            });
+        }
     }
 
     function operationModeText(operation) {
@@ -740,8 +753,23 @@
             return stockMode && stockMode.value === 'infinite' ? t('stock_infinite', 'Make infinite') : (stockValue && stockValue.value ? stockValue.value : '—');
         }
         if (operation === 'features') {
-            var featureValue = document.getElementById('masseditor-feature-value');
-            return featureMode && featureMode.value === 'clear' ? t('clear', 'Clear') : (featureValue && featureValue.value ? featureValue.value.substring(0, 80) : '—');
+            if (featureMode && featureMode.value === 'clear') {
+                return t('clear', 'Clear');
+            }
+            var feature = document.getElementById('masseditor-feature-id');
+            if (feature && feature.value !== '0') {
+                var selectedOption = feature.options ? feature.options[feature.selectedIndex] : null;
+                var uiType = (selectedOption && selectedOption.getAttribute) ? selectedOption.getAttribute('data-ui') : 'text';
+                if (!uiType) { uiType = 'text'; }
+                var activeWidget = featureValueField.querySelector('[data-widget="' + uiType + '"]');
+                if (!activeWidget) {
+                    activeWidget = featureValueField.querySelector('[data-widget="text"]');
+                }
+                var fallbackValue = document.getElementById('masseditor-feature-value');
+                var displayValue = activeWidget ? activeWidget.value : (fallbackValue ? fallbackValue.value : '');
+                return displayValue ? displayValue.substring(0, 80) : '—';
+            }
+            return '—';
         }
         if (operation === 'categories') {
             var category = document.getElementById('masseditor-operation-category-id');
@@ -799,14 +827,24 @@
 
         if (operation === 'features') {
             var feature = document.getElementById('masseditor-feature-id');
-            var featureValue = document.getElementById('masseditor-feature-value');
             if (!feature || feature.value === '0') {
                 showErrorToast(t('validation_feature', 'Select a feature.'));
                 return false;
             }
-            if (featureMode && featureMode.value !== 'clear' && (!featureValue || !featureValue.value.trim())) {
-                showErrorToast(t('validation_feature_value', 'Enter a feature value.'));
-                return false;
+            if (featureMode && featureMode.value !== 'clear') {
+                var selectedOption = feature.options ? feature.options[feature.selectedIndex] : null;
+                var uiType = (selectedOption && selectedOption.getAttribute) ? selectedOption.getAttribute('data-ui') : 'text';
+                if (!uiType) { uiType = 'text'; }
+                var activeWidget = featureValueField.querySelector('[data-widget="' + uiType + '"]');
+                if (!activeWidget) {
+                    activeWidget = featureValueField.querySelector('[data-widget="text"]');
+                }
+                var fallbackValue = document.getElementById('masseditor-feature-value');
+                var widgetValue = activeWidget ? activeWidget.value : (fallbackValue ? fallbackValue.value : '');
+                if (!widgetValue.trim()) {
+                    showErrorToast(t('validation_feature_value', 'Enter a feature value.'));
+                    return false;
+                }
             }
         }
 
@@ -897,10 +935,86 @@
         featureMode.addEventListener('change', updateFeatureValueVisibility);
     }
 
+    var featureId = document.getElementById('masseditor-feature-id');
+    if (featureId) {
+        featureId.addEventListener('change', function () {
+            showFeatureWidget();
+        });
+    }
+
+    function showFeatureWidget() {
+        if (!featureId || !featureValueField) {
+            return;
+        }
+
+        var selectedOption = featureId.options ? featureId.options[featureId.selectedIndex] : null;
+        var uiType = (selectedOption && selectedOption.getAttribute) ? selectedOption.getAttribute('data-ui') : 'text';
+        if (!uiType) {
+            uiType = 'text';
+        }
+        var featureIdValue = featureId.value;
+
+        var widgets = featureValueField.querySelectorAll('[data-widget]');
+        Array.prototype.slice.call(widgets).forEach(function (widget) {
+            widget.hidden = true;
+            widget.disabled = true;
+        });
+
+        if (featureIdValue === '0' || featureMode.value === 'clear') {
+            return;
+        }
+
+        var activeWidget = featureValueField.querySelector('[data-widget="' + uiType + '"]');
+        if (!activeWidget) {
+            activeWidget = featureValueField.querySelector('[data-widget="text"]');
+        }
+
+        if (activeWidget) {
+            activeWidget.hidden = false;
+            activeWidget.disabled = false;
+
+            if (uiType === 'select') {
+                populateSelectValues(activeWidget, featureIdValue);
+            }
+        }
+    }
+
+    function populateSelectValues(selectEl, featureIdValue) {
+        var valuesMap = window.__masseditor_feature_values_map || {};
+        var values = valuesMap[featureIdValue] || [];
+        var texts = window.__masseditor_texts || {};
+
+        while (selectEl.options.length > 1) {
+            selectEl.remove(1);
+        }
+
+        values.forEach(function (item) {
+            var opt = document.createElement('option');
+            opt.value = item.value;
+            opt.textContent = item.value;
+            selectEl.appendChild(opt);
+        });
+
+        if (selectEl.options.length > 0) {
+            selectEl.options[0].textContent = texts.select_value || '—';
+        }
+    }
+
     if (selectAll) {
         selectAll.addEventListener('change', function () {
             productCheckboxes.forEach(function (checkbox) {
                 checkbox.checked = selectAll.checked;
+                setProductSelection(toProductId(checkbox.value), checkbox.checked);
+            });
+            saveSelectedProductsMap();
+            updateSelectionState();
+        });
+    }
+
+    if (selectAllPageMobile) {
+        selectAllPageMobile.addEventListener('change', function () {
+            productCheckboxes.forEach(function (checkbox) {
+                checkbox.checked = selectAllPageMobile.checked;
                 setProductSelection(toProductId(checkbox.value), checkbox.checked);
             });
             saveSelectedProductsMap();
@@ -962,4 +1076,5 @@
     syncCheckboxesFromSelection();
     setOperation(currentOperation());
     updateSelectionState();
+    showFeatureWidget();
 })();

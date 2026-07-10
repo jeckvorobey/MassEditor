@@ -865,10 +865,9 @@ class MassOperationServiceTest extends TestCase
             'selectable' => 1,
             'multiple' => 0,
         ))));
-        $service = new shopMasseditorPluginMassOperationService($selection, new FakeLogService(), $model, 100);
+        $model->queueResponse('FROM shop_feature_values_varchar', new FakeQueryResult(array(array('id' => 78))));
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Тип характеристики не поддерживается');
+        $service = new shopMasseditorPluginMassOperationService($selection, new FakeLogService(), $model, 100);
         $service->apply(array(
             'product_ids' => array(15),
             'operation' => 'features',
@@ -877,6 +876,10 @@ class MassOperationServiceTest extends TestCase
             'feature_value' => 'red',
             'confirm_apply' => 1,
         ));
+
+        $this->assertStringContainsString('DELETE FROM shop_product_features', $model->execs[1]['sql']);
+        $this->assertStringContainsString('INSERT INTO shop_product_features', $model->execs[2]['sql']);
+        $this->assertSame(78, $model->execs[2]['params']['feature_value_id']);
     }
 
     public function testApplyFeatureOperationCreatesMissingBasicValueBeforeAssigning(): void
@@ -937,6 +940,241 @@ class MassOperationServiceTest extends TestCase
             'feature_value' => 'heavy',
             'confirm_apply' => 1,
         ));
+    }
+
+    public function testApplyFeatureOperationSupportsBooleanType(): void
+    {
+        $selection = new FakeSelectionService();
+        $selection->products = array(15 => array('id' => 15, 'name' => 'Bool Product'));
+        $model = new waModel();
+        $model->queueResponse('FROM shop_feature WHERE', new FakeQueryResult(array(array(
+            'id' => 20,
+            'name' => 'WiFi',
+            'type' => 'boolean',
+            'selectable' => 1,
+            'multiple' => 0,
+        ))));
+        $model->queueResponse('FROM shop_feature_values_varchar', new FakeQueryResult(array(array('id' => 101))));
+
+        $service = new shopMasseditorPluginMassOperationService($selection, new FakeLogService(), $model, 100);
+        $service->apply(array(
+            'product_ids' => array(15),
+            'operation' => 'features',
+            'feature_id' => 20,
+            'feature_mode' => 'set',
+            'feature_value' => '1',
+            'confirm_apply' => 1,
+        ));
+
+        $this->assertStringContainsString('DELETE FROM shop_product_features', $model->execs[1]['sql']);
+        $this->assertStringContainsString('INSERT INTO shop_product_features', $model->execs[2]['sql']);
+        $this->assertSame(101, $model->execs[2]['params']['feature_value_id']);
+    }
+
+    public function testApplyFeatureOperationSupportsDimensionType(): void
+    {
+        $selection = new FakeSelectionService();
+        $selection->products = array(15 => array('id' => 15, 'name' => 'Dim Product'));
+        $model = new waModel();
+        $model->queueResponse('FROM shop_feature WHERE', new FakeQueryResult(array(array(
+            'id' => 21,
+            'name' => 'Height',
+            'type' => 'dimension.length',
+            'selectable' => 0,
+            'multiple' => 0,
+        ))));
+        $model->queueResponse('FROM shop_feature_values_double', new FakeQueryResult(array(array('id' => 102))));
+
+        $service = new shopMasseditorPluginMassOperationService($selection, new FakeLogService(), $model, 100);
+        $service->apply(array(
+            'product_ids' => array(15),
+            'operation' => 'features',
+            'feature_id' => 21,
+            'feature_mode' => 'set',
+            'feature_value' => '12,5',
+            'confirm_apply' => 1,
+        ));
+
+        $this->assertStringContainsString('DELETE FROM shop_product_features', $model->execs[1]['sql']);
+        $this->assertStringContainsString('INSERT INTO shop_product_features', $model->execs[2]['sql']);
+        $this->assertSame(102, $model->execs[2]['params']['feature_value_id']);
+    }
+
+    public function testApplyFeatureOperationSupportsColorType(): void
+    {
+        $selection = new FakeSelectionService();
+        $selection->products = array(15 => array('id' => 15, 'name' => 'Color Product'));
+        $model = new waModel();
+        $model->queueResponse('FROM shop_feature WHERE', new FakeQueryResult(array(array(
+            'id' => 22,
+            'name' => 'Color',
+            'type' => 'color',
+            'selectable' => 1,
+            'multiple' => 0,
+        ))));
+        $model->queueResponse('FROM shop_feature_values_varchar', new FakeQueryResult(array(array('id' => 103))));
+
+        $service = new shopMasseditorPluginMassOperationService($selection, new FakeLogService(), $model, 100);
+        $service->apply(array(
+            'product_ids' => array(15),
+            'operation' => 'features',
+            'feature_id' => 22,
+            'feature_mode' => 'set',
+            'feature_value' => '#ff0000',
+            'confirm_apply' => 1,
+        ));
+
+        $this->assertStringContainsString('DELETE FROM shop_product_features', $model->execs[1]['sql']);
+        $this->assertStringContainsString('INSERT INTO shop_product_features', $model->execs[2]['sql']);
+        $this->assertSame(103, $model->execs[2]['params']['feature_value_id']);
+    }
+
+    public function testApplyFeatureOperationSupportsSelectType(): void
+    {
+        $selection = new FakeSelectionService();
+        $selection->products = array(15 => array('id' => 15, 'name' => 'Select Product'));
+        $model = new waModel();
+        $model->queueResponse('FROM shop_feature WHERE', new FakeQueryResult(array(array(
+            'id' => 23,
+            'name' => 'Size',
+            'type' => 'select',
+            'selectable' => 1,
+            'multiple' => 0,
+        ))));
+        $model->queueResponse('FROM shop_feature_values_varchar', new FakeQueryResult(array(array('id' => 104))));
+
+        $service = new shopMasseditorPluginMassOperationService($selection, new FakeLogService(), $model, 100);
+        $service->apply(array(
+            'product_ids' => array(15),
+            'operation' => 'features',
+            'feature_id' => 23,
+            'feature_mode' => 'set',
+            'feature_value' => 'Large',
+            'confirm_apply' => 1,
+        ));
+
+        $this->assertStringContainsString('DELETE FROM shop_product_features', $model->execs[1]['sql']);
+        $this->assertStringContainsString('INSERT INTO shop_product_features', $model->execs[2]['sql']);
+        $this->assertSame(104, $model->execs[2]['params']['feature_value_id']);
+    }
+
+    public function testApplyFeatureOperationSupportsRadioType(): void
+    {
+        $selection = new FakeSelectionService();
+        $selection->products = array(15 => array('id' => 15, 'name' => 'Radio Product'));
+        $model = new waModel();
+        $model->queueResponse('FROM shop_feature WHERE', new FakeQueryResult(array(array(
+            'id' => 24,
+            'name' => 'Material',
+            'type' => 'radio',
+            'selectable' => 1,
+            'multiple' => 0,
+        ))));
+        $model->queueResponse('FROM shop_feature_values_varchar', new FakeQueryResult(array(array('id' => 105))));
+
+        $service = new shopMasseditorPluginMassOperationService($selection, new FakeLogService(), $model, 100);
+        $service->apply(array(
+            'product_ids' => array(15),
+            'operation' => 'features',
+            'feature_id' => 24,
+            'feature_mode' => 'set',
+            'feature_value' => 'Cotton',
+            'confirm_apply' => 1,
+        ));
+
+        $this->assertStringContainsString('DELETE FROM shop_product_features', $model->execs[1]['sql']);
+        $this->assertStringContainsString('INSERT INTO shop_product_features', $model->execs[2]['sql']);
+        $this->assertSame(105, $model->execs[2]['params']['feature_value_id']);
+    }
+
+    public function testApplyFeatureOperationSupportsRangeType(): void
+    {
+        $selection = new FakeSelectionService();
+        $selection->products = array(15 => array('id' => 15, 'name' => 'Range Product'));
+        $model = new waModel();
+        $model->queueResponse('FROM shop_feature WHERE', new FakeQueryResult(array(array(
+            'id' => 25,
+            'name' => 'Power',
+            'type' => 'range',
+            'selectable' => 0,
+            'multiple' => 0,
+        ))));
+        $model->queueResponse('FROM shop_feature_values_double', new FakeQueryResult(array(array('id' => 106))));
+
+        $service = new shopMasseditorPluginMassOperationService($selection, new FakeLogService(), $model, 100);
+        $service->apply(array(
+            'product_ids' => array(15),
+            'operation' => 'features',
+            'feature_id' => 25,
+            'feature_mode' => 'set',
+            'feature_value' => '42',
+            'confirm_apply' => 1,
+        ));
+
+        $this->assertStringContainsString('DELETE FROM shop_product_features', $model->execs[1]['sql']);
+        $this->assertStringContainsString('INSERT INTO shop_product_features', $model->execs[2]['sql']);
+        $this->assertSame(106, $model->execs[2]['params']['feature_value_id']);
+    }
+
+    public function testApplyFeatureOperationClearWorksForAllTypes(): void
+    {
+        $selection = new FakeSelectionService();
+        $selection->products = array(15 => array('id' => 15, 'name' => 'Clear Product'));
+
+        foreach (array('boolean', 'dimension.length', 'color', 'select', 'radio', 'range') as $type) {
+            $model = new waModel();
+            $model->queueResponse('FROM shop_feature WHERE', new FakeQueryResult(array(array(
+                'id' => 30,
+                'name' => 'Test Feature',
+                'type' => $type,
+                'selectable' => 0,
+                'multiple' => 0,
+            ))));
+
+            $service = new shopMasseditorPluginMassOperationService($selection, new FakeLogService(), $model, 100);
+            $service->apply(array(
+                'product_ids' => array(15),
+                'operation' => 'features',
+                'feature_id' => 30,
+                'feature_mode' => 'clear',
+                'feature_value' => '',
+                'confirm_apply' => 1,
+            ));
+
+            $this->assertStringContainsString('DELETE FROM shop_product_features', $model->execs[1]['sql']);
+            $this->assertCount(3, $model->execs, "Clear for type {$type} should have START TRANSACTION, DELETE, COMMIT");
+            $this->assertStringContainsString('START TRANSACTION', $model->execs[0]['sql']);
+            $this->assertStringContainsString('COMMIT', $model->execs[2]['sql']);
+        }
+    }
+
+    public function testApplyFeatureOperationRejectsUnknownTypeWithFallback(): void
+    {
+        $selection = new FakeSelectionService();
+        $selection->products = array(15 => array('id' => 15, 'name' => 'Unknown Product'));
+        $model = new waModel();
+        $model->queueResponse('FROM shop_feature WHERE', new FakeQueryResult(array(array(
+            'id' => 26,
+            'name' => 'Custom',
+            'type' => 'custom_future_type',
+            'selectable' => 0,
+            'multiple' => 0,
+        ))));
+        $model->queueResponse('FROM shop_feature_values_varchar', new FakeQueryResult(array(array('id' => 107))));
+
+        $service = new shopMasseditorPluginMassOperationService($selection, new FakeLogService(), $model, 100);
+        $service->apply(array(
+            'product_ids' => array(15),
+            'operation' => 'features',
+            'feature_id' => 26,
+            'feature_mode' => 'set',
+            'feature_value' => 'test value',
+            'confirm_apply' => 1,
+        ));
+
+        $this->assertStringContainsString('DELETE FROM shop_product_features', $model->execs[1]['sql']);
+        $this->assertStringContainsString('INSERT INTO shop_product_features', $model->execs[2]['sql']);
+        $this->assertSame(107, $model->execs[2]['params']['feature_value_id']);
     }
 
     public function testApplyCategoriesOperationAddsRemovesAndReplacesMainCategory(): void
@@ -1057,5 +1295,44 @@ class MassOperationServiceTest extends TestCase
         $this->expectExceptionMessage('Не удалось подобрать уникальный URL');
 
         $this->invokePrivate($service, 'suggestUniqueProductUrl', array('name', 99));
+    }
+
+    public function testGetFeatureValuesReturnsSelectableValues(): void
+    {
+        $model = new waModel();
+        $model->queueResponse('FROM shop_feature_values_varchar', new FakeQueryResult(array(
+            array('id' => 1, 'value' => 'Cotton'),
+            array('id' => 2, 'value' => 'Linen'),
+            array('id' => 3, 'value' => 'Silk'),
+        )));
+
+        $service = new shopMasseditorPluginMassOperationService(
+            new FakeSelectionService(),
+            new FakeLogService(),
+            $model,
+            100
+        );
+
+        $values = $service->getFeatureValues(7, 'varchar');
+
+        $this->assertCount(3, $values);
+        $this->assertSame('Cotton', $values[0]['value']);
+        $this->assertSame('Linen', $values[1]['value']);
+        $this->assertSame('Silk', $values[2]['value']);
+    }
+
+    public function testGetFeatureValuesReturnsEmptyForInvalidSuffix(): void
+    {
+        $model = new waModel();
+        $service = new shopMasseditorPluginMassOperationService(
+            new FakeSelectionService(),
+            new FakeLogService(),
+            $model,
+            100
+        );
+
+        $values = $service->getFeatureValues(7, 'invalid_table');
+
+        $this->assertEmpty($values);
     }
 }

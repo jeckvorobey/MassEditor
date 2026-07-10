@@ -641,11 +641,26 @@ msgstr "Feature"
 msgid "Select feature"
 msgstr "Select feature"
 
+msgid "Select value"
+msgstr "Select value"
+
 msgid "Feature mode"
 msgstr "Feature mode"
 
 msgid "Feature value"
 msgstr "Feature value"
+
+msgid "Yes"
+msgstr "Yes"
+
+msgid "No"
+msgstr "No"
+
+msgid "Enter a hex color value (e.g. #ff0000)"
+msgstr "Enter a hex color value (e.g. #ff0000)"
+
+msgid "Enter a numeric value"
+msgstr "Enter a numeric value"
 
 msgid "Select category"
 msgstr "Select category"
@@ -694,6 +709,9 @@ msgstr "Enter a feature value."
 
 msgid "Enter a valid feature value."
 msgstr "Enter a valid feature value."
+
+msgid "Enter 1 for yes or 0 for no."
+msgstr "Enter 1 for yes or 0 for no."
 
 msgid "Feature type is not supported in this version."
 msgstr "Feature type is not supported in this version."

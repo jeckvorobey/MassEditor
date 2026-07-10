@@ -952,9 +952,8 @@ class shopMasseditorPluginMassOperationService
         }
 
         $feature = reset($rows);
-        $type = isset($feature['type']) ? (string) $feature['type'] : '';
         $multiple = !empty($feature['multiple']);
-        if ($multiple || !$this->featureValueTableSuffix($type)) {
+        if ($multiple) {
             throw new InvalidArgumentException($this->t('unsupported_feature_type'));
         }
 
@@ -1010,13 +1009,24 @@ class shopMasseditorPluginMassOperationService
     private function normalizeFeatureValue(array $feature, $value)
     {
         $type = $this->featureBaseType(isset($feature['type']) ? $feature['type'] : '');
-        if (in_array($type, array('double', 'int'), true)) {
+        $config = $this->featureTypeConfig(isset($feature['type']) ? $feature['type'] : '');
+
+        if ($config['validate'] === 'numeric') {
             $value = str_replace(',', '.', trim((string) $value));
             if ($value === '' || !is_numeric($value)) {
                 throw new InvalidArgumentException($this->t('validation_feature_numeric_value'));
             }
 
             return (float) $value;
+        }
+
+        if ($config['validate'] === 'boolean') {
+            $value = trim((string) $value);
+            if ($value !== '1' && $value !== '0') {
+                throw new InvalidArgumentException($this->t('validation_feature_boolean_value'));
+            }
+
+            return $value;
         }
 
         return trim((string) $value);
@@ -1032,18 +1042,71 @@ class shopMasseditorPluginMassOperationService
         return $type;
     }
 
-    private function featureValueTableSuffix($type)
+    private function featureTypeConfig($type)
     {
-        $type = $this->featureBaseType($type);
+        $base = $this->featureBaseType($type);
 
-        $allowed = array(
-            'varchar' => 'varchar',
-            'text' => 'text',
-            'double' => 'double',
-            'int' => 'double',
+        $configs = array(
+            'varchar'   => array('table' => 'varchar', 'validate' => 'string'),
+            'text'      => array('table' => 'text',    'validate' => 'string'),
+            'double'    => array('table' => 'double',  'validate' => 'numeric'),
+            'int'       => array('table' => 'double',  'validate' => 'numeric'),
+            'boolean'   => array('table' => 'varchar', 'validate' => 'boolean'),
+            'color'     => array('table' => 'varchar', 'validate' => 'string'),
+            'dimension' => array('table' => 'double',  'validate' => 'numeric'),
+            'range'     => array('table' => 'double',  'validate' => 'numeric'),
+            'select'    => array('table' => 'varchar', 'validate' => 'string'),
+            'radio'     => array('table' => 'varchar', 'validate' => 'string'),
         );
 
-        return isset($allowed[$type]) ? $allowed[$type] : '';
+        return isset($configs[$base]) ? $configs[$base] : array('table' => 'varchar', 'validate' => 'string');
+    }
+
+    private function featureValueTableSuffix($type)
+    {
+        $config = $this->featureTypeConfig($type);
+
+        return $config['table'];
+    }
+
+    public function getFeatureValues($feature_id, $table_suffix)
+    {
+        $allowed_suffixes = array('varchar', 'text', 'double');
+        if (!in_array($table_suffix, $allowed_suffixes, true)) {
+            return array();
+        }
+
+        $rows = $this->model
+            ->query(
+                'SELECT id, value FROM shop_feature_values_' . $table_suffix . ' WHERE feature_id = i:feature_id ORDER BY value ASC',
+                array('feature_id' => (int) $feature_id)
+            )
+            ->fetchAll();
+
+        return $rows ? $rows : array();
+    }
+
+    public function getFeatureUiConfig($type)
+    {
+        $base = $this->featureBaseType($type);
+
+        $ui_map = array(
+            'varchar'   => 'text',
+            'text'      => 'textarea',
+            'double'    => 'number',
+            'int'       => 'number',
+            'boolean'   => 'boolean_select',
+            'color'     => 'text',
+            'dimension' => 'number',
+            'range'     => 'number',
+            'select'    => 'select',
+            'radio'     => 'select',
+        );
+
+        $ui = isset($ui_map[$base]) ? $ui_map[$base] : 'text';
+        $table = $this->featureValueTableSuffix($type);
+
+        return array('ui' => $ui, 'table' => $table);
     }
 
     private function normalizeOperationLimit($operation_limit)

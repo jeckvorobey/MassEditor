@@ -516,7 +516,7 @@ test('select all by filter switches payload mode without losing checkbox mode', 
 test('template renders compact select-all-found button and left-aligned counter under title', () => {
   assert.match(
     templateSource,
-    /<div class="masseditor-table-card__heading">\s*<h2>\{\$texts\.nav_products\|escape\}<\/h2>\s*<span class="masseditor-counter" data-role="selection-counter-pill" data-total="\{\$pagination\.total\|escape\}">\{\$texts\.stats_selected\|escape\} 0 \{\$texts\.selected_counter_separator\|escape\} \{\$pagination\.total\|escape\}<\/span>\s*<\/div>\s*<div class="masseditor-searchbox masseditor-table-search">[\s\S]*data-role="product-search-input"[\s\S]*data-role="product-search-suggestions"[\s\S]*<div class="masseditor-panel__actions masseditor-table-card__actions">\s*\{if \$can_select_filter\}\s*<button class="button masseditor-button masseditor-button_primary masseditor-button_compact" type="button" data-role="select-filter"/
+    /<div class="masseditor-table-card__heading">\s*<h2>\{\$texts\.nav_products\|escape\}<\/h2>\s*<span class="masseditor-counter" data-role="selection-counter-pill" data-total="\{\$pagination\.total\|escape\}">\{\$texts\.stats_selected\|escape\} 0 \{\$texts\.selected_counter_separator\|escape\} \{\$pagination\.total\|escape\}<\/span>\s*<\/div>\s*<div class="masseditor-searchbox masseditor-table-search">[\s\S]*data-role="product-search-input"[\s\S]*data-role="product-search-suggestions"[\s\S]*<div class="masseditor-panel__actions masseditor-table-card__actions">[\s\S]*\{if \$can_select_filter\}\s*<button class="button masseditor-button masseditor-button_primary masseditor-button_compact" type="button" data-role="select-filter"/
   );
 });
 
@@ -657,4 +657,55 @@ test('product search clear button resets query and submits filter form', () => {
   assert.equal(clear.hidden, true);
   assert.equal(app.document.activeElement, query);
   assert.equal(submitted, true);
+});
+
+test('mobile select-all-page checkbox toggles all product checkboxes and persists to localStorage', () => {
+  const app = boot();
+  const mobileSelectAll = app.document.querySelector('[data-role="select-all-page-mobile"]');
+  const checkboxes = app.document.querySelectorAll('[data-role="product-checkbox"]');
+
+  mobileSelectAll.checked = true;
+  change(mobileSelectAll);
+
+  assert.equal(checkboxes[0].checked, true);
+  assert.equal(checkboxes[1].checked, true);
+  assert.equal(app.document.querySelector('[data-role="selected-count"]').textContent, 2);
+  assert.equal(app.localStorage.snapshot()['masseditor:selected-products:masseditor'], '[1,2]');
+});
+
+test('mobile select-all-page checkbox unchecks all and clears localStorage', () => {
+  const app = boot({
+    localStorage: { 'masseditor:selected-products:masseditor': '[1,2]' },
+  });
+  const mobileSelectAll = app.document.querySelector('[data-role="select-all-page-mobile"]');
+  const checkboxes = app.document.querySelectorAll('[data-role="product-checkbox"]');
+
+  checkboxes[0].checked = true;
+  checkboxes[1].checked = true;
+
+  mobileSelectAll.checked = false;
+  change(mobileSelectAll);
+
+  assert.equal(checkboxes[0].checked, false);
+  assert.equal(checkboxes[1].checked, false);
+  assert.equal(app.document.querySelector('[data-role="selected-count"]').textContent, 0);
+  assert.equal(app.localStorage.snapshot()['masseditor:selected-products:masseditor'], undefined);
+});
+
+test('mobile select-all-page checkbox shows indeterminate when partial selection', () => {
+  const app = boot();
+  const mobileSelectAll = app.document.querySelector('[data-role="select-all-page-mobile"]');
+  const checkboxes = app.document.querySelectorAll('[data-role="product-checkbox"]');
+
+  checkboxes[0].checked = true;
+  change(checkboxes[0]);
+
+  assert.equal(mobileSelectAll.indeterminate, true);
+  assert.equal(mobileSelectAll.checked, false);
+
+  checkboxes[1].checked = true;
+  change(checkboxes[1]);
+
+  assert.equal(mobileSelectAll.indeterminate, false);
+  assert.equal(mobileSelectAll.checked, true);
 });

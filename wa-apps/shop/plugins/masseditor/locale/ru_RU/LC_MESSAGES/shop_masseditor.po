@@ -645,11 +645,26 @@ msgstr "Характеристика"
 msgid "Select feature"
 msgstr "Выберите характеристику"
 
+msgid "Select value"
+msgstr "Выбрать значение"
+
 msgid "Feature mode"
 msgstr "Режим характеристики"
 
 msgid "Feature value"
 msgstr "Значение характеристики"
+
+msgid "Yes"
+msgstr "Да"
+
+msgid "No"
+msgstr "Нет"
+
+msgid "Enter a hex color value (e.g. #ff0000)"
+msgstr "Введите hex-значение цвета (например #ff0000)"
+
+msgid "Enter a numeric value"
+msgstr "Введите числовое значение"
 
 msgid "Select category"
 msgstr "Выберите категорию"
@@ -698,6 +713,9 @@ msgstr "Укажите значение характеристики."
 
 msgid "Enter a valid feature value."
 msgstr "Укажите корректное значение характеристики."
+
+msgid "Enter 1 for yes or 0 for no."
+msgstr "Укажите 1 для «да» или 0 для «нет»."
 
 msgid "Feature type is not supported in this version."
 msgstr "Тип характеристики не поддерживается в этой версии."

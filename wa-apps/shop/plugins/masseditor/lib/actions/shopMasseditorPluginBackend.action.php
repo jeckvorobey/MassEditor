@@ -101,6 +101,22 @@ class shopMasseditorPluginBackendAction extends waViewAction
         $categories = $selection_service->getCategories();
         $stocks = $selection_service->getStocks();
         $features = $selection_service->getEditableFeatures();
+        $decorated_features = $this->decorateFeatures($features);
+
+        $feature_values_map = array();
+        $feature_ui_map = array();
+        foreach ($decorated_features as $feature) {
+            $feature_id = (int) $feature['id'];
+            $type = isset($feature['type']) ? (string) $feature['type'] : '';
+            $ui_config = $operation_service->getFeatureUiConfig($type);
+            $feature_ui_map[$feature_id] = $ui_config['ui'];
+
+            if (!empty($feature['selectable'])) {
+                $values = $operation_service->getFeatureValues($feature_id, $ui_config['table']);
+                $feature_values_map[$feature_id] = $values;
+            }
+        }
+
         $log_selection = $log_service->getPage($log_page, 20);
         $recent_logs = $this->decorateLogs($log_selection['logs'], $language);
         $last_log = $this->decorateLogs($log_service->getLatest(1), $language);
@@ -118,7 +134,9 @@ class shopMasseditorPluginBackendAction extends waViewAction
             ),
             'categories' => $categories,
             'stocks' => $stocks,
-            'features' => $this->decorateFeatures($features),
+            'features' => $decorated_features,
+            'feature_values_map' => $feature_values_map,
+            'feature_ui_map' => $feature_ui_map,
             'filters' => $selection['filters'],
             'pagination' => $selection['pagination'],
             'pagination_ui' => $this->buildPaginationUi($selection['pagination']),
@@ -255,25 +273,13 @@ class shopMasseditorPluginBackendAction extends waViewAction
     {
         $result = array();
         foreach ($features as $feature) {
-            $type = isset($feature['type']) ? (string) $feature['type'] : '';
-            $multiple = !empty($feature['multiple']);
-            if ($multiple || !$this->isFeatureTypeEditable($type)) {
+            if (!empty($feature['multiple'])) {
                 continue;
             }
             $result[] = $feature;
         }
 
         return $result;
-    }
-
-    private function isFeatureTypeEditable($type)
-    {
-        $type = strtolower((string) $type);
-        if (strpos($type, '.') !== false) {
-            $type = substr($type, 0, strpos($type, '.'));
-        }
-
-        return in_array($type, array('varchar', 'text', 'double', 'int'), true);
     }
 
     private function resolvePriceViewDigits(array $operation_form)

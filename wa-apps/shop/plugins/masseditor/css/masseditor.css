@@ -1102,6 +1102,10 @@
     display: none;
 }
 
+.masseditor-select-all-page-mobile {
+    display: none;
+}
+
 @media (max-width: 1180px) {
     .masseditor-workspace {
         grid-template-columns: 1fr 1fr;
@@ -1175,6 +1179,21 @@
         width: 100%;
         min-width: 0;
         justify-self: auto;
+    }
+
+    .masseditor-select-all-page-mobile {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: var(--me-font-ui);
+        cursor: pointer;
+        padding: 8px 0;
+    }
+
+    .masseditor-select-all-page-mobile input[type="checkbox"] {
+        width: 22px;
+        height: 22px;
+        flex-shrink: 0;
     }
 
     .masseditor-tabs {

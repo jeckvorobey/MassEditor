@@ -358,6 +358,14 @@ class BackendActionTest extends TestCase
         $this->assertStringContainsString('<option value="increase_percent"{if $operation_form.mode === \'increase_percent\'} selected{/if}>{$texts.increase_percent|escape}</option>', $template);
         $this->assertStringContainsString('<option value="decrease_percent"{if $operation_form.mode === \'decrease_percent\'} selected{/if}>{$texts.decrease_percent|escape}</option>', $template);
     }
+
+    public function testTemplateHidesWarehouseButtonWhenStockFilterSelected(): void
+    {
+        $template = file_get_contents(__DIR__ . '/../../wa-apps/shop/plugins/masseditor/templates/actions/backend/Backend.html');
+
+        $this->assertStringContainsString('{if $filters.stock_id == 0 && !empty($product.stock_details)}', $template);
+        $this->assertStringContainsString('data-role="stock-popover-toggle"', $template);
+    }
 }
 
 class ControllerFakeProductSelectionService extends shopMasseditorPluginProductSelectionService
