@@ -388,8 +388,7 @@ class shopMasseditorPluginMassOperationService
         }
 
         $use_warehouse_stock = $request['operation'] === 'stock'
-            && $request['stock_id'] > 0
-            && $this->usesWarehouseStockAccounting($skus);
+            && $request['stock_id'] > 0;
 
         if ($use_warehouse_stock) {
             $this->applyWarehouseStockOperation((int) $product_data['id'], $request, $skus);
@@ -465,7 +464,9 @@ class shopMasseditorPluginMassOperationService
     private function applyWarehouseStockOperation($product_id, array $request, array $skus)
     {
         $rows = array();
-        $stock_ids = isset($request['stock_ids']) && $request['stock_ids'] ? $request['stock_ids'] : array($request['stock_id']);
+        $stock_ids = isset($request['stock_ids']) && $request['stock_ids']
+            ? $request['stock_ids']
+            : array($request['stock_id']);
 
         foreach ($skus as $sku_id => $sku) {
             foreach ($stock_ids as $stock_id) {
@@ -480,6 +481,7 @@ class shopMasseditorPluginMassOperationService
                 $rows[] = array(
                     'sku_id' => (int) $sku_id,
                     'stock_id' => $stock_id,
+                    'product_id' => (int) $product_id,
                     'count' => $new_value === null ? null : (float) $new_value,
                 );
             }
@@ -492,14 +494,15 @@ class shopMasseditorPluginMassOperationService
         $values = array();
         $params = array();
         foreach ($rows as $index => $row) {
-            $values[] = '(i:sku_id_' . $index . ', i:stock_id_' . $index . ', :count_' . $index . ')';
+            $values[] = '(i:sku_id_' . $index . ', i:stock_id_' . $index . ', i:product_id_' . $index . ', :count_' . $index . ')';
             $params['sku_id_' . $index] = (int) $row['sku_id'];
             $params['stock_id_' . $index] = (int) $row['stock_id'];
+            $params['product_id_' . $index] = (int) $row['product_id'];
             $params['count_' . $index] = $row['count'];
         }
 
         $this->model->exec(
-            'REPLACE INTO shop_product_stocks (sku_id, stock_id, count) VALUES ' . implode(', ', $values),
+            'REPLACE INTO shop_product_stocks (sku_id, stock_id, product_id, count) VALUES ' . implode(', ', $values),
             $params
         );
         $this->model->exec(

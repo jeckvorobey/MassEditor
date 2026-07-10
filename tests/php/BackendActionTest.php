@@ -54,6 +54,7 @@ class BackendActionTest extends TestCase
             'status' => 'published',
             'availability' => 'available',
             'category_id' => 4,
+            'stock_id' => 3,
         );
         $selection_service = new ControllerFakeProductSelectionService();
         $selection_service->suggestions = array('SKU-1', 'Summer dress');
@@ -67,6 +68,7 @@ class BackendActionTest extends TestCase
             'status' => 'published',
             'availability' => 'available',
             'category_id' => 4,
+            'stock_id' => 3,
         ), $selection_service->lastFilters);
         $this->assertSame(10, $selection_service->lastLimit);
     }
@@ -241,6 +243,19 @@ class BackendActionTest extends TestCase
         $this->assertSame('Массовый редактор', $action->view->assigned['page_title']);
         $this->assertSame('Mass Editor', $action->view->assigned['plugin_name']);
         $this->assertSame('Bulk product editing.', $action->view->assigned['texts']['subtitle']);
+    }
+
+    public function testJsI18nContainsWarehouseSelectionValidationForBothLanguages(): void
+    {
+        $russian = shopMasseditorPluginI18nService::getJsTexts('ru_RU');
+        $english = shopMasseditorPluginI18nService::getJsTexts('en_US');
+
+        $this->assertSame('Ошибка', $russian['toast_error']);
+        $this->assertSame('Закрыть уведомление', $russian['toast_close']);
+        $this->assertSame('Для товаров со складским учетом выберите конкретный склад.', $russian['validation_stock_required_for_accounted_products']);
+        $this->assertSame('Error', $english['toast_error']);
+        $this->assertSame('Close notification', $english['toast_close']);
+        $this->assertSame('For products with warehouse stock accounting, select a specific warehouse.', $english['validation_stock_required_for_accounted_products']);
     }
 
     public function testPluginSettingsNormalizationAndThemeMode(): void

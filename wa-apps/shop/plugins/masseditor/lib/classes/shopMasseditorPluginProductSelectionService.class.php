@@ -9,6 +9,11 @@ class shopMasseditorPluginProductSelectionService
      */
     private $product_model;
 
+    /**
+     * @var array|null
+     */
+    private $stocks_cache = null;
+
     public function __construct(shopMasseditorPluginProductModel $product_model = null)
     {
         $this->product_model = $product_model ?: new shopMasseditorPluginProductModel();
@@ -168,13 +173,19 @@ class shopMasseditorPluginProductSelectionService
 
     public function getStocks()
     {
-        return $this->product_model
+        if ($this->stocks_cache !== null) {
+            return $this->stocks_cache;
+        }
+
+        $this->stocks_cache = $this->product_model
             ->query(
                 'SELECT id, name
                  FROM shop_stock
                  ORDER BY sort ASC, id ASC'
             )
             ->fetchAll();
+
+        return $this->stocks_cache;
     }
 
     private function attachStockDetails(array $products)
@@ -303,6 +314,11 @@ class shopMasseditorPluginProductSelectionService
             $availability = (string) $raw_filters['availability'];
         }
 
+        $stock_id = 0;
+        if (isset($raw_filters['stock_id'])) {
+            $stock_id = max(0, (int) $raw_filters['stock_id']);
+        }
+
         if (!in_array($status, array('all', 'published', 'hidden', 'unpublished'), true)) {
             $status = 'all';
         }
@@ -311,12 +327,30 @@ class shopMasseditorPluginProductSelectionService
             $availability = 'all';
         }
 
+        if ($stock_id > 0 && !isset($this->getStockIdMap()[$stock_id])) {
+            $stock_id = 0;
+        }
+
         return array(
             'query' => $query,
             'status' => $status,
             'availability' => $availability,
             'category_id' => $category_id,
+            'stock_id' => $stock_id,
         );
+    }
+
+    private function getStockIdMap()
+    {
+        $result = array();
+        foreach ($this->getStocks() as $stock) {
+            $id = isset($stock['id']) ? (int) $stock['id'] : 0;
+            if ($id > 0) {
+                $result[$id] = true;
+            }
+        }
+
+        return $result;
     }
 
     private function normalizePage($page, $total, $page_size)
@@ -381,6 +415,16 @@ class shopMasseditorPluginProductSelectionService
             ';
             $where[] = 'cpf.category_id = i:category_id';
             $params['category_id'] = $filters['category_id'];
+        }
+
+        if (!empty($filters['stock_id'])) {
+            $where[] = 'EXISTS (
+                SELECT 1
+                FROM shop_product_skus ss
+                INNER JOIN shop_product_stocks ps ON ps.sku_id = ss.id
+                WHERE ss.product_id = p.id AND ps.stock_id = i:stock_id
+            )';
+            $params['stock_id'] = (int) $filters['stock_id'];
         }
 
         return array(

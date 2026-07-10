@@ -215,7 +215,8 @@
             + separator + 'query=' + encodeURIComponent(query)
             + '&status=' + encodeURIComponent(currentFilterValue('masseditor-status', 'all'))
             + '&availability=' + encodeURIComponent(currentFilterValue('masseditor-availability-filter', 'all'))
-            + '&category_id=' + encodeURIComponent(currentFilterValue('masseditor-category', '0'));
+            + '&category_id=' + encodeURIComponent(currentFilterValue('masseditor-category', '0'))
+            + '&stock_id=' + encodeURIComponent(currentFilterValue('masseditor-stock-filter', '0'));
     }
 
     function submitFilterForm() {
@@ -596,6 +597,23 @@
         updateFeatureValueVisibility();
     }
 
+    function resetOperationForm() {
+        operationFieldGroups.forEach(function (field) {
+            Array.prototype.slice.call(field.querySelectorAll('input, select, textarea')).forEach(function (input) {
+                if (input.tagName === 'SELECT') {
+                    input.selectedIndex = 0;
+                    input.value = input.options.length ? input.options[0].value : '';
+                } else if (input.type === 'checkbox' || input.type === 'radio') {
+                    input.checked = false;
+                } else {
+                    input.value = '';
+                }
+            });
+        });
+
+        setWarehouseSelectionInvalid(false);
+    }
+
     function updateComparePriceVisibility() {
         if (!comparePriceMode || !comparePriceValueField) {
             return;
@@ -619,6 +637,26 @@
         Array.prototype.slice.call(stockValueField.querySelectorAll('input')).forEach(function (input) {
             input.disabled = !active;
         });
+    }
+
+    function selectedProductsUseWarehouseAccounting() {
+        return productCheckboxes.some(function (checkbox) {
+            return (checkbox.checked || selectedProductsMap[checkbox.value])
+                && checkbox.getAttribute('data-has-warehouse-stock') === '1';
+        });
+    }
+
+    function setWarehouseSelectionInvalid(isInvalid) {
+        var stockField = stockId && stockId.closest ? stockId.closest('.masseditor-field') : null;
+
+        if (!stockId) {
+            return;
+        }
+
+        if (stockField) {
+            stockField.classList.toggle('masseditor-field_invalid', isInvalid);
+        }
+        stockId.setAttribute('aria-invalid', isInvalid ? 'true' : 'false');
     }
 
     function updateFeatureValueVisibility() {
@@ -748,6 +786,11 @@
 
         if (operation === 'stock') {
             var stockValue = document.getElementById('masseditor-stock-value');
+            if (stockId && stockId.value === '0' && selectedProductsUseWarehouseAccounting()) {
+                setWarehouseSelectionInvalid(true);
+                showErrorToast(t('validation_stock_required_for_accounted_products', 'For products with warehouse stock accounting, select a specific warehouse.'));
+                return false;
+            }
             if (stockMode && stockMode.value !== 'infinite' && (!stockValue || !stockValue.value.trim())) {
                 showErrorToast(t('invalid_stock_value', 'Enter a valid stock value.'));
                 return false;
@@ -826,7 +869,11 @@
             if (button.disabled) {
                 return;
             }
-            setOperation(button.getAttribute('data-operation'));
+            var operation = button.getAttribute('data-operation');
+            if (operation !== currentOperation()) {
+                resetOperationForm();
+            }
+            setOperation(operation);
         });
     });
 
@@ -836,6 +883,14 @@
 
     if (stockMode) {
         stockMode.addEventListener('change', updateStockValueVisibility);
+    }
+
+    if (stockId) {
+        stockId.addEventListener('change', function () {
+            if (stockId.value !== '0') {
+                setWarehouseSelectionInvalid(false);
+            }
+        });
     }
 
     if (featureMode) {

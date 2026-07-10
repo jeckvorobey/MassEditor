@@ -153,6 +153,52 @@ test('operation switching updates visible fields and compare-price toggle', () =
   assert.equal(compareField.querySelector('input').disabled, false);
 });
 
+test('switching to another operation resets operation form controls', () => {
+  const app = boot();
+  const buttons = app.document.querySelectorAll('[data-role="operation-trigger"]');
+  const numeric = app.document.getElementById('masseditor-numeric-value');
+  const compareMode = app.document.getElementById('masseditor-compare-price-mode');
+  const compareValue = app.document.getElementById('masseditor-compare-price-value');
+  const urlMode = app.document.getElementById('masseditor-url-mode');
+  const urlValue = app.document.getElementById('masseditor-url-value');
+
+  numeric.value = '120';
+  compareMode.value = 'coefficient';
+  compareMode.selectedIndex = 1;
+  compareValue.value = '1.15';
+  urlMode.value = 'template';
+  urlMode.selectedIndex = 1;
+  urlValue.value = '{name}-{id}';
+
+  buttons[1].click();
+
+  assert.equal(numeric.value, '');
+  assert.equal(compareMode.value, 'keep');
+  assert.equal(compareMode.selectedIndex, 0);
+  assert.equal(compareValue.value, '');
+  assert.equal(urlMode.value, 'regenerate');
+  assert.equal(urlMode.selectedIndex, 0);
+  assert.equal(urlValue.value, '');
+});
+
+test('operation switch preserves product selection and does not reset the active operation twice', () => {
+  const app = boot({
+    localStorage: {
+      'masseditor:selected-products:masseditor': '[1]',
+    },
+  });
+  const buttons = app.document.querySelectorAll('[data-role="operation-trigger"]');
+  const tagsValue = app.document.getElementById('masseditor-tags-value');
+
+  buttons[1].click();
+  tagsValue.value = 'summer, sale';
+  buttons[1].click();
+
+  assert.equal(tagsValue.value, 'summer, sale');
+  assert.equal(app.document.querySelector('[data-role="selected-count"]').textContent, 1);
+  assert.equal(app.localStorage.snapshot()['masseditor:selected-products:masseditor'], '[1]');
+});
+
 test('validation shows error toast when required inputs are missing', () => {
   const app = boot();
   const openConfirm = app.document.querySelector('[data-role="open-confirm"]');
@@ -207,7 +253,9 @@ test('new operation fields validate and update confirm summary', () => {
     },
   });
   const buttons = app.document.querySelectorAll('[data-role="operation-trigger"]');
+  const stockId = app.document.getElementById('masseditor-stock-id');
   const stockValue = app.document.getElementById('masseditor-stock-value');
+  const featureId = app.document.getElementById('masseditor-feature-id');
   const featureValue = app.document.getElementById('masseditor-feature-value');
   const openConfirm = app.document.querySelector('[data-role="open-confirm"]');
 
@@ -215,6 +263,8 @@ test('new operation fields validate and update confirm summary', () => {
   openConfirm.click();
   assert.equal(app.toastStack.children[1].querySelector('p').textContent, 'Enter a valid stock value.');
 
+  stockId.value = '3';
+  stockId.selectedIndex = 1;
   stockValue.value = '12';
   openConfirm.click();
   assert.equal(app.modal.hidden, false);
@@ -224,6 +274,8 @@ test('new operation fields validate and update confirm summary', () => {
 
   app.document.querySelector('[data-role="close-modal"]').click();
   buttons[4].click();
+  featureId.value = '7';
+  featureId.selectedIndex = 1;
   openConfirm.click();
   assert.equal(app.toastStack.children[2].querySelector('p').textContent, 'Enter a feature value.');
 
@@ -252,6 +304,86 @@ test('stock operation allows regular count when warehouse is not selected', () =
   assert.equal(app.modal.hidden, false);
   assert.equal(app.document.querySelector('[data-role="modal-operation"]').textContent, 'Stock');
   assert.equal(app.document.querySelector('[data-role="modal-value"]').textContent, '12');
+});
+
+test('stock operation requires warehouse selection for products with warehouse accounting', () => {
+  const app = boot({
+    localStorage: {
+      'masseditor:selected-products:masseditor': '[1]',
+    },
+  });
+  const buttons = app.document.querySelectorAll('[data-role="operation-trigger"]');
+  const stockId = app.document.getElementById('masseditor-stock-id');
+  const stockValue = app.document.getElementById('masseditor-stock-value');
+  const checkbox = app.document.querySelector('[data-role="product-checkbox"]');
+  const openConfirm = app.document.querySelector('[data-role="open-confirm"]');
+
+  buttons[3].click();
+  checkbox.setAttribute('data-has-warehouse-stock', '1');
+  checkbox.checked = true;
+  stockId.value = '0';
+  stockValue.value = '12';
+  openConfirm.click();
+
+  assert.equal(app.modal.hidden, true);
+  assert.equal(stockId.getAttribute('aria-invalid'), 'true');
+  assert.equal(stockId.closest('.masseditor-field').classList.contains('masseditor-field_invalid'), true);
+
+  stockId.value = '3';
+  change(stockId);
+
+  assert.equal(stockId.getAttribute('aria-invalid'), 'false');
+  assert.equal(stockId.closest('.masseditor-field').classList.contains('masseditor-field_invalid'), false);
+});
+
+function assertWarehouseSelectionToast(i18n, expected) {
+  const app = boot({
+    i18n,
+    localStorage: {
+      'masseditor:selected-products:masseditor': '[1]',
+    },
+  });
+  const buttons = app.document.querySelectorAll('[data-role="operation-trigger"]');
+  const stockId = app.document.getElementById('masseditor-stock-id');
+  const stockValue = app.document.getElementById('masseditor-stock-value');
+  const checkbox = app.document.querySelector('[data-role="product-checkbox"]');
+  const openConfirm = app.document.querySelector('[data-role="open-confirm"]');
+
+  buttons[3].click();
+  checkbox.setAttribute('data-has-warehouse-stock', '1');
+  checkbox.checked = true;
+  stockId.value = '0';
+  stockValue.value = '12';
+  openConfirm.click();
+
+  const toast = app.toastStack.children[1];
+  assert.equal(toast.children[0].children[0].textContent, expected.title);
+  assert.equal(toast.querySelector('p').textContent, expected.message);
+  assert.equal(toast.querySelector('button').getAttribute('aria-label'), expected.closeLabel);
+}
+
+test('warehouse stock validation toast is fully localized in Russian', () => {
+  assertWarehouseSelectionToast({
+    toast_error: 'Ошибка',
+    toast_close: 'Закрыть уведомление',
+    validation_stock_required_for_accounted_products: 'Для товаров со складским учетом выберите конкретный склад.',
+  }, {
+    title: 'Ошибка',
+    message: 'Для товаров со складским учетом выберите конкретный склад.',
+    closeLabel: 'Закрыть уведомление',
+  });
+});
+
+test('warehouse stock validation toast is fully localized in English', () => {
+  assertWarehouseSelectionToast({
+    toast_error: 'Error',
+    toast_close: 'Close notification',
+    validation_stock_required_for_accounted_products: 'For products with warehouse stock accounting, select a specific warehouse.',
+  }, {
+    title: 'Error',
+    message: 'For products with warehouse stock accounting, select a specific warehouse.',
+    closeLabel: 'Close notification',
+  });
 });
 
 test('warehouse stock popover toggles and keeps confirmation flow intact', () => {
@@ -299,6 +431,54 @@ test('mobile product cards hide all desktop-only columns through changed date', 
   assert.doesNotMatch(
     mobileBlock,
     /\.masseditor-table_products td:nth-child\(7\)\s*\{[\s\S]*?grid-column:/
+  );
+});
+
+test('css defines readable desktop typography contract for backend tables and controls', () => {
+  assert.match(
+    cssSource,
+    /\.masseditor\s*\{[\s\S]*--me-font-body:\s*16px;[\s\S]*--me-font-ui:\s*15px;[\s\S]*--me-font-caption:\s*13px;[\s\S]*--me-control-height:\s*44px;[\s\S]*--me-control-height-compact:\s*36px;/
+  );
+  assert.match(
+    cssSource,
+    /\.masseditor input\[type="text"\],[\s\S]*?\.masseditor textarea\s*\{[\s\S]*min-height:\s*var\(--me-control-height\);[\s\S]*font-size:\s*var\(--me-font-body\);[\s\S]*line-height:\s*var\(--me-line-body\);/
+  );
+  assert.match(
+    cssSource,
+    /\.masseditor-table th,\s*\.masseditor-table td\s*\{[\s\S]*font-size:\s*var\(--me-font-ui\);[\s\S]*line-height:\s*var\(--me-line-body\);/
+  );
+  assert.match(
+    cssSource,
+    /\.masseditor-table thead th\s*\{[\s\S]*font-size:\s*var\(--me-font-caption\);/
+  );
+  assert.match(
+    cssSource,
+    /\.masseditor-button\s*\{[\s\S]*min-height:\s*var\(--me-control-height\);[\s\S]*font-size:\s*15px;/
+  );
+});
+
+test('css defines larger mobile typography and touch targets', () => {
+  const mobileBlock = cssSource.slice(cssSource.indexOf('@media (max-width: 1024px)'));
+
+  assert.match(
+    mobileBlock,
+    /\.masseditor\s*\{[\s\S]*--me-font-body:\s*30px;[\s\S]*--me-font-ui:\s*30px;[\s\S]*--me-font-small:\s*28px;[\s\S]*--me-font-caption:\s*25px;[\s\S]*--me-control-height:\s*64px;[\s\S]*--me-control-height-compact:\s*56px;/
+  );
+  assert.match(
+    mobileBlock,
+    /\.masseditor-table_products tr\s*\{[\s\S]*padding:\s*18px;/
+  );
+  assert.match(
+    mobileBlock,
+    /\.masseditor-product-mobile-details__row span\s*\{[\s\S]*font-size:\s*25px;/
+  );
+  assert.match(
+    mobileBlock,
+    /\.masseditor-product-mobile-details__row strong\s*\{[\s\S]*font-size:\s*30px;/
+  );
+  assert.match(
+    mobileBlock,
+    /\.masseditor-mobile-apply \.masseditor-button\s*\{[\s\S]*min-height:\s*64px;[\s\S]*font-size:\s*25px;/
   );
 });
 
@@ -415,6 +595,7 @@ test('product search suggestions request current filters and render options', as
   assert.match(requestedUrl, /status=published/);
   assert.match(requestedUrl, /availability=available/);
   assert.match(requestedUrl, /category_id=9/);
+  assert.match(requestedUrl, /stock_id=5/);
   assert.equal(app.document.querySelector('[data-role="product-search-suggestions"]').children.length, 2);
 });
 

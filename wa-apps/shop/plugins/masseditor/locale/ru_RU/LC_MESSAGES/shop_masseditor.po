@@ -612,6 +612,9 @@ msgstr "Базовое редактирование характеристик"
 msgid "Warehouse"
 msgstr "Склад"
 
+msgid "All warehouses"
+msgstr "Все склады"
+
 msgid "Select warehouse"
 msgstr "Без склада"
 

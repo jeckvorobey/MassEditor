@@ -608,6 +608,9 @@ msgstr "Basic feature editing"
 msgid "Warehouse"
 msgstr "Warehouse"
 
+msgid "All warehouses"
+msgstr "All warehouses"
+
 msgid "Select warehouse"
 msgstr "No warehouse"
 

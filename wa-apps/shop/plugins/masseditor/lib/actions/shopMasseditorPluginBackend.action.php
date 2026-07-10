@@ -28,6 +28,7 @@ class shopMasseditorPluginBackendAction extends waViewAction
             'status' => waRequest::get('status', 'all', waRequest::TYPE_STRING_TRIM),
             'availability' => waRequest::get('availability', 'all', waRequest::TYPE_STRING_TRIM),
             'category_id' => waRequest::get('category_id', 0, waRequest::TYPE_INT),
+            'stock_id' => waRequest::get('stock_id', 0, waRequest::TYPE_INT),
             'page' => waRequest::get('page', 1, waRequest::TYPE_INT),
         );
         $log_page = waRequest::get('log_page', 1, waRequest::TYPE_INT);
@@ -131,8 +132,8 @@ class shopMasseditorPluginBackendAction extends waViewAction
             'operation_form' => $operation_form,
             'operations' => $operations,
             'selected_product_ids_map' => array_fill_keys($selected_product_ids, true),
-            'has_active_filters' => $selection['filters']['query'] !== '' || $selection['filters']['status'] !== 'all' || $selection['filters']['availability'] !== 'all' || !empty($selection['filters']['category_id']),
-            'can_select_filter' => ($selection['filters']['query'] !== '' || $selection['filters']['status'] !== 'all' || $selection['filters']['availability'] !== 'all' || !empty($selection['filters']['category_id']) || $selection['pagination']['pages'] > 1) && $selection['pagination']['total'] > 0,
+            'has_active_filters' => $selection['filters']['query'] !== '' || $selection['filters']['status'] !== 'all' || $selection['filters']['availability'] !== 'all' || !empty($selection['filters']['category_id']) || !empty($selection['filters']['stock_id']),
+            'can_select_filter' => ($selection['filters']['query'] !== '' || $selection['filters']['status'] !== 'all' || $selection['filters']['availability'] !== 'all' || !empty($selection['filters']['category_id']) || !empty($selection['filters']['stock_id']) || $selection['pagination']['pages'] > 1) && $selection['pagination']['total'] > 0,
             'filter_reset_url' => '?plugin=' . $plugin->getId() . '&view=products',
             'search_suggestions_url' => '?plugin=' . $plugin->getId() . '&action=searchSuggestions',
             'active_tab' => $active_tab,

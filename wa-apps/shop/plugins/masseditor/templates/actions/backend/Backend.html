@@ -26,9 +26,9 @@
             <p class="masseditor-subtitle">{$texts.subtitle|escape}</p>
         </div>
         <nav class="masseditor-tabs" aria-label="{$texts.tabs_aria_label|escape}">
-            <a class="masseditor-tab{if $active_tab === 'products'} is-active{/if}" href="?plugin={$plugin_id|escape}&view=products&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&page={$pagination.page|escape:'url'}">{$texts.nav_products|escape}</a>
-            <a class="masseditor-tab{if $active_tab === 'log'} is-active{/if}" href="?plugin={$plugin_id|escape}&view=log&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&page={$pagination.page|escape:'url'}&log_page={$log_pagination.page|escape:'url'}">{$texts.nav_log|escape}</a>
-            <a class="masseditor-tab{if $active_tab === 'settings'} is-active{/if}" href="?plugin={$plugin_id|escape}&view=settings&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&page={$pagination.page|escape:'url'}&log_page={$log_pagination.page|escape:'url'}">{$texts.nav_settings|escape}</a>
+            <a class="masseditor-tab{if $active_tab === 'products'} is-active{/if}" href="?plugin={$plugin_id|escape}&view=products&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&stock_id={$filters.stock_id|escape:'url'}&page={$pagination.page|escape:'url'}">{$texts.nav_products|escape}</a>
+            <a class="masseditor-tab{if $active_tab === 'log'} is-active{/if}" href="?plugin={$plugin_id|escape}&view=log&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&stock_id={$filters.stock_id|escape:'url'}&page={$pagination.page|escape:'url'}&log_page={$log_pagination.page|escape:'url'}">{$texts.nav_log|escape}</a>
+            <a class="masseditor-tab{if $active_tab === 'settings'} is-active{/if}" href="?plugin={$plugin_id|escape}&view=settings&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&stock_id={$filters.stock_id|escape:'url'}&page={$pagination.page|escape:'url'}&log_page={$log_pagination.page|escape:'url'}">{$texts.nav_settings|escape}</a>
         </nav>
     </header>
 
@@ -49,7 +49,7 @@
     </section>
 
     {if $active_tab === 'products'}
-        <form method="post" action="?plugin={$plugin_id|escape}&view=products&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&page={$pagination.page|escape:'url'}" class="masseditor-products-page" data-role="workspace-form" data-selection-reset="{if $result_message}1{else}0{/if}">
+        <form method="post" action="?plugin={$plugin_id|escape}&view=products&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&stock_id={$filters.stock_id|escape:'url'}&page={$pagination.page|escape:'url'}" class="masseditor-products-page" data-role="workspace-form" data-selection-reset="{if $result_message}1{else}0{/if}">
             {$wa->csrf()}
             <input type="hidden" name="view" value="products">
             <input type="hidden" name="operation" value="{$operation_form.operation|escape}" data-role="operation-input">
@@ -58,6 +58,7 @@
             <input type="hidden" name="filters[status]" value="{$filters.status|escape}">
             <input type="hidden" name="filters[availability]" value="{$filters.availability|escape}">
             <input type="hidden" name="filters[category_id]" value="{$filters.category_id|escape}">
+            <input type="hidden" name="filters[stock_id]" value="{$filters.stock_id|escape}">
             <input type="hidden" name="confirm_apply" value="0" data-role="confirm-apply">
 
             <section class="masseditor-workspace">
@@ -88,6 +89,15 @@
                                 <option value="all"{if $filters.availability === 'all'} selected{/if}>{$texts.all|escape}</option>
                                 <option value="available"{if $filters.availability === 'available'} selected{/if}>{$texts.available|escape}</option>
                                 <option value="unavailable"{if $filters.availability === 'unavailable'} selected{/if}>{$texts.unavailable|escape}</option>
+                            </select>
+                        </div>
+                        <div class="masseditor-field">
+                            <label for="masseditor-stock-filter">{$texts.stock_warehouse|escape}</label>
+                            <select id="masseditor-stock-filter" name="stock_id" form="masseditor-filter-form">
+                                <option value="0"{if !$filters.stock_id} selected{/if}>{$texts.all_warehouses|escape}</option>
+                                {foreach $stocks as $stock}
+                                    <option value="{$stock.id|escape}"{if $filters.stock_id == $stock.id} selected{/if}>{$stock.name|escape}</option>
+                                {/foreach}
                             </select>
                         </div>
                     </div>
@@ -333,7 +343,7 @@
                             <tbody>
                                 {foreach $products as $product}
                                     <tr class="{if !empty($selected_product_ids_map[$product.id])}is-selected{/if}">
-                                        <td class="masseditor-table__check"><input type="checkbox" name="product_ids[]" value="{$product.id|escape}" data-role="product-checkbox"{if !empty($selected_product_ids_map[$product.id])} checked{/if}></td>
+                                        <td class="masseditor-table__check"><input type="checkbox" name="product_ids[]" value="{$product.id|escape}" data-role="product-checkbox" data-has-warehouse-stock="{if !empty($product.stock_details)}1{else}0{/if}"{if !empty($selected_product_ids_map[$product.id])} checked{/if}></td>
                                         <td>{$product.id|escape}</td>
                                         <td>
                                             <div class="masseditor-product-name">{$product.name|escape}</div>
@@ -404,7 +414,7 @@
                     <span class="masseditor-page-info">{$texts.shown|escape} {$pagination_ui.to|escape} {$texts.selected_counter_separator|escape} {$pagination_ui.total|escape}</span>
                     <div class="masseditor-pager" aria-label="{$texts.pagination_products|escape}">
                         {if $pagination_ui.has_prev}
-                            <a class="masseditor-pager__item" href="?plugin={$plugin_id|escape}&view=products&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&page={$pagination_ui.prev_page|escape:'url'}" aria-label="{$texts.prev_page|escape}">‹</a>
+                            <a class="masseditor-pager__item" href="?plugin={$plugin_id|escape}&view=products&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&stock_id={$filters.stock_id|escape:'url'}&page={$pagination_ui.prev_page|escape:'url'}" aria-label="{$texts.prev_page|escape}">‹</a>
                         {else}
                             <span class="masseditor-pager__item is-disabled" aria-hidden="true">‹</span>
                         {/if}
@@ -413,12 +423,12 @@
                             {if $item.type === 'ellipsis'}
                                 <span class="masseditor-pager__ellipsis">…</span>
                             {else}
-                                <a class="masseditor-pager__item{if !empty($item.active)} is-active{/if}" href="?plugin={$plugin_id|escape}&view=products&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&page={$item.value|escape:'url'}">{$item.value|escape}</a>
+                                <a class="masseditor-pager__item{if !empty($item.active)} is-active{/if}" href="?plugin={$plugin_id|escape}&view=products&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&stock_id={$filters.stock_id|escape:'url'}&page={$item.value|escape:'url'}">{$item.value|escape}</a>
                             {/if}
                         {/foreach}
 
                         {if $pagination_ui.has_next}
-                            <a class="masseditor-pager__item" href="?plugin={$plugin_id|escape}&view=products&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&page={$pagination_ui.next_page|escape:'url'}" aria-label="{$texts.next_page|escape}">›</a>
+                            <a class="masseditor-pager__item" href="?plugin={$plugin_id|escape}&view=products&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&stock_id={$filters.stock_id|escape:'url'}&page={$pagination_ui.next_page|escape:'url'}" aria-label="{$texts.next_page|escape}">›</a>
                         {else}
                             <span class="masseditor-pager__item is-disabled" aria-hidden="true">›</span>
                         {/if}
@@ -495,7 +505,7 @@
                     <span class="masseditor-page-info">{$texts.shown|escape} {$log_pagination_ui.to|escape} {$texts.selected_counter_separator|escape} {$log_pagination_ui.total|escape}</span>
                     <div class="masseditor-pager" aria-label="{$texts.pagination_log|escape}">
                         {if $log_pagination_ui.has_prev}
-                            <a class="masseditor-pager__item" href="?plugin={$plugin_id|escape}&view=log&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&page={$pagination.page|escape:'url'}&log_page={$log_pagination_ui.prev_page|escape:'url'}" aria-label="{$texts.prev_page|escape}">‹</a>
+                            <a class="masseditor-pager__item" href="?plugin={$plugin_id|escape}&view=log&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&stock_id={$filters.stock_id|escape:'url'}&page={$pagination.page|escape:'url'}&log_page={$log_pagination_ui.prev_page|escape:'url'}" aria-label="{$texts.prev_page|escape}">‹</a>
                         {else}
                             <span class="masseditor-pager__item is-disabled" aria-hidden="true">‹</span>
                         {/if}
@@ -504,12 +514,12 @@
                             {if $item.type === 'ellipsis'}
                                 <span class="masseditor-pager__ellipsis">…</span>
                             {else}
-                                <a class="masseditor-pager__item{if !empty($item.active)} is-active{/if}" href="?plugin={$plugin_id|escape}&view=log&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&page={$pagination.page|escape:'url'}&log_page={$item.value|escape:'url'}">{$item.value|escape}</a>
+                                <a class="masseditor-pager__item{if !empty($item.active)} is-active{/if}" href="?plugin={$plugin_id|escape}&view=log&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&stock_id={$filters.stock_id|escape:'url'}&page={$pagination.page|escape:'url'}&log_page={$item.value|escape:'url'}">{$item.value|escape}</a>
                             {/if}
                         {/foreach}
 
                         {if $log_pagination_ui.has_next}
-                            <a class="masseditor-pager__item" href="?plugin={$plugin_id|escape}&view=log&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&page={$pagination.page|escape:'url'}&log_page={$log_pagination_ui.next_page|escape:'url'}" aria-label="{$texts.next_page|escape}">›</a>
+                            <a class="masseditor-pager__item" href="?plugin={$plugin_id|escape}&view=log&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&stock_id={$filters.stock_id|escape:'url'}&page={$pagination.page|escape:'url'}&log_page={$log_pagination_ui.next_page|escape:'url'}" aria-label="{$texts.next_page|escape}">›</a>
                         {else}
                             <span class="masseditor-pager__item is-disabled" aria-hidden="true">›</span>
                         {/if}

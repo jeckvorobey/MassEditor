@@ -29,6 +29,7 @@ class shopMasseditorPluginBackendSearchSuggestionsController extends waJsonContr
             'status' => waRequest::get('status', 'all', waRequest::TYPE_STRING_TRIM),
             'availability' => waRequest::get('availability', 'all', waRequest::TYPE_STRING_TRIM),
             'category_id' => waRequest::get('category_id', 0, waRequest::TYPE_INT),
+            'stock_id' => waRequest::get('stock_id', 0, waRequest::TYPE_INT),
         );
 
         $this->response = array(

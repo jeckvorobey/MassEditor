@@ -285,6 +285,10 @@ function buildAppDom() {
     { value: '0', text: 'All categories' },
     { value: '9', text: 'Dresses' },
   ], '9'));
+  filterForm.appendChild(createSelect(document, 'masseditor-stock-filter', null, [
+    { value: '0', text: 'All warehouses' },
+    { value: '5', text: 'Outlet' },
+  ], '5'));
 
   const toastStack = createNode(document, 'div', { 'data-role': 'toast-stack' });
   document.body.appendChild(toastStack);
@@ -306,7 +310,7 @@ function buildAppDom() {
   const priceFields = createNode(document, 'div', { 'data-operation-fields': 'price,compare_price' });
   const tagsFields = createNode(document, 'div', { 'data-operation-fields': 'tags' });
   const urlFields = createNode(document, 'div', { 'data-operation-fields': 'url' });
-  const stockFields = createNode(document, 'div', { 'data-operation-fields': 'stock' });
+  const stockFields = createNode(document, 'div', { class: 'masseditor-field', 'data-operation-fields': 'stock' });
   const featureFields = createNode(document, 'div', { 'data-operation-fields': 'features' });
   const categoryFields = createNode(document, 'div', { 'data-operation-fields': 'categories' });
   form.appendChild(priceFields);
