@@ -23,7 +23,7 @@ Safe Shop-Script backend catalog bulk editing: prices, warehouse stock, categori
 ```html
 <p><strong>Массовый редактор помогает быстро обновлять каталог Shop-Script без ручного редактирования каждой карточки товара.</strong></p>
 
-<p>Плагин добавляет в бекенд удобный экран для массовой работы с товарами: найдите нужные позиции фильтром, выберите отдельные товары или все найденные товары по текущему фильтру, настройте операцию и подтвердите применение изменений. Это уровень инструмента для регулярного управления каталогом за $69: цены, складские остатки, категории, характеристики, описания, теги и URL в одном безопасном потоке.</p>
+<p>Плагин добавляет в бекенд удобный экран для массовой работы с товарами: найдите нужные позиции фильтром, выберите отдельные товары или все найденные товары по текущему фильтру, настройте операцию и подтвердите применение изменений. Это инструмент для регулярного управления каталогом: цены, складские остатки, категории, характеристики, описания, теги и URL в одном безопасном потоке.</p>
 
 <p><strong>Возможности</strong></p>
 <ul>
@@ -81,7 +81,7 @@ Safe Shop-Script backend catalog bulk editing: prices, warehouse stock, categori
 ```html
 <p><strong>Mass Editor - helps update a Shop-Script catalog without opening each product card manually.</strong></p>
 
-<p>The plugin adds a dedicated backend screen for bulk catalog management: filter products, select individual items or all products matching the current filter, configure an operation, and confirm the change. This $69-level release covers everyday catalog operations in one guarded flow: prices, warehouse stock, categories, product features, descriptions, tags, and URLs.</p>
+<p>The plugin adds a dedicated backend screen for bulk catalog management: filter products, select individual items or all products matching the current filter, configure an operation, and confirm the change. This is a tool for regular catalog management: prices, inventory levels, categories, features, descriptions, tags, and URLs in one secure stream.</p>
 
 <p><strong>Features</strong></p>
 <ul>
