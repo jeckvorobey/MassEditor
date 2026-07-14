@@ -37,7 +37,23 @@ class shopMasseditorPluginMassOperationService
         $this->assertSelectedProductsLoaded($products, $request['product_ids']);
         $skus_by_product = $this->resolveSkusByProducts($products, $request['operation']);
         $this->assertStockRequestMatchesProductAccounting($request, $skus_by_product);
+        $skipped_count = 0;
+        if ($request['operation'] === 'stock' && (int) $request['stock_id'] === 0 && $request['stock_type_filter'] !== 'all') {
+            $filtered = $this->filterProductsByStockType($products, $skus_by_product, $request['stock_type_filter']);
+            $products = $filtered['products'];
+            $skipped_count = $filtered['skipped'];
+        }
+
         $count = count($products);
+
+        if ($count === 0) {
+            return array(
+                'request' => $request,
+                'summary' => $this->buildSummary($request, 0),
+                'message' => $this->t('operation_success'),
+                'skipped' => $skipped_count,
+            );
+        }
 
         $this->model->exec('START TRANSACTION');
 
@@ -66,6 +82,7 @@ class shopMasseditorPluginMassOperationService
             'request' => $request,
             'summary' => $this->buildSummary($request, $count),
             'message' => $this->t('operation_success'),
+            'skipped' => $skipped_count,
         );
     }
 
@@ -113,6 +130,7 @@ class shopMasseditorPluginMassOperationService
             'stock_id' => 0,
             'stock_name' => '',
             'stock_mode' => 'set',
+            'stock_type_filter' => 'all',
             'stock_value' => null,
             'stock_ids' => array(),
             'feature_id' => 0,
@@ -212,6 +230,9 @@ class shopMasseditorPluginMassOperationService
                 ? null
                 : $this->normalizeNonNegativeNumber(isset($raw_request['stock_value']) ? $raw_request['stock_value'] : '', 'invalid_stock_value');
             $request['stock_ids'] = $stocks['ids'];
+            $request['stock_type_filter'] = $this->normalizeStockTypeFilter(
+                isset($raw_request['stock_type_filter']) ? $raw_request['stock_type_filter'] : 'all'
+            );
         } elseif ($operation === 'features') {
             $feature = $this->resolveFeature(isset($raw_request['feature_id']) ? (int) $raw_request['feature_id'] : 0);
             $multiple = !empty($feature['multiple']);
@@ -397,6 +418,10 @@ class shopMasseditorPluginMassOperationService
     private function assertStockRequestMatchesProductAccounting(array $request, array $skus_by_product)
     {
         if ($request['operation'] !== 'stock' || (int) $request['stock_id'] > 0) {
+            return;
+        }
+
+        if ($request['stock_type_filter'] !== 'all') {
             return;
         }
 
@@ -591,6 +616,30 @@ class shopMasseditorPluginMassOperationService
         }
 
         return false;
+    }
+
+    private function filterProductsByStockType(array $products, array $skus_by_product, $filter)
+    {
+        $filtered = array();
+        $skipped = 0;
+
+        foreach ($products as $product_id => $product_data) {
+            $skus = isset($skus_by_product[$product_id]) ? $skus_by_product[$product_id] : array();
+            $has_warehouse = $this->usesWarehouseStockAccounting($skus);
+
+            if ($filter === 'without_warehouse' && $has_warehouse) {
+                $skipped++;
+                continue;
+            }
+            if ($filter === 'with_warehouse' && !$has_warehouse) {
+                $skipped++;
+                continue;
+            }
+
+            $filtered[$product_id] = $product_data;
+        }
+
+        return array('products' => $filtered, 'skipped' => $skipped);
     }
 
     private function applyCategoryOperation($product_id, array $request)
@@ -948,6 +997,16 @@ class shopMasseditorPluginMassOperationService
         $value = (string) $value;
         if (!in_array($value, array('set', 'increase', 'decrease', 'infinite'), true)) {
             throw new InvalidArgumentException($this->t('invalid_stock_mode'));
+        }
+
+        return $value;
+    }
+
+    private function normalizeStockTypeFilter($value)
+    {
+        $value = (string) $value;
+        if (!in_array($value, array('all', 'without_warehouse', 'with_warehouse'), true)) {
+            return 'all';
         }
 
         return $value;

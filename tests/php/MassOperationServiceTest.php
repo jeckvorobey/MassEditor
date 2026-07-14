@@ -1711,4 +1711,91 @@ class MassOperationServiceTest extends TestCase
         $this->assertCount(1, $map[8]);
         $this->assertCount(1, $model->queries);
     }
+
+    public function testApplyStockOperationWithStockTypeFilterWithoutWarehouseSkipsWarehouseProducts(): void
+    {
+        $selection = new FakeSelectionService();
+        $selection->products = array(
+            11 => array('id' => 11, 'name' => 'No Warehouse Product'),
+            12 => array('id' => 12, 'name' => 'Warehouse Product'),
+        );
+        $model = new waModel();
+        $model->queueResponse('FROM shop_product_skus', new FakeQueryResult(array(
+            array('id' => 101, 'product_id' => 11, 'count' => 5, 'price' => 100, 'compare_price' => 0, 'available' => 1),
+            array('id' => 102, 'product_id' => 12, 'count' => 3, 'price' => 200, 'compare_price' => 0, 'available' => 1),
+        )));
+        $model->queueResponse('FROM shop_product_stocks', new FakeQueryResult(array(
+            array('sku_id' => 102, 'stock_id' => 1, 'count' => 10),
+        )));
+        shopProduct::seed(11, array('name' => 'No Warehouse Product'), array(
+            101 => array('id' => 101, 'product_id' => 11, 'count' => 5),
+        ));
+        shopProduct::seed(12, array('name' => 'Warehouse Product'), array(
+            102 => array('id' => 102, 'product_id' => 12, 'count' => 3),
+        ));
+
+        $service = new shopMasseditorPluginMassOperationService($selection, new FakeLogService(), $model, 100);
+        $result = $service->apply(array(
+            'product_ids' => array(11, 12), 'operation' => 'stock', 'stock_id' => 0,
+            'stock_mode' => 'increase', 'stock_value' => '10',
+            'stock_type_filter' => 'without_warehouse', 'confirm_apply' => 1,
+        ));
+
+        $this->assertSame(15.0, shopProduct::$saved[11]['skus'][101]['count']);
+        $this->assertArrayNotHasKey(12, shopProduct::$saved);
+        $this->assertSame(1, $result['skipped']);
+    }
+
+    public function testApplyStockOperationWithStockTypeFilterWithWarehouseSkipsNonWarehouseProducts(): void
+    {
+        $selection = new FakeSelectionService();
+        $selection->products = array(
+            11 => array('id' => 11, 'name' => 'No Warehouse Product'),
+            12 => array('id' => 12, 'name' => 'Warehouse Product'),
+        );
+        $model = new waModel();
+        $model->queueResponse('FROM shop_product_skus', new FakeQueryResult(array(
+            array('id' => 101, 'product_id' => 11, 'count' => 5, 'price' => 100, 'compare_price' => 0, 'available' => 1),
+            array('id' => 102, 'product_id' => 12, 'count' => 3, 'price' => 200, 'compare_price' => 0, 'available' => 1),
+        )));
+        $model->queueResponse('FROM shop_product_stocks', new FakeQueryResult(array(
+            array('sku_id' => 102, 'stock_id' => 1, 'count' => 10),
+        )));
+        shopProduct::seed(11, array('name' => 'No Warehouse Product'), array(
+            101 => array('id' => 101, 'product_id' => 11, 'count' => 5),
+        ));
+        shopProduct::seed(12, array('name' => 'Warehouse Product'), array(
+            102 => array('id' => 102, 'product_id' => 12, 'count' => 3),
+        ));
+
+        $service = new shopMasseditorPluginMassOperationService($selection, new FakeLogService(), $model, 100);
+        $result = $service->apply(array(
+            'product_ids' => array(11, 12), 'operation' => 'stock', 'stock_id' => 0,
+            'stock_mode' => 'increase', 'stock_value' => '10',
+            'stock_type_filter' => 'with_warehouse', 'confirm_apply' => 1,
+        ));
+
+        $this->assertSame(13.0, shopProduct::$saved[12]['skus'][102]['count']);
+        $this->assertArrayNotHasKey(11, shopProduct::$saved);
+        $this->assertSame(1, $result['skipped']);
+    }
+
+    public function testApplyStockOperationWithStockTypeFilterAllProcessesAllProducts(): void
+    {
+        $selection = new FakeSelectionService();
+        $selection->products = array(11 => array('id' => 11, 'name' => 'No Warehouse Product'));
+        shopProduct::seed(11, array('name' => 'No Warehouse Product'), array(
+            101 => array('id' => 101, 'product_id' => 11, 'count' => 5),
+        ));
+
+        $service = new shopMasseditorPluginMassOperationService($selection, new FakeLogService(), new waModel(), 100);
+        $result = $service->apply(array(
+            'product_ids' => array(11), 'operation' => 'stock', 'stock_id' => 0,
+            'stock_mode' => 'increase', 'stock_value' => '2',
+            'stock_type_filter' => 'all', 'confirm_apply' => 1,
+        ));
+
+        $this->assertSame(7.0, shopProduct::$saved[11]['skus'][101]['count']);
+        $this->assertSame(0, $result['skipped']);
+    }
 }

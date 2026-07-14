@@ -61,6 +61,7 @@ class shopMasseditorPluginBackendAction extends waViewAction
             'stock_id' => 0,
             'stock_mode' => 'set',
             'stock_value' => '',
+            'stock_type_filter' => 'all',
             'feature_id' => 0,
             'feature_mode' => 'set',
             'feature_value' => '',
@@ -270,12 +271,20 @@ class shopMasseditorPluginBackendAction extends waViewAction
     {
         $summary = isset($result['summary']) ? trim((string) $result['summary']) : '';
         $message = isset($result['message']) ? trim((string) $result['message']) : '';
+        $skipped = isset($result['skipped']) ? (int) $result['skipped'] : 0;
 
+        $text = '';
         if ($summary !== '' && $message !== '') {
-            return $summary . ' · ' . $message;
+            $text = $summary . ' · ' . $message;
+        } else {
+            $text = $summary !== '' ? $summary : $message;
         }
 
-        return $summary !== '' ? $summary : $message;
+        if ($skipped > 0) {
+            $text .= ' · ' . sprintf(shopMasseditorPluginI18nService::t('stock_skipped_by_filter'), $skipped);
+        }
+
+        return $text;
     }
 
     private function decorateFeatures(array $features)
@@ -365,6 +374,7 @@ class shopMasseditorPluginBackendAction extends waViewAction
             'stock_id' => waRequest::post('stock_id', 0, waRequest::TYPE_INT),
             'stock_mode' => waRequest::post('stock_mode', 'set', waRequest::TYPE_STRING_TRIM),
             'stock_value' => waRequest::post('stock_value', '', waRequest::TYPE_STRING_TRIM),
+            'stock_type_filter' => waRequest::post('stock_type_filter', 'all', waRequest::TYPE_STRING_TRIM),
             'feature_id' => waRequest::post('feature_id', 0, waRequest::TYPE_INT),
             'feature_mode' => waRequest::post('feature_mode', 'set', waRequest::TYPE_STRING_TRIM),
             'feature_value' => waRequest::post('feature_value', '', waRequest::TYPE_STRING_TRIM),

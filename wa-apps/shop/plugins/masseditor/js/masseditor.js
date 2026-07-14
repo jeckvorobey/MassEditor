@@ -120,6 +120,8 @@
     var comparePriceMode = document.getElementById('masseditor-compare-price-mode');
     var comparePriceValueField = document.querySelector('[data-compare-mode-field]');
     var stockId = document.getElementById('masseditor-stock-id');
+    var stockTypeFilter = document.getElementById('masseditor-stock-type-filter');
+    var stockTypeFilterField = document.querySelector('[data-stock-type-filter-field]');
     var stockMode = document.getElementById('masseditor-stock-mode');
     var stockValueField = document.querySelector('[data-stock-value-field]');
     var featureMode = document.getElementById('masseditor-feature-mode');
@@ -603,6 +605,7 @@
 
         updateComparePriceVisibility();
         updateStockValueVisibility();
+        updateStockTypeFilterVisibility();
         updateFeatureValueVisibility();
         updateVideoUrlVisibility();
     }
@@ -654,6 +657,18 @@
             return (checkbox.checked || selectedProductsMap[checkbox.value])
                 && checkbox.getAttribute('data-has-warehouse-stock') === '1';
         });
+    }
+
+    function updateStockTypeFilterVisibility() {
+        if (!stockTypeFilterField || !stockId) {
+            return;
+        }
+
+        var visible = currentOperation() === 'stock' && stockId.value === '0';
+        stockTypeFilterField.hidden = !visible;
+        if (stockTypeFilter) {
+            stockTypeFilter.disabled = !visible;
+        }
     }
 
     function setWarehouseSelectionInvalid(isInvalid) {
@@ -991,7 +1006,12 @@
             if (stockId.value !== '0') {
                 setWarehouseSelectionInvalid(false);
             }
+            updateStockTypeFilterVisibility();
         });
+    }
+
+    if (stockTypeFilter) {
+        stockTypeFilter.addEventListener('change', updateStockTypeFilterVisibility);
     }
 
     if (featureMode) {

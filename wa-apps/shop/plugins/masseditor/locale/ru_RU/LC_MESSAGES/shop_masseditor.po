@@ -643,6 +643,21 @@ msgstr "Сделать бесконечным"
 msgid "Stock value"
 msgstr "Значение остатка"
 
+msgid "Stock accounting type"
+msgstr "Тип складского учёта"
+
+msgid "All products"
+msgstr "Все товары"
+
+msgid "Without warehouse accounting"
+msgstr "Без складского учёта"
+
+msgid "With warehouse accounting"
+msgstr "Со складским учётом"
+
+msgid "%d products skipped by stock type filter"
+msgstr "%d товаров пропущено по фильтру типа учёта"
+
 msgid "Feature"
 msgstr "Характеристика"
 
