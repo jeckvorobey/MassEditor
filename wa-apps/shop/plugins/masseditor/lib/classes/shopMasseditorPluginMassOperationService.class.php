@@ -4,10 +4,11 @@ class shopMasseditorPluginMassOperationService
 {
     const DEFAULT_OPERATION_LIMIT = 100;
     const APPLY_BATCH_SIZE = 20;
+    const FEATURE_VALUES_LIMIT = 1000;
     const SKU_OPERATIONS = array('price', 'compare_price', 'availability', 'stock');
     const PRICE_OPERATIONS = array('price', 'compare_price');
     const PRICE_MODES = array('set', 'add', 'subtract', 'increase_percent', 'decrease_percent');
-    const ALL_OPERATIONS = array('price', 'compare_price', 'visibility', 'availability', 'description', 'tags', 'url', 'stock', 'features', 'categories');
+    const ALL_OPERATIONS = array('price', 'compare_price', 'visibility', 'availability', 'description', 'tags', 'url', 'stock', 'features', 'categories', 'video');
 
     private $selection_service;
     private $log_service;
@@ -36,7 +37,6 @@ class shopMasseditorPluginMassOperationService
         $this->assertSelectedProductsLoaded($products, $request['product_ids']);
         $skus_by_product = $this->resolveSkusByProducts($products, $request['operation']);
         $this->assertStockRequestMatchesProductAccounting($request, $skus_by_product);
-
         $skipped_count = 0;
         if ($request['operation'] === 'stock' && (int) $request['stock_id'] === 0 && $request['stock_type_filter'] !== 'all') {
             $filtered = $this->filterProductsByStockType($products, $skus_by_product, $request['stock_type_filter']);
@@ -130,18 +130,25 @@ class shopMasseditorPluginMassOperationService
             'stock_id' => 0,
             'stock_name' => '',
             'stock_mode' => 'set',
+            'stock_type_filter' => 'all',
             'stock_value' => null,
             'stock_ids' => array(),
-            'stock_type_filter' => 'all',
             'feature_id' => 0,
             'feature_name' => '',
+            'feature_code' => '',
             'feature_type' => '',
+            'feature_multiple' => false,
             'feature_value_id' => null,
             'feature_value' => '',
+            'feature_value_ids' => array(),
+            'feature_values_by_id' => array(),
+            'feature_current_value_ids' => array(),
             'feature_mode' => 'set',
             'category_id' => 0,
             'category_name' => '',
             'categories_mode' => 'add',
+            'video_mode' => 'set',
+            'video_url' => '',
         );
 
         if (in_array($operation, self::PRICE_OPERATIONS, true)) {
@@ -228,23 +235,69 @@ class shopMasseditorPluginMassOperationService
             );
         } elseif ($operation === 'features') {
             $feature = $this->resolveFeature(isset($raw_request['feature_id']) ? (int) $raw_request['feature_id'] : 0);
-            $feature_mode = $this->normalizeFeatureMode(isset($raw_request['feature_mode']) ? $raw_request['feature_mode'] : 'set');
+            $multiple = !empty($feature['multiple']);
+            $default_mode = $multiple ? 'replace' : 'set';
+            $feature_mode = $this->normalizeFeatureMode(
+                isset($raw_request['feature_mode']) ? $raw_request['feature_mode'] : $default_mode,
+                $multiple
+            );
             $request['feature_id'] = (int) $feature['id'];
             $request['feature_name'] = (string) $feature['name'];
+            $request['feature_code'] = (string) $feature['code'];
             $request['feature_type'] = (string) $feature['type'];
+            $request['feature_multiple'] = $multiple;
             $request['feature_mode'] = $feature_mode;
-            $request['feature_value'] = isset($raw_request['feature_value']) ? trim((string) $raw_request['feature_value']) : '';
-            if ($feature_mode === 'set') {
-                if ($request['feature_value'] === '') {
-                    throw new InvalidArgumentException($this->t('validation_feature_value'));
+
+            if ($multiple) {
+                $value_ids = $this->normalizeFeatureValueIds(
+                    isset($raw_request['feature_value_ids']) && is_array($raw_request['feature_value_ids'])
+                        ? $raw_request['feature_value_ids']
+                        : array()
+                );
+                if ($feature_mode !== 'clear' && !$value_ids) {
+                    throw new InvalidArgumentException($this->t('validation_feature_existing_value'));
                 }
-                $request['feature_value'] = $this->normalizeFeatureValue($feature, $request['feature_value']);
+
+                $request['feature_value_ids'] = $value_ids;
+                $request['feature_values_by_id'] = $this->loadFeatureValuesByIds($feature, $value_ids);
+                if (in_array($feature_mode, array('add', 'remove'), true)) {
+                    $request['feature_current_value_ids'] = $this->loadCurrentFeatureValueIds(
+                        $request['product_ids'],
+                        (int) $feature['id']
+                    );
+                    $current_ids = array();
+                    foreach ($request['feature_current_value_ids'] as $product_value_ids) {
+                        foreach ($product_value_ids as $value_id) {
+                            $current_ids[$value_id] = $value_id;
+                        }
+                    }
+                    $request['feature_values_by_id'] += $this->loadFeatureValuesByIds($feature, array_values($current_ids));
+                }
+            } else {
+                $request['feature_value'] = isset($raw_request['feature_value']) ? trim((string) $raw_request['feature_value']) : '';
+                if ($feature_mode === 'set') {
+                    if ($request['feature_value'] === '') {
+                        throw new InvalidArgumentException($this->t('validation_feature_value'));
+                    }
+                    $request['feature_value'] = $this->normalizeFeatureValue($feature, $request['feature_value']);
+                }
             }
         } elseif ($operation === 'categories') {
             $category = $this->resolveCategory(isset($raw_request['category_id']) ? (int) $raw_request['category_id'] : 0);
             $request['category_id'] = (int) $category['id'];
             $request['category_name'] = (string) $category['name'];
             $request['categories_mode'] = $this->normalizeCategoriesMode(isset($raw_request['categories_mode']) ? $raw_request['categories_mode'] : 'add');
+        } elseif ($operation === 'video') {
+            $video_mode = isset($raw_request['video_mode']) ? (string) $raw_request['video_mode'] : 'set';
+            if (!in_array($video_mode, array('set', 'clear'), true)) {
+                throw new InvalidArgumentException($this->t('invalid_video_mode'));
+            }
+            $video_url = isset($raw_request['video_url']) ? trim((string) $raw_request['video_url']) : '';
+            if ($video_mode === 'set' && !$this->isValidHttpUrl($video_url)) {
+                throw new InvalidArgumentException($this->t('validation_video_url'));
+            }
+            $request['video_mode'] = $video_mode;
+            $request['video_url'] = $video_mode === 'clear' ? '' : $video_url;
         }
 
         if ($require_confirmation && empty($raw_request['confirm_apply'])) {
@@ -413,9 +466,18 @@ class shopMasseditorPluginMassOperationService
             return;
         }
 
+        if ($request['operation'] === 'video') {
+            $product = new shopProduct((int) $product_data['id']);
+            if (!$product->checkRights()) {
+                throw new RuntimeException($this->t('product_edit_denied'));
+            }
+            $product['video_url'] = $request['video_url'];
+            $product->save();
+            return;
+        }
+
         $use_warehouse_stock = $request['operation'] === 'stock'
-            && $request['stock_id'] > 0
-            && $this->usesWarehouseStockAccounting($skus);
+            && $request['stock_id'] > 0;
 
         if ($use_warehouse_stock) {
             $this->applyWarehouseStockOperation((int) $product_data['id'], $request, $skus);
@@ -491,7 +553,9 @@ class shopMasseditorPluginMassOperationService
     private function applyWarehouseStockOperation($product_id, array $request, array $skus)
     {
         $rows = array();
-        $stock_ids = isset($request['stock_ids']) && $request['stock_ids'] ? $request['stock_ids'] : array($request['stock_id']);
+        $stock_ids = isset($request['stock_ids']) && $request['stock_ids']
+            ? $request['stock_ids']
+            : array($request['stock_id']);
 
         foreach ($skus as $sku_id => $sku) {
             foreach ($stock_ids as $stock_id) {
@@ -506,6 +570,7 @@ class shopMasseditorPluginMassOperationService
                 $rows[] = array(
                     'sku_id' => (int) $sku_id,
                     'stock_id' => $stock_id,
+                    'product_id' => (int) $product_id,
                     'count' => $new_value === null ? null : (float) $new_value,
                 );
             }
@@ -518,14 +583,15 @@ class shopMasseditorPluginMassOperationService
         $values = array();
         $params = array();
         foreach ($rows as $index => $row) {
-            $values[] = '(i:sku_id_' . $index . ', i:stock_id_' . $index . ', :count_' . $index . ')';
+            $values[] = '(i:sku_id_' . $index . ', i:stock_id_' . $index . ', i:product_id_' . $index . ', :count_' . $index . ')';
             $params['sku_id_' . $index] = (int) $row['sku_id'];
             $params['stock_id_' . $index] = (int) $row['stock_id'];
+            $params['product_id_' . $index] = (int) $row['product_id'];
             $params['count_' . $index] = $row['count'];
         }
 
         $this->model->exec(
-            'REPLACE INTO shop_product_stocks (sku_id, stock_id, count) VALUES ' . implode(', ', $values),
+            'REPLACE INTO shop_product_stocks (sku_id, stock_id, product_id, count) VALUES ' . implode(', ', $values),
             $params
         );
         $this->model->exec(
@@ -604,36 +670,36 @@ class shopMasseditorPluginMassOperationService
 
     private function applyFeatureOperation($product_id, array $request)
     {
-        $params = array(
-            'product_id' => (int) $product_id,
-            'feature_id' => (int) $request['feature_id'],
-        );
+        $product = new shopProduct((int) $product_id);
+        $feature_value = $request['feature_mode'] === 'clear' ? array() : $request['feature_value'];
 
-        $this->model->exec(
-            'DELETE FROM shop_product_features WHERE product_id = i:product_id AND feature_id = i:feature_id',
-            $params
-        );
+        if (!empty($request['feature_multiple'])) {
+            $current_ids = isset($request['feature_current_value_ids'][$product_id])
+                ? $request['feature_current_value_ids'][$product_id]
+                : array();
+            $selected_ids = $request['feature_value_ids'];
 
-        if ($request['feature_mode'] === 'clear') {
-            return;
+            if ($request['feature_mode'] === 'add') {
+                $final_ids = array_values(array_unique(array_merge($current_ids, $selected_ids)));
+            } elseif ($request['feature_mode'] === 'remove') {
+                $final_ids = array_values(array_diff($current_ids, $selected_ids));
+            } elseif ($request['feature_mode'] === 'clear') {
+                $final_ids = array();
+            } else {
+                $final_ids = $selected_ids;
+            }
+
+            $feature_value = array();
+            foreach ($final_ids as $value_id) {
+                if (!array_key_exists($value_id, $request['feature_values_by_id'])) {
+                    throw new InvalidArgumentException($this->t('validation_feature_existing_value'));
+                }
+                $feature_value[] = $request['feature_values_by_id'][$value_id];
+            }
         }
 
-        $feature_value_id = $this->resolveOrCreateFeatureValueId(
-            array(
-                'id' => (int) $request['feature_id'],
-                'type' => isset($request['feature_type']) ? (string) $request['feature_type'] : '',
-            ),
-            $request['feature_value']
-        );
-
-        $this->model->exec(
-            'INSERT INTO shop_product_features (product_id, feature_id, feature_value_id) VALUES (i:product_id, i:feature_id, i:feature_value_id)',
-            array(
-                'product_id' => (int) $product_id,
-                'feature_id' => (int) $request['feature_id'],
-                'feature_value_id' => $feature_value_id,
-            )
-        );
+        $product['features'] = array($request['feature_code'] => $feature_value);
+        $product->save();
     }
 
     private function applyTagsOperation($product_id, array $request)
@@ -808,6 +874,7 @@ class shopMasseditorPluginMassOperationService
             'stock' => $this->t('operation_stock'),
             'features' => $this->t('operation_features'),
             'categories' => $this->t('operation_categories'),
+            'video' => $this->t('operation_video'),
         );
 
         return isset($labels[$operation]) ? $labels[$operation] : (string) $operation;
@@ -872,6 +939,10 @@ class shopMasseditorPluginMassOperationService
             return sprintf($this->t('description_features'), $request['feature_name'], $request['feature_mode'], (int) $count);
         }
 
+        if ($request['operation'] === 'video') {
+            return sprintf($this->t('description_video'), $request['video_mode'], (int) $count);
+        }
+
         return sprintf($this->t('description_categories'), $request['category_name'], $request['categories_mode'], (int) $count);
     }
 
@@ -907,6 +978,20 @@ class shopMasseditorPluginMassOperationService
         return (float) $value;
     }
 
+    private function isValidHttpUrl($value)
+    {
+        if (strlen((string) $value) > 255) {
+            return false;
+        }
+
+        if (!filter_var($value, FILTER_VALIDATE_URL)) {
+            return false;
+        }
+
+        $scheme = strtolower((string) parse_url($value, PHP_URL_SCHEME));
+        return in_array($scheme, array('http', 'https'), true);
+    }
+
     private function normalizeStockMode($value)
     {
         $value = (string) $value;
@@ -927,10 +1012,11 @@ class shopMasseditorPluginMassOperationService
         return $value;
     }
 
-    private function normalizeFeatureMode($value)
+    private function normalizeFeatureMode($value, $multiple = false)
     {
         $value = (string) $value;
-        if (!in_array($value, array('set', 'clear'), true)) {
+        $allowed = $multiple ? array('replace', 'add', 'remove', 'clear') : array('set', 'clear');
+        if (!in_array($value, $allowed, true)) {
             throw new InvalidArgumentException($this->t('invalid_feature_mode'));
         }
 
@@ -1002,20 +1088,120 @@ class shopMasseditorPluginMassOperationService
         }
 
         $rows = $this->model
-            ->query('SELECT id, name, type, selectable, multiple FROM shop_feature WHERE id = i:feature_id', array('feature_id' => (int) $feature_id))
+            ->query(
+                'SELECT id, code, name, type, selectable, multiple, parent_id FROM shop_feature WHERE id = i:feature_id',
+                array('feature_id' => (int) $feature_id)
+            )
             ->fetchAll();
         if (!$rows) {
             throw new InvalidArgumentException($this->t('validation_feature'));
         }
 
         $feature = reset($rows);
-        $type = isset($feature['type']) ? (string) $feature['type'] : '';
-        $multiple = !empty($feature['multiple']);
-        if ($multiple || !$this->featureValueTableSuffix($type)) {
+        if (!empty($feature['parent_id'])) {
+            throw new InvalidArgumentException($this->t('unsupported_feature_type'));
+        }
+
+        if (!isset($feature['code']) || trim((string) $feature['code']) === '') {
+            throw new InvalidArgumentException($this->t('validation_feature'));
+        }
+
+        if (!$this->featureTypeConfig(isset($feature['type']) ? $feature['type'] : '')) {
             throw new InvalidArgumentException($this->t('unsupported_feature_type'));
         }
 
         return $feature;
+    }
+
+    private function normalizeFeatureValueIds(array $raw_ids)
+    {
+        if (count($raw_ids) > self::FEATURE_VALUES_LIMIT) {
+            throw new InvalidArgumentException($this->t('feature_values_limit'));
+        }
+
+        $ids = array();
+        foreach ($raw_ids as $raw_id) {
+            $id = (int) $raw_id;
+            if ($id > 0) {
+                $ids[$id] = $id;
+            }
+        }
+
+        return array_values($ids);
+    }
+
+    private function loadFeatureValuesByIds(array $feature, array $value_ids)
+    {
+        if (!$value_ids) {
+            return array();
+        }
+
+        $suffix = $this->featureValueTableSuffix(isset($feature['type']) ? $feature['type'] : '');
+        if (!$suffix) {
+            throw new InvalidArgumentException($this->t('unsupported_feature_type'));
+        }
+
+        $value_ids = array_values(array_unique(array_map('intval', $value_ids)));
+        $placeholders = implode(',', array_fill(0, count($value_ids), '?'));
+        $params = array_merge(array((int) $feature['id']), $value_ids);
+        $rows = $this->model
+            ->query(
+                'SELECT id, feature_id, value
+                 FROM shop_feature_values_' . $suffix . '
+                 WHERE feature_id = ? AND id IN (' . $placeholders . ')',
+                $params
+            )
+            ->fetchAll();
+
+        $values = array();
+        foreach ($rows as $row) {
+            $id = isset($row['id']) ? (int) $row['id'] : 0;
+            if ($id > 0 && isset($row['feature_id']) && (int) $row['feature_id'] === (int) $feature['id']) {
+                $values[$id] = $row['value'];
+            }
+        }
+
+        if (count($values) !== count($value_ids)) {
+            throw new InvalidArgumentException($this->t('validation_feature_existing_value'));
+        }
+
+        return $values;
+    }
+
+    private function loadCurrentFeatureValueIds(array $product_ids, $feature_id)
+    {
+        if (!$product_ids) {
+            return array();
+        }
+
+        $product_ids = array_values(array_unique(array_map('intval', $product_ids)));
+        $placeholders = implode(',', array_fill(0, count($product_ids), '?'));
+        $params = array_merge(array((int) $feature_id), $product_ids);
+        $rows = $this->model
+            ->query(
+                'SELECT product_id, feature_value_id
+                 FROM shop_product_features
+                 WHERE feature_id = ?
+                   AND product_id IN (' . $placeholders . ')
+                   AND sku_id IS NULL',
+                $params
+            )
+            ->fetchAll();
+
+        $result = array();
+        foreach ($rows as $row) {
+            $product_id = isset($row['product_id']) ? (int) $row['product_id'] : 0;
+            $value_id = isset($row['feature_value_id']) ? (int) $row['feature_value_id'] : 0;
+            if ($product_id > 0 && $value_id > 0) {
+                $result[$product_id][$value_id] = $value_id;
+            }
+        }
+
+        foreach ($result as $product_id => $value_ids) {
+            $result[$product_id] = array_values($value_ids);
+        }
+
+        return $result;
     }
 
     private function resolveOrCreateFeatureValueId(array $feature, $value)
@@ -1066,14 +1252,27 @@ class shopMasseditorPluginMassOperationService
 
     private function normalizeFeatureValue(array $feature, $value)
     {
-        $type = $this->featureBaseType(isset($feature['type']) ? $feature['type'] : '');
-        if (in_array($type, array('double', 'int'), true)) {
+        $config = $this->featureTypeConfig(isset($feature['type']) ? $feature['type'] : '');
+        if (!$config) {
+            throw new InvalidArgumentException($this->t('unsupported_feature_type'));
+        }
+
+        if ($config['validate'] === 'numeric') {
             $value = str_replace(',', '.', trim((string) $value));
             if ($value === '' || !is_numeric($value)) {
                 throw new InvalidArgumentException($this->t('validation_feature_numeric_value'));
             }
 
             return (float) $value;
+        }
+
+        if ($config['validate'] === 'boolean') {
+            $value = trim((string) $value);
+            if ($value !== '1' && $value !== '0') {
+                throw new InvalidArgumentException($this->t('validation_feature_boolean_value'));
+            }
+
+            return $value;
         }
 
         return trim((string) $value);
@@ -1089,18 +1288,108 @@ class shopMasseditorPluginMassOperationService
         return $type;
     }
 
-    private function featureValueTableSuffix($type)
+    private function featureTypeConfig($type)
     {
-        $type = $this->featureBaseType($type);
+        $base = $this->featureBaseType($type);
 
-        $allowed = array(
-            'varchar' => 'varchar',
-            'text' => 'text',
-            'double' => 'double',
-            'int' => 'double',
+        $configs = array(
+            'varchar'   => array('table' => 'varchar', 'validate' => 'string'),
+            'text'      => array('table' => 'text',    'validate' => 'string'),
+            'double'    => array('table' => 'double',  'validate' => 'numeric'),
+            'int'       => array('table' => 'double',  'validate' => 'numeric'),
+            'boolean'   => array('table' => 'varchar', 'validate' => 'boolean'),
+            'color'     => array('table' => 'color',     'validate' => 'string'),
+            'dimension' => array('table' => 'dimension', 'validate' => 'numeric'),
+            'range'     => array('table' => 'range',     'validate' => 'numeric'),
+            'select'    => array('table' => 'varchar', 'validate' => 'string'),
+            'radio'     => array('table' => 'varchar', 'validate' => 'string'),
         );
 
-        return isset($allowed[$type]) ? $allowed[$type] : '';
+        return isset($configs[$base]) ? $configs[$base] : null;
+    }
+
+    private function featureValueTableSuffix($type)
+    {
+        $config = $this->featureTypeConfig($type);
+
+        return $config ? $config['table'] : null;
+    }
+
+    public function getFeatureValues($feature_id, $table_suffix)
+    {
+        $allowed_suffixes = array('varchar', 'text', 'double', 'range', 'color', 'dimension');
+        if (!in_array($table_suffix, $allowed_suffixes, true)) {
+            return array();
+        }
+
+        $rows = $this->model
+            ->query(
+                'SELECT id, value FROM shop_feature_values_' . $table_suffix . ' WHERE feature_id = i:feature_id ORDER BY value ASC',
+                array('feature_id' => (int) $feature_id)
+            )
+            ->fetchAll();
+
+        return $rows ? $rows : array();
+    }
+
+    public function getFeatureValuesMap(array $features)
+    {
+        $groups = array();
+        foreach ($features as $feature) {
+            if (empty($feature['selectable']) && empty($feature['multiple'])) {
+                continue;
+            }
+            $feature_id = isset($feature['id']) ? (int) $feature['id'] : 0;
+            $suffix = $this->featureValueTableSuffix(isset($feature['type']) ? $feature['type'] : '');
+            if ($feature_id > 0 && $suffix) {
+                $groups[$suffix][$feature_id] = $feature_id;
+            }
+        }
+
+        $result = array();
+        foreach ($groups as $suffix => $feature_ids) {
+            $feature_ids = array_values($feature_ids);
+            $feature_ids_map = array_fill_keys($feature_ids, true);
+            $placeholders = implode(',', array_fill(0, count($feature_ids), '?'));
+            $rows = $this->model
+                ->query(
+                    'SELECT id, feature_id, value FROM shop_feature_values_' . $suffix
+                    . ' WHERE feature_id IN (' . $placeholders . ') ORDER BY feature_id ASC, value ASC',
+                    $feature_ids
+                )
+                ->fetchAll();
+            foreach ($rows as $row) {
+                $feature_id = isset($row['feature_id']) ? (int) $row['feature_id'] : 0;
+                if (isset($feature_ids_map[$feature_id])) {
+                    $result[$feature_id][] = $row;
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    public function getFeatureUiConfig($type)
+    {
+        $base = $this->featureBaseType($type);
+
+        $ui_map = array(
+            'varchar'   => 'text',
+            'text'      => 'textarea',
+            'double'    => 'number',
+            'int'       => 'number',
+            'boolean'   => 'boolean_select',
+            'color'     => 'text',
+            'dimension' => 'number',
+            'range'     => 'number',
+            'select'    => 'select',
+            'radio'     => 'select',
+        );
+
+        $ui = isset($ui_map[$base]) ? $ui_map[$base] : 'text';
+        $table = $this->featureValueTableSuffix($type);
+
+        return array('ui' => $ui, 'table' => $table);
     }
 
     private function normalizeOperationLimit($operation_limit)

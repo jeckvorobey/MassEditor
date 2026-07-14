@@ -23,13 +23,24 @@
     --me-warning: #b7791f;
     --me-warning-soft: #fbf7ea;
     --me-danger: #d64545;
+    --me-accent: #1a73e8;
     --me-ready-bg: #f1f7ff;
     --me-ready-border: #d6e6fa;
     --me-ready-text: #2d4053;
     --me-shadow: 0 20px 40px rgba(15, 23, 41, 0.06);
+    --me-font-body: 16px;
+    --me-font-ui: 15px;
+    --me-font-small: 14px;
+    --me-font-caption: 13px;
+    --me-font-micro: 12px;
+    --me-line-body: 1.5;
+    --me-control-height: 44px;
+    --me-control-height-compact: 36px;
     min-height: 100dvh;
     width: 100%;
     padding: clamp(14px, 2.2vw, 32px);
+    font-size: var(--me-font-body);
+    line-height: var(--me-line-body);
     color: var(--me-text);
     background: var(--me-bg);
     overflow: visible;
@@ -73,8 +84,8 @@
 
 .masseditor .hint {
     color: var(--me-muted);
-    font-size: 12px;
-    line-height: 1.45;
+    font-size: var(--me-font-caption);
+    line-height: var(--me-line-body);
 }
 
 .masseditor-header,
@@ -94,14 +105,15 @@
 }
 
 .masseditor h1 {
-    font-size: 24px;
+    font-size: 28px;
     line-height: 1.2;
 }
 
 .masseditor-subtitle {
     margin-top: 6px;
     color: var(--me-muted);
-    font-size: 14px;
+    font-size: var(--me-font-ui);
+    line-height: 1.4;
 }
 
 .masseditor-tabs {
@@ -115,9 +127,9 @@
 }
 
 .masseditor-tab {
-    padding: 8px 14px;
+    padding: 10px 16px;
     border-radius: 8px;
-    font-size: 13px;
+    font-size: var(--me-font-small);
     font-weight: 600;
     color: var(--me-text);
 }
@@ -153,7 +165,7 @@
     display: block;
     margin-bottom: 8px;
     color: var(--me-muted);
-    font-size: 11px;
+    font-size: var(--me-font-micro);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -170,14 +182,15 @@
 }
 
 .masseditor-stat__value_small {
-    font-size: 18px;
+    font-size: 20px;
 }
 
 .masseditor-stat__meta {
     display: block;
     margin-top: 4px;
     color: var(--me-muted);
-    font-size: 12px;
+    font-size: var(--me-font-caption);
+    line-height: 1.4;
 }
 
 .masseditor-products-page,
@@ -205,8 +218,8 @@
 .masseditor-panel__head h2,
 .masseditor-table-card__head h2,
 .masseditor-settings-group h2 {
-    font-size: 16px;
-    line-height: 1.25;
+    font-size: 18px;
+    line-height: 1.3;
 }
 
 .masseditor-field-stack {
@@ -223,8 +236,9 @@
 
 .masseditor-field label {
     color: var(--me-muted);
-    font-size: 12px;
+    font-size: var(--me-font-caption);
     font-weight: 600;
+    line-height: 1.35;
 }
 
 .masseditor input[type="text"],
@@ -232,18 +246,31 @@
 .masseditor select,
 .masseditor textarea {
     width: 100%;
-    min-height: 40px;
-    padding: 10px 12px;
+    min-height: var(--me-control-height);
+    padding: 11px 14px;
     border: 1px solid var(--me-border);
     border-radius: 8px;
     background: var(--me-surface-soft);
     color: var(--me-text);
     font: inherit;
+    font-size: var(--me-font-body);
+    line-height: var(--me-line-body);
 }
 
 .masseditor textarea {
-    min-height: 88px;
+    min-height: 112px;
     resize: vertical;
+}
+
+.masseditor-field_invalid select {
+    border-color: var(--me-danger);
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.14);
+}
+
+.masseditor input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--me-primary);
 }
 
 .masseditor-searchbox {
@@ -356,14 +383,15 @@
 .masseditor-searchbox__option,
 .masseditor-searchbox__state {
     width: 100%;
-    min-height: 34px;
+    min-height: 40px;
     padding: 8px 10px;
     border: 0;
     border-radius: 6px;
     background: transparent;
     color: var(--me-text);
     font: inherit;
-    line-height: 1.3;
+    font-size: var(--me-font-small);
+    line-height: 1.4;
     text-align: left;
 }
 
@@ -396,12 +424,15 @@
 }
 
 .masseditor-button {
-    min-height: 40px;
-    padding: 0 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--me-control-height);
+    padding: 0 20px;
     border-radius: 10px;
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 700;
-    line-height: 38px;
+    line-height: 1.2;
 }
 
 .masseditor-button_primary {
@@ -417,11 +448,11 @@
 }
 
 .masseditor-button_compact {
-    min-height: 32px;
+    min-height: var(--me-control-height-compact);
     padding: 0 12px;
     border-radius: 8px;
-    font-size: 12px;
-    line-height: 30px;
+    font-size: var(--me-font-caption);
+    line-height: 1.2;
 }
 
 .masseditor-panel__actions_centered {
@@ -449,7 +480,7 @@
 .masseditor-library-group h3 {
     margin-bottom: 6px;
     color: var(--me-soft);
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.07em;
@@ -466,14 +497,16 @@
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    min-height: 40px;
-    padding: 10px 12px;
+    min-height: var(--me-control-height);
+    padding: 12px 14px;
     border: 0;
     border-radius: 8px;
     background: transparent;
     color: var(--me-text);
     text-align: left;
     font: inherit;
+    font-size: var(--me-font-ui);
+    line-height: 1.4;
 }
 
 .masseditor-library-item.is-active {
@@ -492,13 +525,13 @@
 .masseditor-badge {
     display: inline-flex;
     align-items: center;
-    min-height: 22px;
-    padding: 0 10px;
+    min-height: 24px;
+    padding: 0 12px;
     border: 1px solid var(--me-border);
     border-radius: 999px;
     background: var(--me-surface-soft);
     color: var(--me-muted);
-    font-size: 11px;
+    font-size: var(--me-font-micro);
     font-weight: 600;
 }
 
@@ -539,14 +572,15 @@
 
 .masseditor-ready strong {
     color: var(--me-primary);
-    font-size: 12px;
+    font-size: var(--me-font-caption);
     font-weight: 700;
 }
 
 .masseditor-ready__text [data-role="ready-copy"] {
     display: block;
     color: var(--me-ready-text);
-    font-size: 12px;
+    font-size: var(--me-font-small);
+    line-height: 1.45;
 }
 
 .masseditor-panel_params [data-role="open-confirm"] {
@@ -588,8 +622,8 @@
 .masseditor-table td {
     padding: 14px 16px;
     border-bottom: 1px solid var(--me-border);
-    font-size: 14px;
-    line-height: 1.45;
+    font-size: var(--me-font-ui);
+    line-height: var(--me-line-body);
     text-align: left;
     vertical-align: top;
 }
@@ -597,7 +631,7 @@
 .masseditor-table thead th {
     background: var(--me-surface-soft);
     color: var(--me-muted);
-    font-size: 12px;
+    font-size: var(--me-font-caption);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -620,21 +654,21 @@
 }
 
 .masseditor-table__check {
-    width: 44px;
+    width: 48px;
     text-align: center;
 }
 
 .masseditor-product-name {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 600;
-    line-height: 1.35;
+    line-height: 1.4;
 }
 
 .masseditor-product-meta {
     margin-top: 2px;
     color: var(--me-soft);
-    font-size: 12px;
-    line-height: 1.4;
+    font-size: var(--me-font-caption);
+    line-height: 1.45;
 }
 
 .masseditor-product-mobile-details {
@@ -643,8 +677,8 @@
 
 .masseditor-product-categories {
     color: var(--me-muted);
-    font-size: 13px;
-    line-height: 1.4;
+    font-size: var(--me-font-small);
+    line-height: 1.45;
 }
 
 .masseditor-stock-summary {
@@ -660,17 +694,19 @@
 }
 
 .masseditor-stock-popover__toggle {
-    min-height: 24px;
-    padding: 0 8px;
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 0 10px;
     border: 1px solid var(--me-border);
     border-radius: 6px;
     background: var(--me-surface-soft);
     color: var(--me-muted);
     cursor: pointer;
     font: inherit;
-    font-size: 12px;
+    font-size: var(--me-font-caption);
     font-weight: 700;
-    line-height: 22px;
+    line-height: 1.2;
 }
 
 .masseditor-stock-popover__toggle:hover,
@@ -702,8 +738,8 @@
     justify-content: space-between;
     gap: 16px;
     color: var(--me-muted);
-    font-size: 13px;
-    line-height: 1.45;
+    font-size: var(--me-font-small);
+    line-height: var(--me-line-body);
     white-space: nowrap;
 }
 
@@ -720,8 +756,8 @@
     min-width: 220px;
     max-width: 360px;
     color: var(--me-text);
-    font-size: 13px;
-    line-height: 1.45;
+    font-size: var(--me-font-small);
+    line-height: var(--me-line-body);
     white-space: normal;
     word-break: break-word;
 }
@@ -785,7 +821,7 @@
 
 .masseditor-page-info {
     color: var(--me-muted);
-    font-size: 12px;
+    font-size: var(--me-font-caption);
     font-weight: 500;
 }
 
@@ -799,13 +835,13 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 30px;
-    height: 30px;
+    width: 34px;
+    height: 34px;
     border: 1px solid var(--me-border);
     border-radius: 8px;
     background: var(--me-surface);
     color: var(--me-text);
-    font-size: 13px;
+    font-size: var(--me-font-small);
     font-weight: 600;
     line-height: 1;
 }
@@ -824,7 +860,7 @@
 
 .masseditor-pager__ellipsis {
     color: var(--me-muted);
-    font-size: 12px;
+    font-size: var(--me-font-caption);
     line-height: 1;
 }
 
@@ -859,7 +895,8 @@
     align-items: center;
     gap: 8px;
     color: var(--me-text);
-    font-size: 13px;
+    font-size: var(--me-font-small);
+    line-height: 1.4;
 }
 
 .masseditor-modal[hidden] {
@@ -930,11 +967,11 @@
 
 .masseditor-modal__summary span {
     color: var(--me-muted);
-    font-size: 13px;
+    font-size: var(--me-font-small);
 }
 
 .masseditor-modal__summary strong {
-    font-size: 13px;
+    font-size: var(--me-font-ui);
     font-weight: 700;
 }
 
@@ -947,8 +984,8 @@
     border-radius: 10px;
     background: var(--me-warning-soft);
     color: #8a6a1f;
-    font-size: 12px;
-    line-height: 1.45;
+    font-size: var(--me-font-caption);
+    line-height: var(--me-line-body);
 }
 
 .masseditor-modal__footer {
@@ -1017,7 +1054,7 @@
 .masseditor-toast__title {
     display: block;
     margin-bottom: 4px;
-    font-size: 12px;
+    font-size: var(--me-font-caption);
     font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -1037,8 +1074,8 @@
 
 .masseditor-toast__message {
     margin: 0;
-    font-size: 13px;
-    line-height: 1.45;
+    font-size: var(--me-font-small);
+    line-height: var(--me-line-body);
     white-space: pre-line;
 }
 
@@ -1062,6 +1099,10 @@
 }
 
 .masseditor-mobile-apply {
+    display: none;
+}
+
+.masseditor-select-all-page-mobile {
     display: none;
 }
 
@@ -1097,6 +1138,13 @@
 
 @media (max-width: 1024px) {
     .masseditor {
+        --me-font-body: 30px;
+        --me-font-ui: 30px;
+        --me-font-small: 28px;
+        --me-font-caption: 25px;
+        --me-font-micro: 22px;
+        --me-control-height: 64px;
+        --me-control-height-compact: 56px;
         padding: 16px;
         padding-bottom: 96px;
     }
@@ -1133,6 +1181,21 @@
         justify-self: auto;
     }
 
+    .masseditor-select-all-page-mobile {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: var(--me-font-ui);
+        cursor: pointer;
+        padding: 8px 0;
+    }
+
+    .masseditor-select-all-page-mobile input[type="checkbox"] {
+        width: 22px;
+        height: 22px;
+        flex-shrink: 0;
+    }
+
     .masseditor-tabs {
         width: 100%;
         justify-content: flex-start;
@@ -1143,6 +1206,21 @@
     .masseditor-tab {
         flex: 1 0 auto;
         min-width: 104px;
+    }
+
+    .masseditor-button {
+        font-size: 25px;
+    }
+
+    .masseditor-button_compact {
+        font-size: 22px;
+    }
+
+    .masseditor-panel__head h2,
+    .masseditor-table-card__head h2,
+    .masseditor-settings-group h2 {
+        font-size: 32px;
+        line-height: 1.3;
     }
 
     .masseditor-settings-row input,
@@ -1170,7 +1248,7 @@
 
     .masseditor-stat__label {
         margin-bottom: 4px;
-        font-size: 10px;
+        font-size: 22px;
         letter-spacing: 0.04em;
     }
 
@@ -1182,11 +1260,11 @@
     }
 
     .masseditor-stat__value {
-        font-size: 20px;
+        font-size: 40px;
     }
 
     .masseditor-stat__value_small {
-        font-size: 15px;
+        font-size: 32px;
     }
 
     .masseditor-stat__meta {
@@ -1209,9 +1287,9 @@
 
     .masseditor-table_products tr {
         display: grid;
-        grid-template-columns: 22px minmax(0, 1fr);
-        gap: 10px 12px;
-        padding: 16px;
+        grid-template-columns: 28px minmax(0, 1fr);
+        gap: 12px 14px;
+        padding: 18px;
         border: 1px solid var(--me-border);
         border-radius: 12px;
         background: var(--me-surface);
@@ -1231,10 +1309,15 @@
     .masseditor-table_products td.masseditor-table__check {
         grid-row: 1 / 2;
         grid-column: 1;
-        width: 22px;
+        width: 28px;
         text-align: left;
         align-self: start;
-        padding-top: 1px;
+        padding-top: 2px;
+    }
+
+    .masseditor-table_products td.masseditor-table__check input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
     }
 
     .masseditor-table_products td:nth-child(3) {
@@ -1267,34 +1350,34 @@
     .masseditor-product-mobile-details {
         display: flex;
         flex-direction: column;
-        gap: 2px;
-        margin-top: 10px;
-        padding-top: 10px;
+        gap: 4px;
+        margin-top: 12px;
+        padding-top: 12px;
         border-top: 1px solid var(--me-border);
     }
 
     .masseditor-product-mobile-details__row {
         display: grid;
-        grid-template-columns: 84px minmax(0, 1fr);
-        align-items: baseline;
-        gap: 8px;
+        grid-template-columns: 96px minmax(0, 1fr);
+        align-items: start;
+        gap: 10px;
         min-width: 0;
-        padding: 4px 0;
+        padding: 5px 0;
     }
 
     .masseditor-product-mobile-details__row span {
         color: var(--me-soft);
-        font-size: 12px;
-        line-height: 1.35;
+        font-size: 25px;
+        line-height: 1.45;
         text-transform: none;
         letter-spacing: 0;
     }
 
     .masseditor-product-mobile-details__row strong {
         color: var(--me-text);
-        font-size: 14px;
+        font-size: 30px;
         font-weight: 500;
-        line-height: 1.35;
+        line-height: 1.45;
         white-space: normal;
         overflow: visible;
         text-overflow: clip;
@@ -1302,26 +1385,26 @@
     }
 
     .masseditor-product-name {
-        font-size: 16px;
-        line-height: 1.35;
+        font-size: 35px;
+        line-height: 1.4;
         font-weight: 700;
     }
 
     .masseditor-product-meta {
         margin-top: 3px;
         color: var(--me-muted);
-        font-size: 13px;
-        line-height: 1.35;
+        font-size: 25px;
+        line-height: 1.45;
     }
 
     .masseditor-stock-popover__toggle {
-        font-size: 12px;
-        line-height: 24px;
+        min-height: 44px;
+        font-size: 22px;
     }
 
     .masseditor-stock-popover__item {
-        font-size: 12px;
-        line-height: 1.45;
+        font-size: 22px;
+        line-height: 1.5;
     }
 
     .masseditor-table_log,
@@ -1336,7 +1419,7 @@
 
     .masseditor-table_log tr {
         display: block;
-        padding: 12px;
+        padding: 16px;
         border: 1px solid var(--me-border);
         border-radius: 12px;
         background: var(--me-surface);
@@ -1349,20 +1432,20 @@
 
     .masseditor-table_log td {
         display: grid;
-        grid-template-columns: 92px minmax(0, 1fr);
+        grid-template-columns: 100px minmax(0, 1fr);
         gap: 10px;
-        padding: 4px 0;
+        padding: 6px 0;
         border: 0;
-        font-size: 14px;
-        line-height: 1.4;
+        font-size: 28px;
+        line-height: 1.5;
         word-break: break-word;
     }
 
     .masseditor-table_log td::before {
         content: attr(data-label);
         color: var(--me-soft);
-        font-size: 12px;
-        line-height: 1.35;
+        font-size: 22px;
+        line-height: 1.45;
     }
 
     .masseditor-table_log td .masseditor-badge {
@@ -1407,23 +1490,24 @@
     }
 
     .masseditor-mobile-apply__meta strong {
-        font-size: 13px;
-        line-height: 1.2;
+        font-size: 28px;
+        line-height: 1.3;
     }
 
     .masseditor-mobile-apply__meta span {
         color: var(--me-muted);
-        font-size: 11px;
-        line-height: 1.3;
+        font-size: 25px;
+        line-height: 1.4;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
     .masseditor-mobile-apply .masseditor-button {
-        min-height: 38px;
-        padding: 0 14px;
+        min-height: 64px;
+        padding: 0 18px;
         border-radius: 10px;
+        font-size: 25px;
         white-space: nowrap;
     }
 
@@ -1447,11 +1531,11 @@
     }
 
     .masseditor h1 {
-        font-size: 20px;
+        font-size: 38px;
     }
 
     .masseditor-subtitle {
-        font-size: 13px;
+        font-size: 22px;
     }
 
     .masseditor-panel__actions {

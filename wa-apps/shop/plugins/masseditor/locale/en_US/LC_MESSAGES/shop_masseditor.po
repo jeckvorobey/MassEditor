@@ -1,6 +1,10 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: shop_masseditor 1.1.0\n"
+"Project-Id-Version: shop_masseditor 1.2.0\n"
+"PO-Revision-Date: 2026-07-14 00:00+0300\n"
+"Last-Translator: MassEditor Team\n"
+"Language-Team: English\n"
+"MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: en_US\n"
@@ -608,6 +612,9 @@ msgstr "Basic feature editing"
 msgid "Warehouse"
 msgstr "Warehouse"
 
+msgid "All warehouses"
+msgstr "All warehouses"
+
 msgid "Select warehouse"
 msgstr "No warehouse"
 
@@ -653,11 +660,26 @@ msgstr "Feature"
 msgid "Select feature"
 msgstr "Select feature"
 
+msgid "Select value"
+msgstr "Select value"
+
 msgid "Feature mode"
 msgstr "Feature mode"
 
 msgid "Feature value"
 msgstr "Feature value"
+
+msgid "Yes"
+msgstr "Yes"
+
+msgid "No"
+msgstr "No"
+
+msgid "Enter a hex color value (e.g. #ff0000)"
+msgstr "Enter a hex color value (e.g. #ff0000)"
+
+msgid "Enter a numeric value"
+msgstr "Enter a numeric value"
 
 msgid "Select category"
 msgstr "Select category"
@@ -707,11 +729,17 @@ msgstr "Enter a feature value."
 msgid "Enter a valid feature value."
 msgstr "Enter a valid feature value."
 
+msgid "Enter 1 for yes or 0 for no."
+msgstr "Enter 1 for yes or 0 for no."
+
 msgid "Feature type is not supported in this version."
 msgstr "Feature type is not supported in this version."
 
 msgid "Select an existing feature value."
 msgstr "Select an existing feature value."
+
+msgid "Too many feature values selected."
+msgstr "Too many feature values selected."
 
 msgid "Select a category."
 msgstr "Select a category."
@@ -727,3 +755,20 @@ msgstr "Feature: %s, mode %s for %d products"
 
 msgid "Category: %s, mode %s for %d products"
 msgstr "Category: %s, mode %s for %d products"
+msgid "Video mode"
+msgstr "Video mode"
+
+msgid "Video URL"
+msgstr "Video URL"
+
+msgid "Invalid video mode."
+msgstr "Invalid video mode."
+
+msgid "Enter a valid HTTP(S) video URL."
+msgstr "Enter a valid HTTP(S) video URL."
+
+msgid "Not enough rights to edit the selected product."
+msgstr "Not enough rights to edit the selected product."
+
+msgid "Video: mode %s for %d products"
+msgstr "Video: mode %s for %d products"

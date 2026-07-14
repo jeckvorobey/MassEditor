@@ -2,27 +2,38 @@
 
 Published release history for this Webasyst product.
 
-## 1.1.0 — 2026-06-02
+## 1.0.0 — 2026-05-01
 
-### Added
+```html
+<p><strong>Version 1.0.0 — May 1, 2026</strong></p>
+<ul>
+  <li>Initial plugin release with bulk operations for price, compare price, visibility, availability, descriptions, tags, and URLs.</li>
+  <li>Added product filtering, pagination, and product selection preserved across list pages.</li>
+  <li>Added operation confirmation, change log, and Russian and English interface support.</li>
+</ul>
+```
 
-- Bulk stock management: set, increase, decrease, or make stock infinite; a warehouse can be selected when warehouse stock accounting is enabled.
-- Basic product feature editing: choose a feature, set an existing value, or clear the value.
-- Bulk category operations: add a product to a category, remove the category link, or replace the main category.
-- Selection of all products matching the current filter with server-side reselection and `operation_limit` enforcement.
+## 1.1.0 — 2026-07-10
 
-### Improved
+```html
+<p><strong>Version 1.1.0 — July 10, 2026</strong></p>
+<ul>
+  <li>Added bulk stock editing, warehouse filtering, and selected-warehouse stock display.</li>
+  <li>Expanded bulk feature editing with boolean values, dimensions, colors, selectable values, radio options, and ranges.</li>
+  <li>Added bulk category operations, selection of all filtered products, and current-page selection on mobile devices.</li>
+  <li>Improved the responsive interface, operation switching, and Russian and English localization.</li>
+  <li>Fixed stock updates for the selected warehouse and plugin menu item display in the Shop-Script backend.</li>
+</ul>
+```
 
-- The operation library and confirmation modal now reflect the new stock, feature, and category modes.
-- Server-side validation and the operation log were extended for the `stock`, `features`, and `categories` actions.
-- Russian and English interface strings were refreshed together with the release publication materials for `1.1.0`.
+## 1.2.0 — 2026-07-14
 
-### Compatibility
-
-- The plugin still works only in the Shop-Script backend and does not modify the storefront, cart, orders, or theme.
-- Basic feature editing is limited to common product features of safe types: string, text, number, and a single existing selectable value.
-
-### Notes
-
-- This release does not include SKU features, multiple values, colors, ranges, dimensions, or creation of new feature values.
-- Product images, videos, cross-selling, similar products, and product pages are also out of scope for this version.
+```html
+<p><strong>Version 1.2.0 — July 14, 2026</strong></p>
+<ul>
+  <li>Added bulk editing of multiple-value common product features with replace, add, remove selected values, and clear modes.</li>
+  <li>Added bulk video editing to set one HTTP(S) URL for selected products or clear the current URL.</li>
+  <li>Feature values are validated before saving; SKU-level, child, and unrelated product features remain unchanged.</li>
+  <li>Added safe installed-plugin schema updates through the standard Webasyst update mechanism.</li>
+</ul>
+```

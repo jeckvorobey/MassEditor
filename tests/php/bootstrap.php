@@ -177,6 +177,7 @@ class FakeQueryResult
 
 class waModel
 {
+    public static $global_execs = array();
     public $queries = array();
     public $execs = array();
     public $responses = array();
@@ -197,6 +198,7 @@ class waModel
     public function exec($sql, $params = array())
     {
         $this->execs[] = array('sql' => $sql, 'params' => $params);
+        self::$global_execs[] = array('sql' => $sql, 'params' => $params);
         return 1;
     }
 
@@ -432,6 +434,8 @@ class shopProduct implements ArrayAccess
 {
     public static $products = array();
     public static $saved = array();
+    public static $save_failures = array();
+    public static $denied_rights = array();
 
     private $id;
     private $data = array();
@@ -447,6 +451,8 @@ class shopProduct implements ArrayAccess
     {
         self::$products = array();
         self::$saved = array();
+        self::$save_failures = array();
+        self::$denied_rights = array();
     }
 
     public static function seed($id, array $data = array(), array $skus = array())
@@ -457,6 +463,21 @@ class shopProduct implements ArrayAccess
         );
     }
 
+    public static function failSaveFor($id, $message = 'Product save failed')
+    {
+        self::$save_failures[(int) $id] = (string) $message;
+    }
+
+    public static function denyRightsFor($id)
+    {
+        self::$denied_rights[(int) $id] = true;
+    }
+
+    public function checkRights()
+    {
+        return empty(self::$denied_rights[$this->id]);
+    }
+
     public function getSkus()
     {
         return isset(self::$products[$this->id]['skus']) ? self::$products[$this->id]['skus'] : array();
@@ -464,6 +485,9 @@ class shopProduct implements ArrayAccess
 
     public function save()
     {
+        if (isset(self::$save_failures[$this->id])) {
+            throw new RuntimeException(self::$save_failures[$this->id]);
+        }
         self::$saved[$this->id] = $this->data;
         self::$products[$this->id]['data'] = $this->data;
     }

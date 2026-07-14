@@ -28,6 +28,7 @@ class shopMasseditorPluginBackendAction extends waViewAction
             'status' => waRequest::get('status', 'all', waRequest::TYPE_STRING_TRIM),
             'availability' => waRequest::get('availability', 'all', waRequest::TYPE_STRING_TRIM),
             'category_id' => waRequest::get('category_id', 0, waRequest::TYPE_INT),
+            'stock_id' => waRequest::get('stock_id', 0, waRequest::TYPE_INT),
             'page' => waRequest::get('page', 1, waRequest::TYPE_INT),
         );
         $log_page = waRequest::get('log_page', 1, waRequest::TYPE_INT);
@@ -64,8 +65,11 @@ class shopMasseditorPluginBackendAction extends waViewAction
             'feature_id' => 0,
             'feature_mode' => 'set',
             'feature_value' => '',
+            'feature_value_ids' => array(),
             'category_id' => 0,
             'categories_mode' => 'add',
+            'video_mode' => 'set',
+            'video_url' => '',
         );
 
         if (waRequest::getMethod() === 'post') {
@@ -101,6 +105,17 @@ class shopMasseditorPluginBackendAction extends waViewAction
         $categories = $selection_service->getCategories();
         $stocks = $selection_service->getStocks();
         $features = $selection_service->getEditableFeatures();
+        $decorated_features = $this->decorateFeatures($features);
+
+        $feature_values_map = $operation_service->getFeatureValuesMap($decorated_features);
+        $feature_ui_map = array();
+        foreach ($decorated_features as $feature) {
+            $feature_id = (int) $feature['id'];
+            $type = isset($feature['type']) ? (string) $feature['type'] : '';
+            $ui_config = $operation_service->getFeatureUiConfig($type);
+            $feature_ui_map[$feature_id] = !empty($feature['multiple']) ? 'multiple_select' : $ui_config['ui'];
+        }
+
         $log_selection = $log_service->getPage($log_page, 20);
         $recent_logs = $this->decorateLogs($log_selection['logs'], $language);
         $last_log = $this->decorateLogs($log_service->getLatest(1), $language);
@@ -118,7 +133,15 @@ class shopMasseditorPluginBackendAction extends waViewAction
             ),
             'categories' => $categories,
             'stocks' => $stocks,
-            'features' => $this->decorateFeatures($features),
+            'features' => $decorated_features,
+            'feature_values_map' => $feature_values_map,
+            'feature_ui_map' => $feature_ui_map,
+            'feature_values_json' => $this->encodeInlineJson($feature_values_map),
+            'feature_ui_json' => $this->encodeInlineJson($feature_ui_map),
+            'feature_texts_json' => $this->encodeInlineJson(array(
+                'select_feature' => $texts['select_feature'],
+                'select_value' => $texts['select_value'],
+            )),
             'filters' => $selection['filters'],
             'pagination' => $selection['pagination'],
             'pagination_ui' => $this->buildPaginationUi($selection['pagination']),
@@ -132,8 +155,8 @@ class shopMasseditorPluginBackendAction extends waViewAction
             'operation_form' => $operation_form,
             'operations' => $operations,
             'selected_product_ids_map' => array_fill_keys($selected_product_ids, true),
-            'has_active_filters' => $selection['filters']['query'] !== '' || $selection['filters']['status'] !== 'all' || $selection['filters']['availability'] !== 'all' || !empty($selection['filters']['category_id']),
-            'can_select_filter' => ($selection['filters']['query'] !== '' || $selection['filters']['status'] !== 'all' || $selection['filters']['availability'] !== 'all' || !empty($selection['filters']['category_id']) || $selection['pagination']['pages'] > 1) && $selection['pagination']['total'] > 0,
+            'has_active_filters' => $selection['filters']['query'] !== '' || $selection['filters']['status'] !== 'all' || $selection['filters']['availability'] !== 'all' || !empty($selection['filters']['category_id']) || !empty($selection['filters']['stock_id']),
+            'can_select_filter' => ($selection['filters']['query'] !== '' || $selection['filters']['status'] !== 'all' || $selection['filters']['availability'] !== 'all' || !empty($selection['filters']['category_id']) || !empty($selection['filters']['stock_id']) || $selection['pagination']['pages'] > 1) && $selection['pagination']['total'] > 0,
             'filter_reset_url' => '?plugin=' . $plugin->getId() . '&view=products',
             'search_suggestions_url' => '?plugin=' . $plugin->getId() . '&action=searchSuggestions',
             'active_tab' => $active_tab,
@@ -199,6 +222,11 @@ class shopMasseditorPluginBackendAction extends waViewAction
         );
     }
 
+    private function encodeInlineJson($value)
+    {
+        return json_encode($value, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
+    }
+
     private function decorateProducts(array $products, $price_digits = null)
     {
         foreach ($products as &$product) {
@@ -261,27 +289,7 @@ class shopMasseditorPluginBackendAction extends waViewAction
 
     private function decorateFeatures(array $features)
     {
-        $result = array();
-        foreach ($features as $feature) {
-            $type = isset($feature['type']) ? (string) $feature['type'] : '';
-            $multiple = !empty($feature['multiple']);
-            if ($multiple || !$this->isFeatureTypeEditable($type)) {
-                continue;
-            }
-            $result[] = $feature;
-        }
-
-        return $result;
-    }
-
-    private function isFeatureTypeEditable($type)
-    {
-        $type = strtolower((string) $type);
-        if (strpos($type, '.') !== false) {
-            $type = substr($type, 0, strpos($type, '.'));
-        }
-
-        return in_array($type, array('varchar', 'text', 'double', 'int'), true);
+        return array_values($features);
     }
 
     private function resolvePriceViewDigits(array $operation_form)
@@ -370,8 +378,11 @@ class shopMasseditorPluginBackendAction extends waViewAction
             'feature_id' => waRequest::post('feature_id', 0, waRequest::TYPE_INT),
             'feature_mode' => waRequest::post('feature_mode', 'set', waRequest::TYPE_STRING_TRIM),
             'feature_value' => waRequest::post('feature_value', '', waRequest::TYPE_STRING_TRIM),
+            'feature_value_ids' => waRequest::post('feature_value_ids', array(), waRequest::TYPE_ARRAY),
             'category_id' => waRequest::post('category_id', 0, waRequest::TYPE_INT),
             'categories_mode' => waRequest::post('categories_mode', 'add', waRequest::TYPE_STRING_TRIM),
+            'video_mode' => waRequest::post('video_mode', 'set', waRequest::TYPE_STRING_TRIM),
+            'video_url' => waRequest::post('video_url', '', waRequest::TYPE_STRING_TRIM),
             'confirm_apply' => waRequest::post('confirm_apply', 0, waRequest::TYPE_INT),
         );
     }
@@ -513,6 +524,9 @@ class shopMasseditorPluginBackendAction extends waViewAction
         }
         if ($action_type === 'categories') {
             return shopMasseditorPluginI18nService::t('action_categories', $language);
+        }
+        if ($action_type === 'video') {
+            return shopMasseditorPluginI18nService::t('operation_video', $language);
         }
 
         return (string) $action_type;
@@ -656,7 +670,7 @@ class shopMasseditorPluginBackendAction extends waViewAction
                 'title' => shopMasseditorPluginI18nService::t('group_media', $language),
                 'items' => array(
                     array('id' => 'product_images', 'label' => shopMasseditorPluginI18nService::t('product_images', $language), 'enabled' => false),
-                    array('id' => 'video', 'label' => shopMasseditorPluginI18nService::t('video', $language), 'enabled' => false),
+                    array('id' => 'video', 'label' => shopMasseditorPluginI18nService::t('operation_video', $language), 'enabled' => true),
                 ),
             ),
             array(

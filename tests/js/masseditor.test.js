@@ -22,6 +22,12 @@ function boot(options = {}) {
     document: app.document,
     localStorage,
     masseditorI18n: options.i18n || {},
+    __masseditor_feature_values_map: options.featureValues || {
+      8: [
+        { id: 71, value: 'Cotton' },
+        { id: 72, value: 'Linen' },
+      ],
+    },
     fetch: hasFetchOption ? options.fetch : ((url) => {
       fetchCalls.push(url);
       return Promise.resolve({
@@ -153,6 +159,52 @@ test('operation switching updates visible fields and compare-price toggle', () =
   assert.equal(compareField.querySelector('input').disabled, false);
 });
 
+test('switching to another operation resets operation form controls', () => {
+  const app = boot();
+  const buttons = app.document.querySelectorAll('[data-role="operation-trigger"]');
+  const numeric = app.document.getElementById('masseditor-numeric-value');
+  const compareMode = app.document.getElementById('masseditor-compare-price-mode');
+  const compareValue = app.document.getElementById('masseditor-compare-price-value');
+  const urlMode = app.document.getElementById('masseditor-url-mode');
+  const urlValue = app.document.getElementById('masseditor-url-value');
+
+  numeric.value = '120';
+  compareMode.value = 'coefficient';
+  compareMode.selectedIndex = 1;
+  compareValue.value = '1.15';
+  urlMode.value = 'template';
+  urlMode.selectedIndex = 1;
+  urlValue.value = '{name}-{id}';
+
+  buttons[1].click();
+
+  assert.equal(numeric.value, '');
+  assert.equal(compareMode.value, 'keep');
+  assert.equal(compareMode.selectedIndex, 0);
+  assert.equal(compareValue.value, '');
+  assert.equal(urlMode.value, 'regenerate');
+  assert.equal(urlMode.selectedIndex, 0);
+  assert.equal(urlValue.value, '');
+});
+
+test('operation switch preserves product selection and does not reset the active operation twice', () => {
+  const app = boot({
+    localStorage: {
+      'masseditor:selected-products:masseditor': '[1]',
+    },
+  });
+  const buttons = app.document.querySelectorAll('[data-role="operation-trigger"]');
+  const tagsValue = app.document.getElementById('masseditor-tags-value');
+
+  buttons[1].click();
+  tagsValue.value = 'summer, sale';
+  buttons[1].click();
+
+  assert.equal(tagsValue.value, 'summer, sale');
+  assert.equal(app.document.querySelector('[data-role="selected-count"]').textContent, 1);
+  assert.equal(app.localStorage.snapshot()['masseditor:selected-products:masseditor'], '[1]');
+});
+
 test('validation shows error toast when required inputs are missing', () => {
   const app = boot();
   const openConfirm = app.document.querySelector('[data-role="open-confirm"]');
@@ -207,7 +259,9 @@ test('new operation fields validate and update confirm summary', () => {
     },
   });
   const buttons = app.document.querySelectorAll('[data-role="operation-trigger"]');
+  const stockId = app.document.getElementById('masseditor-stock-id');
   const stockValue = app.document.getElementById('masseditor-stock-value');
+  const featureId = app.document.getElementById('masseditor-feature-id');
   const featureValue = app.document.getElementById('masseditor-feature-value');
   const openConfirm = app.document.querySelector('[data-role="open-confirm"]');
 
@@ -215,6 +269,8 @@ test('new operation fields validate and update confirm summary', () => {
   openConfirm.click();
   assert.equal(app.toastStack.children[1].querySelector('p').textContent, 'Enter a valid stock value.');
 
+  stockId.value = '3';
+  stockId.selectedIndex = 1;
   stockValue.value = '12';
   openConfirm.click();
   assert.equal(app.modal.hidden, false);
@@ -224,6 +280,8 @@ test('new operation fields validate and update confirm summary', () => {
 
   app.document.querySelector('[data-role="close-modal"]').click();
   buttons[4].click();
+  featureId.value = '7';
+  featureId.selectedIndex = 1;
   openConfirm.click();
   assert.equal(app.toastStack.children[2].querySelector('p').textContent, 'Enter a feature value.');
 
@@ -231,6 +289,83 @@ test('new operation fields validate and update confirm summary', () => {
   openConfirm.click();
   assert.equal(app.document.querySelector('[data-role="modal-operation"]').textContent, 'Basic feature editing');
   assert.equal(app.document.querySelector('[data-role="modal-value"]').textContent, 'cotton');
+});
+
+test('multiple feature switches to safe modes and requires selected values', () => {
+  const app = boot({
+    localStorage: {
+      'masseditor:selected-products:masseditor': '[1]',
+    },
+  });
+  const buttons = app.document.querySelectorAll('[data-role="operation-trigger"]');
+  const featureId = app.document.getElementById('masseditor-feature-id');
+  const featureMode = app.document.getElementById('masseditor-feature-mode');
+  const multiple = app.document.getElementById('masseditor-feature-value-multiple');
+  const featureValueField = app.document.querySelector('[data-feature-value-field]');
+  const openConfirm = app.document.querySelector('[data-role="open-confirm"]');
+
+  buttons[4].click();
+  featureId.value = '8';
+  featureId.selectedIndex = 2;
+  change(featureId);
+
+  assert.equal(featureMode.value, 'replace');
+  assert.equal(multiple.hidden, false);
+  assert.equal(multiple.disabled, false);
+
+  openConfirm.click();
+  assert.equal(app.toastStack.children[1].querySelector('p').textContent, 'Enter a feature value.');
+
+  multiple.options[0].selected = true;
+  openConfirm.click();
+  assert.equal(app.modal.hidden, false);
+  assert.equal(app.document.querySelector('[data-role="modal-value"]').textContent, 'Cotton');
+
+  app.document.querySelector('[data-role="close-modal"]').click();
+  featureMode.value = 'clear';
+  featureMode.selectedIndex = 1;
+  change(featureMode);
+  assert.equal(featureValueField.hidden, true);
+  assert.equal(multiple.disabled, true);
+});
+
+test('video operation validates URL and disables it in clear mode', () => {
+  const app = boot({
+    localStorage: {
+      'masseditor:selected-products:masseditor': '[1]',
+    },
+    i18n: {
+      operation_video: 'Video',
+      validation_video_url: 'Enter a valid HTTP(S) video URL.',
+    },
+  });
+  const videoButton = app.document.querySelectorAll('[data-role="operation-trigger"]').find((button) => button.getAttribute('data-operation') === 'video');
+  const videoMode = app.document.getElementById('masseditor-video-mode');
+  const videoUrl = app.document.getElementById('masseditor-video-url');
+  const videoUrlField = app.document.querySelector('[data-video-url-field]');
+  const openConfirm = app.document.querySelector('[data-role="open-confirm"]');
+
+  videoButton.click();
+  videoUrl.value = 'ftp://example.com/video';
+  openConfirm.click();
+  assert.equal(app.toastStack.children[1].querySelector('p').textContent, 'Enter a valid HTTP(S) video URL.');
+
+  videoUrl.value = `https://example.com/${'a'.repeat(240)}`;
+  openConfirm.click();
+  assert.equal(app.toastStack.children[2].querySelector('p').textContent, 'Enter a valid HTTP(S) video URL.');
+
+  videoUrl.value = 'https://www.youtube.com/watch?v=abc';
+  openConfirm.click();
+  assert.equal(app.modal.hidden, false);
+  assert.equal(app.document.querySelector('[data-role="modal-operation"]').textContent, 'Video');
+  assert.equal(app.document.querySelector('[data-role="modal-value"]').textContent, 'https://www.youtube.com/watch?v=abc');
+
+  app.document.querySelector('[data-role="close-modal"]').click();
+  videoMode.value = 'clear';
+  videoMode.selectedIndex = 1;
+  change(videoMode);
+  assert.equal(videoUrlField.hidden, true);
+  assert.equal(videoUrl.disabled, true);
 });
 
 test('stock operation allows regular count when warehouse is not selected', () => {
@@ -252,6 +387,86 @@ test('stock operation allows regular count when warehouse is not selected', () =
   assert.equal(app.modal.hidden, false);
   assert.equal(app.document.querySelector('[data-role="modal-operation"]').textContent, 'Stock');
   assert.equal(app.document.querySelector('[data-role="modal-value"]').textContent, '12');
+});
+
+test('stock operation requires warehouse selection for products with warehouse accounting', () => {
+  const app = boot({
+    localStorage: {
+      'masseditor:selected-products:masseditor': '[1]',
+    },
+  });
+  const buttons = app.document.querySelectorAll('[data-role="operation-trigger"]');
+  const stockId = app.document.getElementById('masseditor-stock-id');
+  const stockValue = app.document.getElementById('masseditor-stock-value');
+  const checkbox = app.document.querySelector('[data-role="product-checkbox"]');
+  const openConfirm = app.document.querySelector('[data-role="open-confirm"]');
+
+  buttons[3].click();
+  checkbox.setAttribute('data-has-warehouse-stock', '1');
+  checkbox.checked = true;
+  stockId.value = '0';
+  stockValue.value = '12';
+  openConfirm.click();
+
+  assert.equal(app.modal.hidden, true);
+  assert.equal(stockId.getAttribute('aria-invalid'), 'true');
+  assert.equal(stockId.closest('.masseditor-field').classList.contains('masseditor-field_invalid'), true);
+
+  stockId.value = '3';
+  change(stockId);
+
+  assert.equal(stockId.getAttribute('aria-invalid'), 'false');
+  assert.equal(stockId.closest('.masseditor-field').classList.contains('masseditor-field_invalid'), false);
+});
+
+function assertWarehouseSelectionToast(i18n, expected) {
+  const app = boot({
+    i18n,
+    localStorage: {
+      'masseditor:selected-products:masseditor': '[1]',
+    },
+  });
+  const buttons = app.document.querySelectorAll('[data-role="operation-trigger"]');
+  const stockId = app.document.getElementById('masseditor-stock-id');
+  const stockValue = app.document.getElementById('masseditor-stock-value');
+  const checkbox = app.document.querySelector('[data-role="product-checkbox"]');
+  const openConfirm = app.document.querySelector('[data-role="open-confirm"]');
+
+  buttons[3].click();
+  checkbox.setAttribute('data-has-warehouse-stock', '1');
+  checkbox.checked = true;
+  stockId.value = '0';
+  stockValue.value = '12';
+  openConfirm.click();
+
+  const toast = app.toastStack.children[1];
+  assert.equal(toast.children[0].children[0].textContent, expected.title);
+  assert.equal(toast.querySelector('p').textContent, expected.message);
+  assert.equal(toast.querySelector('button').getAttribute('aria-label'), expected.closeLabel);
+}
+
+test('warehouse stock validation toast is fully localized in Russian', () => {
+  assertWarehouseSelectionToast({
+    toast_error: 'Ошибка',
+    toast_close: 'Закрыть уведомление',
+    validation_stock_required_for_accounted_products: 'Для товаров со складским учетом выберите конкретный склад.',
+  }, {
+    title: 'Ошибка',
+    message: 'Для товаров со складским учетом выберите конкретный склад.',
+    closeLabel: 'Закрыть уведомление',
+  });
+});
+
+test('warehouse stock validation toast is fully localized in English', () => {
+  assertWarehouseSelectionToast({
+    toast_error: 'Error',
+    toast_close: 'Close notification',
+    validation_stock_required_for_accounted_products: 'For products with warehouse stock accounting, select a specific warehouse.',
+  }, {
+    title: 'Error',
+    message: 'For products with warehouse stock accounting, select a specific warehouse.',
+    closeLabel: 'Close notification',
+  });
 });
 
 test('warehouse stock popover toggles and keeps confirmation flow intact', () => {
@@ -302,6 +517,54 @@ test('mobile product cards hide all desktop-only columns through changed date', 
   );
 });
 
+test('css defines readable desktop typography contract for backend tables and controls', () => {
+  assert.match(
+    cssSource,
+    /\.masseditor\s*\{[\s\S]*--me-font-body:\s*16px;[\s\S]*--me-font-ui:\s*15px;[\s\S]*--me-font-caption:\s*13px;[\s\S]*--me-control-height:\s*44px;[\s\S]*--me-control-height-compact:\s*36px;/
+  );
+  assert.match(
+    cssSource,
+    /\.masseditor input\[type="text"\],[\s\S]*?\.masseditor textarea\s*\{[\s\S]*min-height:\s*var\(--me-control-height\);[\s\S]*font-size:\s*var\(--me-font-body\);[\s\S]*line-height:\s*var\(--me-line-body\);/
+  );
+  assert.match(
+    cssSource,
+    /\.masseditor-table th,\s*\.masseditor-table td\s*\{[\s\S]*font-size:\s*var\(--me-font-ui\);[\s\S]*line-height:\s*var\(--me-line-body\);/
+  );
+  assert.match(
+    cssSource,
+    /\.masseditor-table thead th\s*\{[\s\S]*font-size:\s*var\(--me-font-caption\);/
+  );
+  assert.match(
+    cssSource,
+    /\.masseditor-button\s*\{[\s\S]*min-height:\s*var\(--me-control-height\);[\s\S]*font-size:\s*15px;/
+  );
+});
+
+test('css defines larger mobile typography and touch targets', () => {
+  const mobileBlock = cssSource.slice(cssSource.indexOf('@media (max-width: 1024px)'));
+
+  assert.match(
+    mobileBlock,
+    /\.masseditor\s*\{[\s\S]*--me-font-body:\s*30px;[\s\S]*--me-font-ui:\s*30px;[\s\S]*--me-font-small:\s*28px;[\s\S]*--me-font-caption:\s*25px;[\s\S]*--me-control-height:\s*64px;[\s\S]*--me-control-height-compact:\s*56px;/
+  );
+  assert.match(
+    mobileBlock,
+    /\.masseditor-table_products tr\s*\{[\s\S]*padding:\s*18px;/
+  );
+  assert.match(
+    mobileBlock,
+    /\.masseditor-product-mobile-details__row span\s*\{[\s\S]*font-size:\s*25px;/
+  );
+  assert.match(
+    mobileBlock,
+    /\.masseditor-product-mobile-details__row strong\s*\{[\s\S]*font-size:\s*30px;/
+  );
+  assert.match(
+    mobileBlock,
+    /\.masseditor-mobile-apply \.masseditor-button\s*\{[\s\S]*min-height:\s*64px;[\s\S]*font-size:\s*25px;/
+  );
+});
+
 test('select all by filter switches payload mode without losing checkbox mode', () => {
   const app = boot();
   const selectFilter = app.document.querySelector('[data-role="select-filter"]');
@@ -336,7 +599,7 @@ test('select all by filter switches payload mode without losing checkbox mode', 
 test('template renders compact select-all-found button and left-aligned counter under title', () => {
   assert.match(
     templateSource,
-    /<div class="masseditor-table-card__heading">\s*<h2>\{\$texts\.nav_products\|escape\}<\/h2>\s*<span class="masseditor-counter" data-role="selection-counter-pill" data-total="\{\$pagination\.total\|escape\}">\{\$texts\.stats_selected\|escape\} 0 \{\$texts\.selected_counter_separator\|escape\} \{\$pagination\.total\|escape\}<\/span>\s*<\/div>\s*<div class="masseditor-searchbox masseditor-table-search">[\s\S]*data-role="product-search-input"[\s\S]*data-role="product-search-suggestions"[\s\S]*<div class="masseditor-panel__actions masseditor-table-card__actions">\s*\{if \$can_select_filter\}\s*<button class="button masseditor-button masseditor-button_primary masseditor-button_compact" type="button" data-role="select-filter"/
+    /<div class="masseditor-table-card__heading">\s*<h2>\{\$texts\.nav_products\|escape\}<\/h2>\s*<span class="masseditor-counter" data-role="selection-counter-pill" data-total="\{\$pagination\.total\|escape\}">\{\$texts\.stats_selected\|escape\} 0 \{\$texts\.selected_counter_separator\|escape\} \{\$pagination\.total\|escape\}<\/span>\s*<\/div>\s*<div class="masseditor-searchbox masseditor-table-search">[\s\S]*data-role="product-search-input"[\s\S]*data-role="product-search-suggestions"[\s\S]*<div class="masseditor-panel__actions masseditor-table-card__actions">[\s\S]*\{if \$can_select_filter\}\s*<button class="button masseditor-button masseditor-button_primary masseditor-button_compact" type="button" data-role="select-filter"/
   );
 });
 
@@ -415,6 +678,7 @@ test('product search suggestions request current filters and render options', as
   assert.match(requestedUrl, /status=published/);
   assert.match(requestedUrl, /availability=available/);
   assert.match(requestedUrl, /category_id=9/);
+  assert.match(requestedUrl, /stock_id=5/);
   assert.equal(app.document.querySelector('[data-role="product-search-suggestions"]').children.length, 2);
 });
 
@@ -476,4 +740,55 @@ test('product search clear button resets query and submits filter form', () => {
   assert.equal(clear.hidden, true);
   assert.equal(app.document.activeElement, query);
   assert.equal(submitted, true);
+});
+
+test('mobile select-all-page checkbox toggles all product checkboxes and persists to localStorage', () => {
+  const app = boot();
+  const mobileSelectAll = app.document.querySelector('[data-role="select-all-page-mobile"]');
+  const checkboxes = app.document.querySelectorAll('[data-role="product-checkbox"]');
+
+  mobileSelectAll.checked = true;
+  change(mobileSelectAll);
+
+  assert.equal(checkboxes[0].checked, true);
+  assert.equal(checkboxes[1].checked, true);
+  assert.equal(app.document.querySelector('[data-role="selected-count"]').textContent, 2);
+  assert.equal(app.localStorage.snapshot()['masseditor:selected-products:masseditor'], '[1,2]');
+});
+
+test('mobile select-all-page checkbox unchecks all and clears localStorage', () => {
+  const app = boot({
+    localStorage: { 'masseditor:selected-products:masseditor': '[1,2]' },
+  });
+  const mobileSelectAll = app.document.querySelector('[data-role="select-all-page-mobile"]');
+  const checkboxes = app.document.querySelectorAll('[data-role="product-checkbox"]');
+
+  checkboxes[0].checked = true;
+  checkboxes[1].checked = true;
+
+  mobileSelectAll.checked = false;
+  change(mobileSelectAll);
+
+  assert.equal(checkboxes[0].checked, false);
+  assert.equal(checkboxes[1].checked, false);
+  assert.equal(app.document.querySelector('[data-role="selected-count"]').textContent, 0);
+  assert.equal(app.localStorage.snapshot()['masseditor:selected-products:masseditor'], undefined);
+});
+
+test('mobile select-all-page checkbox shows indeterminate when partial selection', () => {
+  const app = boot();
+  const mobileSelectAll = app.document.querySelector('[data-role="select-all-page-mobile"]');
+  const checkboxes = app.document.querySelectorAll('[data-role="product-checkbox"]');
+
+  checkboxes[0].checked = true;
+  change(checkboxes[0]);
+
+  assert.equal(mobileSelectAll.indeterminate, true);
+  assert.equal(mobileSelectAll.checked, false);
+
+  checkboxes[1].checked = true;
+  change(checkboxes[1]);
+
+  assert.equal(mobileSelectAll.indeterminate, false);
+  assert.equal(mobileSelectAll.checked, true);
 });

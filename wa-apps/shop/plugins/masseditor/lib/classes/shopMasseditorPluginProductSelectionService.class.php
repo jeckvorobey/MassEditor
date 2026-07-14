@@ -9,6 +9,11 @@ class shopMasseditorPluginProductSelectionService
      */
     private $product_model;
 
+    /**
+     * @var array|null
+     */
+    private $stocks_cache = null;
+
     public function __construct(shopMasseditorPluginProductModel $product_model = null)
     {
         $this->product_model = $product_model ?: new shopMasseditorPluginProductModel();
@@ -81,7 +86,7 @@ class shopMasseditorPluginProductSelectionService
                 $conditions['params']
             )
             ->fetchAll();
-        $products = $this->attachStockDetails($products);
+        $products = $this->attachStockDetails($products, $filters['stock_id']);
 
         return array(
             'products' => $products,
@@ -168,17 +173,25 @@ class shopMasseditorPluginProductSelectionService
 
     public function getStocks()
     {
-        return $this->product_model
+        if ($this->stocks_cache !== null) {
+            return $this->stocks_cache;
+        }
+
+        $this->stocks_cache = $this->product_model
             ->query(
                 'SELECT id, name
                  FROM shop_stock
                  ORDER BY sort ASC, id ASC'
             )
             ->fetchAll();
+
+        return $this->stocks_cache;
     }
 
-    private function attachStockDetails(array $products)
+    private function attachStockDetails(array $products, $selected_stock_id = 0)
     {
+        $selected_stock_id = max(0, (int) $selected_stock_id);
+
         if (!$products) {
             return $products;
         }
@@ -204,58 +217,114 @@ class shopMasseditorPluginProductSelectionService
         }
 
         $placeholders = implode(',', array_fill(0, count($product_ids), '?'));
-        $rows = $this->product_model
-            ->query(
-                'SELECT sku.product_id,
-                        ps.stock_id,
-                        SUM(CASE WHEN ps.count IS NULL THEN 0 ELSE ps.count END) AS count,
-                        MAX(CASE WHEN ps.count IS NULL THEN 1 ELSE 0 END) AS has_infinite
-                 FROM shop_product_skus sku
-                 INNER JOIN shop_product_stocks ps ON ps.sku_id = sku.id
-                 WHERE sku.product_id IN (' . $placeholders . ')
-                 GROUP BY sku.product_id, ps.stock_id',
-                $product_ids
-            )
-            ->fetchAll();
 
-        $stock_counts = array();
-        $products_with_stock_details = array();
-        foreach ($rows as $row) {
-            $product_id = isset($row['product_id']) ? (int) $row['product_id'] : 0;
-            $stock_id = isset($row['stock_id']) ? (int) $row['stock_id'] : 0;
-            if ($product_id <= 0 || $stock_id <= 0) {
-                continue;
-            }
-            $products_with_stock_details[$product_id] = true;
-            $has_infinite = !empty($row['has_infinite'])
-                || (array_key_exists('count', $row) && $row['count'] === null);
-            $stock_counts[$product_id][$stock_id] = $has_infinite
-                ? null
-                : (float) $row['count'];
-        }
+        if ($selected_stock_id > 0) {
+            $rows = $this->product_model
+                ->query(
+                    'SELECT sku.product_id,
+                            ps.stock_id,
+                            SUM(CASE WHEN ps.count IS NULL THEN 0 ELSE ps.count END) AS count,
+                            MAX(CASE WHEN ps.count IS NULL THEN 1 ELSE 0 END) AS has_infinite
+                     FROM shop_product_skus sku
+                     INNER JOIN shop_product_stocks ps ON ps.sku_id = sku.id
+                     WHERE sku.product_id IN (' . $placeholders . ')
+                       AND ps.stock_id = i:selected_stock_id
+                     GROUP BY sku.product_id, ps.stock_id',
+                    array_merge($product_ids, array('selected_stock_id' => $selected_stock_id))
+                )
+                ->fetchAll();
 
-        foreach ($products as &$product) {
-            $product_id = isset($product['id']) ? (int) $product['id'] : 0;
-            if (empty($products_with_stock_details[$product_id])) {
-                continue;
-            }
-            foreach ($stocks as $stock) {
-                $stock_id = isset($stock['id']) ? (int) $stock['id'] : 0;
-                if ($stock_id <= 0) {
+            $stock_counts = array();
+            $products_with_stock = array();
+            foreach ($rows as $row) {
+                $product_id = isset($row['product_id']) ? (int) $row['product_id'] : 0;
+                if ($product_id <= 0) {
                     continue;
                 }
-                $count = isset($stock_counts[$product_id]) && array_key_exists($stock_id, $stock_counts[$product_id])
-                    ? $stock_counts[$product_id][$stock_id]
+                $products_with_stock[$product_id] = true;
+                $has_infinite = !empty($row['has_infinite'])
+                    || (array_key_exists('count', $row) && $row['count'] === null);
+                $stock_counts[$product_id] = $has_infinite
+                    ? null
+                    : (float) $row['count'];
+            }
+
+            $selected_stock_name = '';
+            foreach ($stocks as $stock) {
+                if ((int) $stock['id'] === $selected_stock_id) {
+                    $selected_stock_name = isset($stock['name']) ? (string) $stock['name'] : '';
+                    break;
+                }
+            }
+
+            foreach ($products as &$product) {
+                $product_id = isset($product['id']) ? (int) $product['id'] : 0;
+                $count = array_key_exists($product_id, $stock_counts)
+                    ? $stock_counts[$product_id]
                     : 0.0;
-                $product['stock_details'][] = array(
-                    'stock_id' => $stock_id,
-                    'stock_name' => isset($stock['name']) ? (string) $stock['name'] : '',
+                $product['count'] = $count;
+                $product['stock_details'] = array(array(
+                    'stock_id' => $selected_stock_id,
+                    'stock_name' => $selected_stock_name,
                     'count' => $count,
                     'count_view' => $this->formatStockCount($count),
-                );
+                ));
             }
+            unset($product);
+        } else {
+            $rows = $this->product_model
+                ->query(
+                    'SELECT sku.product_id,
+                            ps.stock_id,
+                            SUM(CASE WHEN ps.count IS NULL THEN 0 ELSE ps.count END) AS count,
+                            MAX(CASE WHEN ps.count IS NULL THEN 1 ELSE 0 END) AS has_infinite
+                     FROM shop_product_skus sku
+                     INNER JOIN shop_product_stocks ps ON ps.sku_id = sku.id
+                     WHERE sku.product_id IN (' . $placeholders . ')
+                     GROUP BY sku.product_id, ps.stock_id',
+                    $product_ids
+                )
+                ->fetchAll();
+
+            $stock_counts = array();
+            $products_with_stock_details = array();
+            foreach ($rows as $row) {
+                $product_id = isset($row['product_id']) ? (int) $row['product_id'] : 0;
+                $stock_id = isset($row['stock_id']) ? (int) $row['stock_id'] : 0;
+                if ($product_id <= 0 || $stock_id <= 0) {
+                    continue;
+                }
+                $products_with_stock_details[$product_id] = true;
+                $has_infinite = !empty($row['has_infinite'])
+                    || (array_key_exists('count', $row) && $row['count'] === null);
+                $stock_counts[$product_id][$stock_id] = $has_infinite
+                    ? null
+                    : (float) $row['count'];
+            }
+
+            foreach ($products as &$product) {
+                $product_id = isset($product['id']) ? (int) $product['id'] : 0;
+                if (empty($products_with_stock_details[$product_id])) {
+                    continue;
+                }
+                foreach ($stocks as $stock) {
+                    $stock_id = isset($stock['id']) ? (int) $stock['id'] : 0;
+                    if ($stock_id <= 0) {
+                        continue;
+                    }
+                    $count = isset($stock_counts[$product_id]) && array_key_exists($stock_id, $stock_counts[$product_id])
+                        ? $stock_counts[$product_id][$stock_id]
+                        : 0.0;
+                    $product['stock_details'][] = array(
+                        'stock_id' => $stock_id,
+                        'stock_name' => isset($stock['name']) ? (string) $stock['name'] : '',
+                        'count' => $count,
+                        'count_view' => $this->formatStockCount($count),
+                    );
+                }
+            }
+            unset($product);
         }
-        unset($product);
 
         return $products;
     }
@@ -303,6 +372,11 @@ class shopMasseditorPluginProductSelectionService
             $availability = (string) $raw_filters['availability'];
         }
 
+        $stock_id = 0;
+        if (isset($raw_filters['stock_id'])) {
+            $stock_id = max(0, (int) $raw_filters['stock_id']);
+        }
+
         if (!in_array($status, array('all', 'published', 'hidden', 'unpublished'), true)) {
             $status = 'all';
         }
@@ -311,12 +385,30 @@ class shopMasseditorPluginProductSelectionService
             $availability = 'all';
         }
 
+        if ($stock_id > 0 && !isset($this->getStockIdMap()[$stock_id])) {
+            $stock_id = 0;
+        }
+
         return array(
             'query' => $query,
             'status' => $status,
             'availability' => $availability,
             'category_id' => $category_id,
+            'stock_id' => $stock_id,
         );
+    }
+
+    private function getStockIdMap()
+    {
+        $result = array();
+        foreach ($this->getStocks() as $stock) {
+            $id = isset($stock['id']) ? (int) $stock['id'] : 0;
+            if ($id > 0) {
+                $result[$id] = true;
+            }
+        }
+
+        return $result;
     }
 
     private function normalizePage($page, $total, $page_size)
@@ -381,6 +473,16 @@ class shopMasseditorPluginProductSelectionService
             ';
             $where[] = 'cpf.category_id = i:category_id';
             $params['category_id'] = $filters['category_id'];
+        }
+
+        if (!empty($filters['stock_id'])) {
+            $where[] = 'EXISTS (
+                SELECT 1
+                FROM shop_product_skus ss
+                INNER JOIN shop_product_stocks ps ON ps.sku_id = ss.id
+                WHERE ss.product_id = p.id AND ps.stock_id = i:stock_id
+            )';
+            $params['stock_id'] = (int) $filters['stock_id'];
         }
 
         return array(
