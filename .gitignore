@@ -41,6 +41,14 @@ desktop.ini
 ChatGPT*.html
 .codex
 .codex/
+# Репозиторный workflow-навык должен поставляться вместе с OpenSpec-контекстом.
+!.codex/
+.codex/*
+!.codex/skills/
+.codex/skills/*
+!.codex/skills/webasyst-loop/
+!.codex/skills/webasyst-loop/**
+.codex/skills/webasyst-loop/.security-scan-passed
 AGENTS.md
 specification_masseditor_codex.md
 .claude
