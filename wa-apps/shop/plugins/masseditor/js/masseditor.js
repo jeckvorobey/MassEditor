@@ -124,6 +124,8 @@
     var stockValueField = document.querySelector('[data-stock-value-field]');
     var featureMode = document.getElementById('masseditor-feature-mode');
     var featureValueField = document.querySelector('[data-feature-value-field]');
+    var videoMode = document.getElementById('masseditor-video-mode');
+    var videoUrlField = document.querySelector('[data-video-url-field]');
     var selectAll = document.querySelector('[data-role="select-all"]');
     var selectAllPageMobile = document.querySelector('[data-role="select-all-page-mobile"]');
     var selectFilter = document.querySelector('[data-role="select-filter"]');
@@ -163,6 +165,7 @@
         stock: t('operation_stock', 'Stock'),
         features: t('operation_features', 'Basic feature editing'),
         categories: t('operation_categories', 'Categories')
+        ,video: t('operation_video', 'Video')
     };
 
     function currentOperation() {
@@ -601,6 +604,7 @@
         updateComparePriceVisibility();
         updateStockValueVisibility();
         updateFeatureValueVisibility();
+        updateVideoUrlVisibility();
     }
 
     function resetOperationForm() {
@@ -684,6 +688,46 @@
         }
     }
 
+    function updateVideoUrlVisibility() {
+        if (!videoMode || !videoUrlField) {
+            return;
+        }
+        var active = currentOperation() === 'video' && videoMode.value === 'set';
+        videoUrlField.hidden = !active;
+        Array.prototype.slice.call(videoUrlField.querySelectorAll('input')).forEach(function (input) {
+            input.disabled = !active;
+        });
+    }
+
+    function selectedFeatureIsMultiple() {
+        var selectedOption = featureId && featureId.options ? featureId.options[featureId.selectedIndex] : null;
+        return !!(selectedOption && selectedOption.getAttribute && selectedOption.getAttribute('data-multiple') === '1');
+    }
+
+    function updateFeatureModeOptions() {
+        if (!featureMode) {
+            return;
+        }
+
+        var allowed = selectedFeatureIsMultiple()
+            ? ['replace', 'add', 'remove', 'clear']
+            : ['set', 'clear'];
+        var preferredIndex = -1;
+        Array.prototype.slice.call(featureMode.options || []).forEach(function (option, index) {
+            var enabled = allowed.indexOf(option.value) !== -1;
+            option.hidden = !enabled;
+            option.disabled = !enabled;
+            if (option.value === allowed[0]) {
+                preferredIndex = index;
+            }
+        });
+
+        if (allowed.indexOf(featureMode.value) === -1 && preferredIndex >= 0) {
+            featureMode.selectedIndex = preferredIndex;
+            featureMode.value = featureMode.options[preferredIndex].value;
+        }
+    }
+
     function operationModeText(operation) {
         if (operation === 'price' || operation === 'compare_price') {
             var mode = document.getElementById('masseditor-mode');
@@ -722,6 +766,9 @@
         if (operation === 'categories') {
             var categoriesMode = document.getElementById('masseditor-categories-mode');
             return categoriesMode ? categoriesMode.options[categoriesMode.selectedIndex].text : '—';
+        }
+        if (operation === 'video') {
+            return videoMode ? videoMode.options[videoMode.selectedIndex].text : '—';
         }
 
         return '—';
@@ -766,7 +813,7 @@
                     activeWidget = featureValueField.querySelector('[data-widget="text"]');
                 }
                 var fallbackValue = document.getElementById('masseditor-feature-value');
-                var displayValue = activeWidget ? activeWidget.value : (fallbackValue ? fallbackValue.value : '');
+                var displayValue = featureWidgetValue(activeWidget || fallbackValue, true);
                 return displayValue ? displayValue.substring(0, 80) : '—';
             }
             return '—';
@@ -774,6 +821,13 @@
         if (operation === 'categories') {
             var category = document.getElementById('masseditor-operation-category-id');
             return category ? category.options[category.selectedIndex].text : '—';
+        }
+        if (operation === 'video') {
+            if (videoMode && videoMode.value === 'clear') {
+                return t('clear', 'Clear');
+            }
+            var videoUrl = document.getElementById('masseditor-video-url');
+            return videoUrl && videoUrl.value ? videoUrl.value : '—';
         }
 
         return '—';
@@ -840,11 +894,20 @@
                     activeWidget = featureValueField.querySelector('[data-widget="text"]');
                 }
                 var fallbackValue = document.getElementById('masseditor-feature-value');
-                var widgetValue = activeWidget ? activeWidget.value : (fallbackValue ? fallbackValue.value : '');
+                var widgetValue = featureWidgetValue(activeWidget || fallbackValue, false);
                 if (!widgetValue.trim()) {
                     showErrorToast(t('validation_feature_value', 'Enter a feature value.'));
                     return false;
                 }
+            }
+        }
+
+        if (operation === 'video' && videoMode && videoMode.value === 'set') {
+            var videoUrl = document.getElementById('masseditor-video-url');
+            var value = videoUrl ? videoUrl.value.trim() : '';
+            if (value.length > 255 || !/^https?:\/\/[^\s]+$/i.test(value)) {
+                showErrorToast(t('validation_video_url', 'Enter a valid HTTP(S) video URL.'));
+                return false;
             }
         }
 
@@ -935,9 +998,15 @@
         featureMode.addEventListener('change', updateFeatureValueVisibility);
     }
 
+    if (videoMode) {
+        videoMode.addEventListener('change', updateVideoUrlVisibility);
+    }
+
     var featureId = document.getElementById('masseditor-feature-id');
     if (featureId) {
         featureId.addEventListener('change', function () {
+            updateFeatureModeOptions();
+            updateFeatureValueVisibility();
             showFeatureWidget();
         });
     }
@@ -973,10 +1042,25 @@
             activeWidget.hidden = false;
             activeWidget.disabled = false;
 
-            if (uiType === 'select') {
+            if (uiType === 'select' || uiType === 'multiple_select') {
                 populateSelectValues(activeWidget, featureIdValue);
             }
         }
+    }
+
+    function featureWidgetValue(widget, useText) {
+        if (!widget) {
+            return '';
+        }
+        if (widget.getAttribute && widget.getAttribute('data-widget') === 'multiple_select') {
+            return Array.prototype.slice.call(widget.options || []).filter(function (option) {
+                return option.selected;
+            }).map(function (option) {
+                return useText ? (option.text || option.textContent || '') : option.value;
+            }).join(', ');
+        }
+
+        return widget.value || '';
     }
 
     function populateSelectValues(selectEl, featureIdValue) {
@@ -984,18 +1068,20 @@
         var values = valuesMap[featureIdValue] || [];
         var texts = window.__masseditor_texts || {};
 
-        while (selectEl.options.length > 1) {
-            selectEl.remove(1);
+        var isMultiple = selectEl.getAttribute && selectEl.getAttribute('data-widget') === 'multiple_select';
+        var keep = isMultiple ? 0 : 1;
+        while (selectEl.options.length > keep) {
+            selectEl.remove(keep);
         }
 
         values.forEach(function (item) {
             var opt = document.createElement('option');
-            opt.value = item.value;
+            opt.value = isMultiple ? String(item.id) : item.value;
             opt.textContent = item.value;
             selectEl.appendChild(opt);
         });
 
-        if (selectEl.options.length > 0) {
+        if (!isMultiple && selectEl.options.length > 0) {
             selectEl.options[0].textContent = texts.select_value || '—';
         }
     }

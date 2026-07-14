@@ -54,7 +54,6 @@ $plugins = is_file($file) ? include $file : array();
 if (!is_array($plugins)) {
     $plugins = array();
 }
-unset($plugins["masseditorproduct"]);
 unset($plugins["masseditor"]);
 $plugins["masseditor"] = true;
 file_put_contents($file, "<?php\nreturn " . var_export($plugins, true) . ";\n");

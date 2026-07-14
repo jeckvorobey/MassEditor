@@ -22,6 +22,12 @@ function boot(options = {}) {
     document: app.document,
     localStorage,
     masseditorI18n: options.i18n || {},
+    __masseditor_feature_values_map: options.featureValues || {
+      8: [
+        { id: 71, value: 'Cotton' },
+        { id: 72, value: 'Linen' },
+      ],
+    },
     fetch: hasFetchOption ? options.fetch : ((url) => {
       fetchCalls.push(url);
       return Promise.resolve({
@@ -283,6 +289,83 @@ test('new operation fields validate and update confirm summary', () => {
   openConfirm.click();
   assert.equal(app.document.querySelector('[data-role="modal-operation"]').textContent, 'Basic feature editing');
   assert.equal(app.document.querySelector('[data-role="modal-value"]').textContent, 'cotton');
+});
+
+test('multiple feature switches to safe modes and requires selected values', () => {
+  const app = boot({
+    localStorage: {
+      'masseditor:selected-products:masseditor': '[1]',
+    },
+  });
+  const buttons = app.document.querySelectorAll('[data-role="operation-trigger"]');
+  const featureId = app.document.getElementById('masseditor-feature-id');
+  const featureMode = app.document.getElementById('masseditor-feature-mode');
+  const multiple = app.document.getElementById('masseditor-feature-value-multiple');
+  const featureValueField = app.document.querySelector('[data-feature-value-field]');
+  const openConfirm = app.document.querySelector('[data-role="open-confirm"]');
+
+  buttons[4].click();
+  featureId.value = '8';
+  featureId.selectedIndex = 2;
+  change(featureId);
+
+  assert.equal(featureMode.value, 'replace');
+  assert.equal(multiple.hidden, false);
+  assert.equal(multiple.disabled, false);
+
+  openConfirm.click();
+  assert.equal(app.toastStack.children[1].querySelector('p').textContent, 'Enter a feature value.');
+
+  multiple.options[0].selected = true;
+  openConfirm.click();
+  assert.equal(app.modal.hidden, false);
+  assert.equal(app.document.querySelector('[data-role="modal-value"]').textContent, 'Cotton');
+
+  app.document.querySelector('[data-role="close-modal"]').click();
+  featureMode.value = 'clear';
+  featureMode.selectedIndex = 1;
+  change(featureMode);
+  assert.equal(featureValueField.hidden, true);
+  assert.equal(multiple.disabled, true);
+});
+
+test('video operation validates URL and disables it in clear mode', () => {
+  const app = boot({
+    localStorage: {
+      'masseditor:selected-products:masseditor': '[1]',
+    },
+    i18n: {
+      operation_video: 'Video',
+      validation_video_url: 'Enter a valid HTTP(S) video URL.',
+    },
+  });
+  const videoButton = app.document.querySelectorAll('[data-role="operation-trigger"]').find((button) => button.getAttribute('data-operation') === 'video');
+  const videoMode = app.document.getElementById('masseditor-video-mode');
+  const videoUrl = app.document.getElementById('masseditor-video-url');
+  const videoUrlField = app.document.querySelector('[data-video-url-field]');
+  const openConfirm = app.document.querySelector('[data-role="open-confirm"]');
+
+  videoButton.click();
+  videoUrl.value = 'ftp://example.com/video';
+  openConfirm.click();
+  assert.equal(app.toastStack.children[1].querySelector('p').textContent, 'Enter a valid HTTP(S) video URL.');
+
+  videoUrl.value = `https://example.com/${'a'.repeat(240)}`;
+  openConfirm.click();
+  assert.equal(app.toastStack.children[2].querySelector('p').textContent, 'Enter a valid HTTP(S) video URL.');
+
+  videoUrl.value = 'https://www.youtube.com/watch?v=abc';
+  openConfirm.click();
+  assert.equal(app.modal.hidden, false);
+  assert.equal(app.document.querySelector('[data-role="modal-operation"]').textContent, 'Video');
+  assert.equal(app.document.querySelector('[data-role="modal-value"]').textContent, 'https://www.youtube.com/watch?v=abc');
+
+  app.document.querySelector('[data-role="close-modal"]').click();
+  videoMode.value = 'clear';
+  videoMode.selectedIndex = 1;
+  change(videoMode);
+  assert.equal(videoUrlField.hidden, true);
+  assert.equal(videoUrl.disabled, true);
 });
 
 test('stock operation allows regular count when warehouse is not selected', () => {

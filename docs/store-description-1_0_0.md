@@ -21,7 +21,7 @@ Safe bulk product editing in the Shop-Script backend with Russian and English in
 ## RU HTML description
 
 ```html
-<p><strong>Массвоый редактор - помогает быстро обновлять выбранные товары в Shop-Script без ручного редактирования каждой карточки.</strong></p>
+<p><strong>Массовый редактор - помогает быстро обновлять выбранные товары в Shop-Script без ручного редактирования каждой карточки.</strong></p>
 
 <p>Плагин добавляет в бекенд удобный экран для массовой работы с каталогом: найдите нужные товары, выберите их в таблице, настройте операцию и подтвердите применение изменений. Это полезно при обновлении цен, подготовке сезонных правок, управлении видимостью товаров и наведении порядка в описаниях, тегах и URL.</p>
 
@@ -36,7 +36,6 @@ Safe bulk product editing in the Shop-Script backend with Russian and English in
   <li>Работа с тегами: добавление, удаление или замена списка тегов.</li>
   <li>Генерация URL товаров из названия или по шаблону с переменными <code>{name}</code>, <code>{id}</code>, <code>{current_url}</code>.</li>
   <li>Фильтрация товаров по названию или артикулу, категории, статусу и доступности.</li>
-  <li>Пагинация и сохранение выбранных товаров при переходе между страницами списка.</li>
   <li>Журнал выполненных операций с количеством обработанных товаров и описанием действия.</li>
   <li>Настройки лимита товаров за одну операцию, размера страницы, срока хранения журнала, формата даты, режима темы и языка интерфейса.</li>
   <li>Русский и английский интерфейс с режимом Auto: язык выбирается по текущей локали Webasyst, также доступно ручное переключение.</li>
@@ -80,7 +79,6 @@ Safe bulk product editing in the Shop-Script backend with Russian and English in
   <li>Tag editing: add, remove, or replace tags.</li>
   <li>Product URL generation from product names or by template with <code>{name}</code>, <code>{id}</code>, and <code>{current_url}</code> variables.</li>
   <li>Product filtering by name or SKU, category, status, and availability.</li>
-  <li>Pagination with product selection preserved across pages.</li>
   <li>Operation log with processed product count and action description.</li>
   <li>Settings for operation limit, page size, log retention, date format, theme mode, and interface language.</li>
   <li>Russian and English interface support with locale-based default language and manual language selection.</li>

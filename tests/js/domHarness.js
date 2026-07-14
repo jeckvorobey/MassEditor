@@ -71,7 +71,19 @@ class Element {
   appendChild(child) {
     child.parentNode = this;
     this.children.push(child);
+    if (this.tagName === 'SELECT' && child.tagName === 'OPTION') {
+      child.index = this.options.length;
+      child.text = child.textContent;
+      this.options.push(child);
+    }
     return child;
+  }
+
+  remove(index) {
+    if (this.tagName === 'SELECT') {
+      this.options.splice(index, 1);
+      this.options.forEach((option, optionIndex) => { option.index = optionIndex; });
+    }
   }
 
   removeChild(child) {
@@ -205,6 +217,14 @@ function matchesSelector(node, selector) {
   if (selector === '[data-toast-source="true"]') {
     return node.getAttribute('data-toast-source') === 'true';
   }
+  const attributeMatch = selector.match(/^\[([^=]+)="([^"]+)"\]$/);
+  if (attributeMatch) {
+    return node.getAttribute(attributeMatch[1]) === attributeMatch[2];
+  }
+  const attributePresenceMatch = selector.match(/^\[([^=\]]+)\]$/);
+  if (attributePresenceMatch) {
+    return node.getAttribute(attributePresenceMatch[1]) !== null;
+  }
   if (selector === 'input[name="plugin"]') {
     return node.tagName === 'INPUT' && node.name === 'plugin';
   }
@@ -241,6 +261,11 @@ function createSelect(document, id, dataRole, options, value) {
     text: option.text,
     selected: option.value === value,
     index,
+    getAttribute(name) {
+      return option.attributes && Object.prototype.hasOwnProperty.call(option.attributes, name)
+        ? String(option.attributes[name])
+        : null;
+    },
   }));
   select.selectedIndex = Math.max(0, select.options.findIndex((option) => option.value === value));
   select.value = value;
@@ -302,7 +327,7 @@ function buildAppDom() {
   const operationTitle = createNode(document, 'div', { 'data-role': 'operation-title' });
   form.appendChild(operationTitle);
 
-  ['price', 'tags', 'url', 'stock', 'features', 'categories'].forEach((operation) => {
+  ['price', 'tags', 'url', 'stock', 'features', 'categories', 'video'].forEach((operation) => {
     const button = createNode(document, 'button', { 'data-role': 'operation-trigger', 'data-operation': operation });
     form.appendChild(button);
   });
@@ -313,12 +338,14 @@ function buildAppDom() {
   const stockFields = createNode(document, 'div', { class: 'masseditor-field', 'data-operation-fields': 'stock' });
   const featureFields = createNode(document, 'div', { 'data-operation-fields': 'features' });
   const categoryFields = createNode(document, 'div', { 'data-operation-fields': 'categories' });
+  const videoFields = createNode(document, 'div', { 'data-operation-fields': 'video' });
   form.appendChild(priceFields);
   form.appendChild(tagsFields);
   form.appendChild(urlFields);
   form.appendChild(stockFields);
   form.appendChild(featureFields);
   form.appendChild(categoryFields);
+  form.appendChild(videoFields);
 
   const numericValue = createNode(document, 'input', { id: 'masseditor-numeric-value', value: '' });
   priceFields.appendChild(numericValue);
@@ -361,17 +388,31 @@ function buildAppDom() {
 
   const featureId = createSelect(document, 'masseditor-feature-id', null, [
     { value: '0', text: 'Select feature' },
-    { value: '7', text: 'Material' },
+    { value: '7', text: 'Material', attributes: { 'data-ui': 'text', 'data-multiple': '0' } },
+    { value: '8', text: 'Labels', attributes: { 'data-ui': 'multiple_select', 'data-multiple': '1' } },
   ], '7');
   featureFields.appendChild(featureId);
   const featureMode = createSelect(document, 'masseditor-feature-mode', null, [
     { value: 'set', text: 'Set' },
     { value: 'clear', text: 'Clear' },
+    { value: 'replace', text: 'Replace' },
+    { value: 'add', text: 'Add' },
+    { value: 'remove', text: 'Remove' },
   ], 'set');
   featureFields.appendChild(featureMode);
   const featureValueWrap = createNode(document, 'div', { 'data-feature-value-field': '1' });
   const featureValue = createNode(document, 'input', { id: 'masseditor-feature-value', value: '' });
+  featureValue.setAttribute('data-widget', 'text');
   featureValueWrap.appendChild(featureValue);
+  const featureMultiple = createSelect(document, 'masseditor-feature-value-multiple', null, [
+    { value: '71', text: 'Cotton' },
+    { value: '72', text: 'Linen' },
+  ], '');
+  featureMultiple.setAttribute('data-widget', 'multiple_select');
+  featureMultiple.setAttribute('name', 'feature_value_ids[]');
+  featureMultiple.hidden = true;
+  featureMultiple.disabled = true;
+  featureValueWrap.appendChild(featureMultiple);
   featureFields.appendChild(featureValueWrap);
 
   const categoryId = createSelect(document, 'masseditor-operation-category-id', null, [
@@ -384,6 +425,16 @@ function buildAppDom() {
     { value: 'replace_main', text: 'Replace main' },
   ], 'add');
   categoryFields.appendChild(categoriesMode);
+
+  const videoMode = createSelect(document, 'masseditor-video-mode', null, [
+    { value: 'set', text: 'Set' },
+    { value: 'clear', text: 'Clear' },
+  ], 'set');
+  videoFields.appendChild(videoMode);
+  const videoUrlWrap = createNode(document, 'div', { 'data-video-url-field': '1' });
+  const videoUrl = createNode(document, 'input', { id: 'masseditor-video-url', value: '' });
+  videoUrlWrap.appendChild(videoUrl);
+  videoFields.appendChild(videoUrlWrap);
 
   const modeSelect = createSelect(document, 'masseditor-mode', null, [
     { value: 'set', text: 'Set' },

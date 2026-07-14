@@ -189,6 +189,45 @@ class BackendActionTest extends TestCase
         ))));
     }
 
+    public function testMultipleFeaturesRemainEditableAndPayloadKeepsValueIds(): void
+    {
+        $action = new shopMasseditorPluginBackendAction();
+        $features = $this->invokePrivate($action, 'decorateFeatures', array(array(
+            array('id' => 7, 'name' => 'Single', 'multiple' => 0),
+            array('id' => 8, 'name' => 'Multiple', 'multiple' => 1),
+        )));
+
+        $this->assertCount(2, $features);
+        $this->assertSame(1, $features[1]['multiple']);
+
+        waRequest::$post = array(
+            'operation' => 'features',
+            'feature_id' => 8,
+            'feature_mode' => 'add',
+            'feature_value_ids' => array('71', '72', '71'),
+            'confirm_apply' => 1,
+        );
+        $payload = $this->invokePrivate($action, 'readOperationPayload');
+
+        $this->assertSame(array('71', '72', '71'), $payload['feature_value_ids']);
+    }
+
+    public function testInlineJsonIsHexEscapedForScriptContext(): void
+    {
+        $action = new shopMasseditorPluginBackendAction();
+        $json = $this->invokePrivate($action, 'encodeInlineJson', array(array(
+            'value' => '</script><img src=x onerror=alert(1)>',
+        )));
+
+        $this->assertStringNotContainsString('</script>', $json);
+        $this->assertStringNotContainsString('<img', $json);
+        $this->assertStringContainsString('\\u003C\\/script\\u003E', $json);
+
+        $template = file_get_contents(__DIR__ . '/../../wa-apps/shop/plugins/masseditor/templates/actions/backend/Backend.html');
+        $this->assertStringContainsString('window.__masseditor_feature_values_map = {$feature_values_json};', $template);
+        $this->assertStringNotContainsString('{$feature_values_map|json_encode}', $template);
+    }
+
     public function testDecorateLogsSettingsAndOperationsLibrary(): void
     {
         $action = new shopMasseditorPluginBackendAction();
@@ -214,6 +253,7 @@ class BackendActionTest extends TestCase
             }
         }
         $this->assertContains('price', $flat_ids);
+        $this->assertContains('video', $flat_ids);
         $this->assertNotContains('sku_generator', $flat_ids);
     }
 

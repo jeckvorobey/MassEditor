@@ -239,6 +239,17 @@
                                 {/foreach}
                             </select>
                         </div>
+                        <div class="masseditor-field" data-operation-fields="video">
+                            <label for="masseditor-video-mode">{$texts.video_mode|escape}</label>
+                            <select id="masseditor-video-mode" name="video_mode">
+                                <option value="set"{if $operation_form.video_mode === 'set'} selected{/if}>{$texts.set_value|escape}</option>
+                                <option value="clear"{if $operation_form.video_mode === 'clear'} selected{/if}>{$texts.clear|escape}</option>
+                            </select>
+                        </div>
+                        <div class="masseditor-field" data-operation-fields="video" data-video-url-field>
+                            <label for="masseditor-video-url">{$texts.video_url|escape}</label>
+                            <input id="masseditor-video-url" type="url" name="video_url" value="{$operation_form.video_url|escape}" placeholder="https://" maxlength="255">
+                        </div>
                         <div class="masseditor-field" data-operation-fields="stock">
                             <label for="masseditor-stock-mode">{$texts.stock_mode|escape}</label>
                             <select id="masseditor-stock-mode" name="stock_mode">
@@ -257,7 +268,7 @@
                             <select id="masseditor-feature-id" name="feature_id">
                                 <option value="0">{$texts.select_feature|escape}</option>
                                 {foreach $features as $feature}
-                                    <option value="{$feature.id|escape}" data-ui="{if isset($feature_ui_map[$feature.id])}{$feature_ui_map[$feature.id]|escape}{else}text{/if}" data-selectable="{if !empty($feature.selectable)}1{else}0{/if}"{if $operation_form.feature_id == $feature.id} selected{/if}>{$feature.name|escape}</option>
+                                    <option value="{$feature.id|escape}" data-ui="{if isset($feature_ui_map[$feature.id])}{$feature_ui_map[$feature.id]|escape}{else}text{/if}" data-selectable="{if !empty($feature.selectable)}1{else}0{/if}" data-multiple="{if !empty($feature.multiple)}1{else}0{/if}"{if $operation_form.feature_id == $feature.id} selected{/if}>{$feature.name|escape}</option>
                                 {/foreach}
                             </select>
                         </div>
@@ -266,6 +277,9 @@
                             <select id="masseditor-feature-mode" name="feature_mode">
                                 <option value="set"{if $operation_form.feature_mode === 'set'} selected{/if}>{$texts.set_value|escape}</option>
                                 <option value="clear"{if $operation_form.feature_mode === 'clear'} selected{/if}>{$texts.clear|escape}</option>
+                                <option value="replace"{if $operation_form.feature_mode === 'replace'} selected{/if}>{$texts.replace|escape}</option>
+                                <option value="add"{if $operation_form.feature_mode === 'add'} selected{/if}>{$texts.add|escape}</option>
+                                <option value="remove"{if $operation_form.feature_mode === 'remove'} selected{/if}>{$texts.remove|escape}</option>
                             </select>
                         </div>
                         <div class="masseditor-field" data-operation-fields="features" data-feature-value-field>
@@ -281,11 +295,12 @@
                                 <option value="1"{if $operation_form.feature_value === '1'} selected{/if}>{$texts.feature_type_boolean_yes|escape}</option>
                                 <option value="0"{if $operation_form.feature_value === '0'} selected{/if}>{$texts.feature_type_boolean_no|escape}</option>
                             </select>
+                            <select id="masseditor-feature-value-multiple" name="feature_value_ids[]" data-widget="multiple_select" multiple size="6" hidden></select>
                         </div>
                         <script>
-                            window.__masseditor_feature_values_map = {$feature_values_map|json_encode};
-                            window.__masseditor_feature_ui_map = {$feature_ui_map|json_encode};
-                            window.__masseditor_texts = { "select_feature": "{$texts.select_feature|escape}", "select_value": "{$texts.select_value|escape}" };
+                            window.__masseditor_feature_values_map = {$feature_values_json};
+                            window.__masseditor_feature_ui_map = {$feature_ui_json};
+                            window.__masseditor_texts = {$feature_texts_json};
                         </script>
                         <div class="masseditor-field" data-operation-fields="categories">
                             <label for="masseditor-operation-category-id">{$texts.category|escape}</label>

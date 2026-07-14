@@ -1,10 +1,10 @@
-# Описание плагина «Массовый редактор» для Webasyst Store
+# Описание плагина «Массовый редактор» 1.1.0 для Webasyst Store
 
 Документ хранит черновик описания плагина для карточки Webasyst Store. HTML-блоки ниже используют только базовые теги, разрешенные редактором магазина, без CSS.
 
 ## RU title
 
-`Массовый редактор для Shop-Script`
+`Mass Editor для Shop-Script`
 
 ## EN title
 
@@ -12,18 +12,18 @@
 
 ## RU summary
 
-Безопасное массовое редактирование каталога в бекенде Shop-Script: цены, складские остатки, категории, характеристики, описания, теги и URL.
+Безопасное массовое редактирование товаров в бекенде Shop-Script с русским и английским интерфейсом. Также поддерживаются складские остатки, категории и общие характеристики товаров.
 
 ## EN summary
 
-Safe Shop-Script backend catalog bulk editing: prices, warehouse stock, categories, product features, descriptions, tags, and URLs.
+Safe bulk product editing in the Shop-Script backend with Russian and English interface support. Warehouse stock, categories, and common product features are also supported.
 
 ## RU HTML description
 
 ```html
-<p><strong>Массовый редактор помогает быстро обновлять каталог Shop-Script без ручного редактирования каждой карточки товара.</strong></p>
+<p><strong>Массовый редактор - помогает быстро обновлять выбранные товары в Shop-Script без ручного редактирования каждой карточки.</strong></p>
 
-<p>Плагин добавляет в бекенд удобный экран для массовой работы с товарами: найдите нужные позиции фильтром, выберите отдельные товары или все найденные товары по текущему фильтру, настройте операцию и подтвердите применение изменений. Это инструмент для регулярного управления каталогом: цены, складские остатки, категории, характеристики, описания, теги и URL в одном безопасном потоке.</p>
+<p>Плагин добавляет в бекенд удобный экран для массовой работы с каталогом: найдите нужные товары, выберите их в таблице, настройте операцию и подтвердите применение изменений. Это полезно при обновлении цен, подготовке сезонных правок, управлении видимостью товаров и наведении порядка в описаниях, тегах и URL.</p>
 
 <p><strong>Возможности</strong></p>
 <ul>
@@ -39,10 +39,8 @@ Safe Shop-Script backend catalog bulk editing: prices, warehouse stock, categori
   <li>Работа с описаниями: полная замена, добавление текста в начало или в конец.</li>
   <li>Работа с тегами: добавление, удаление или замена списка тегов.</li>
   <li>Генерация URL товаров из названия или по шаблону с переменными <code>{name}</code>, <code>{id}</code>, <code>{current_url}</code>.</li>
-  <li>Фильтрация товаров по названию или артикулу, категории, статусу, доступности и складу.</li>
+  <li>Фильтрация товаров по названию или артикулу, категории, статусу и доступности.</li>
   <li>Выбор всех найденных товаров по текущему фильтру с серверной проверкой лимита операции.</li>
-  <li>Выбор всех товаров текущей страницы на мобильных устройствах.</li>
-  <li>Пагинация и сохранение выбранных товаров при переходе между страницами списка.</li>
   <li>Журнал выполненных операций с количеством обработанных товаров и описанием действия.</li>
   <li>Настройки лимита товаров за одну операцию, размера страницы, срока хранения журнала, формата даты, режима темы и языка интерфейса.</li>
   <li>Русский и английский интерфейс с режимом Auto: язык выбирается по текущей локали Webasyst, также доступно ручное переключение.</li>
@@ -57,9 +55,9 @@ Safe Shop-Script backend catalog bulk editing: prices, warehouse stock, categori
 
 <p><strong>Как это работает</strong></p>
 <ol>
-  <li>Откройте "Массовый редактор" в бекенде Shop-Script.</li>
-  <li>Отфильтруйте каталог и отметьте товары или выберите все найденные товары по текущему фильтру.</li>
-  <li>Выберите операцию: цена, compare price, остатки, видимость, доступность, описание, теги, URL, категории или характеристики.</li>
+  <li>Откройте "Mass Editor" в бекенде Shop-Script.</li>
+  <li>Отфильтруйте каталог и отметьте товары, которые нужно изменить.</li>
+  <li>Выберите операцию: цена, compare price, видимость, доступность, описание, теги или URL.</li>
   <li>Заполните параметры операции и проверьте выбранное действие в окне подтверждения.</li>
   <li>Подтвердите применение. Плагин выполнит изменения и добавит запись в журнал.</li>
 </ol>
@@ -79,9 +77,9 @@ Safe Shop-Script backend catalog bulk editing: prices, warehouse stock, categori
 ## EN HTML description
 
 ```html
-<p><strong>Mass Editor - helps update a Shop-Script catalog without opening each product card manually.</strong></p>
+<p><strong>Mass Editor - helps update selected Shop-Script products without opening each product card manually.</strong></p>
 
-<p>The plugin adds a dedicated backend screen for bulk catalog management: filter products, select individual items or all products matching the current filter, configure an operation, and confirm the change. This is a tool for regular catalog management: prices, inventory levels, categories, features, descriptions, tags, and URLs in one secure stream.</p>
+<p>The plugin adds a dedicated backend screen for bulk catalog management: find the required products, select them in the table, configure an operation, and confirm the change. It is useful for price updates, seasonal catalog maintenance, visibility management, and cleanup of descriptions, tags, and product URLs.</p>
 
 <p><strong>Features</strong></p>
 <ul>
@@ -97,10 +95,8 @@ Safe Shop-Script backend catalog bulk editing: prices, warehouse stock, categori
   <li>Description editing: replace, prepend, or append text.</li>
   <li>Tag editing: add, remove, or replace tags.</li>
   <li>Product URL generation from product names or by template with <code>{name}</code>, <code>{id}</code>, and <code>{current_url}</code> variables.</li>
-  <li>Product filtering by name or SKU, category, status, availability, and warehouse.</li>
+  <li>Product filtering by name or SKU, category, status, and availability.</li>
   <li>Select all products matching the current filter with server-side operation limit validation.</li>
-  <li>Select all products on the current page on mobile devices.</li>
-  <li>Pagination with product selection preserved across pages.</li>
   <li>Operation log with processed product count and action description.</li>
   <li>Settings for operation limit, page size, log retention, date format, theme mode, and interface language.</li>
   <li>Russian and English interface support with locale-based default language and manual language selection.</li>
@@ -116,8 +112,8 @@ Safe Shop-Script backend catalog bulk editing: prices, warehouse stock, categori
 <p><strong>How it works</strong></p>
 <ol>
   <li>Open "Mass Editor" in the Shop-Script backend.</li>
-  <li>Filter the catalog and select products or select all products matching the current filter.</li>
-  <li>Choose an operation: price, compare price, stock, visibility, availability, description, tags, URL, categories, or product features.</li>
+  <li>Filter the catalog and select the products you want to update.</li>
+  <li>Choose an operation: price, compare price, visibility, availability, description, tags, or URL.</li>
   <li>Fill in the operation settings and review the action in the confirmation dialog.</li>
   <li>Confirm the change. The plugin applies the update and writes an entry to the log.</li>
 </ol>
@@ -153,5 +149,4 @@ Safe Shop-Script backend catalog bulk editing: prices, warehouse stock, categori
 4. Операция редактирования характеристик с примерами разных типов полей.
 5. Операция категорий с режимом замены основной категории.
 6. Журнал с записями `stock`, `features` и `categories`.
-7. Мобильный экран с выбором всех товаров текущей страницы.
-8. Настройки с лимитом операции, языком интерфейса и темой.
+7. Настройки с лимитом операции, языком интерфейса и темой.

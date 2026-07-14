@@ -1,6 +1,10 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: shop_masseditor 1.1.0\n"
+"Project-Id-Version: shop_masseditor 1.2.0\n"
+"PO-Revision-Date: 2026-07-14 00:00+0300\n"
+"Last-Translator: MassEditor Team\n"
+"Language-Team: Russian\n"
+"MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: ru_RU\n"
@@ -723,6 +727,9 @@ msgstr "Тип характеристики не поддерживается в
 msgid "Select an existing feature value."
 msgstr "Выберите существующее значение характеристики."
 
+msgid "Too many feature values selected."
+msgstr "Выбрано слишком много значений характеристики."
+
 msgid "Select a category."
 msgstr "Выберите категорию."
 
@@ -737,3 +744,20 @@ msgstr "Характеристика: %s, режим %s для %d товаров
 
 msgid "Category: %s, mode %s for %d products"
 msgstr "Категория: %s, режим %s для %d товаров"
+msgid "Video mode"
+msgstr "Режим видео"
+
+msgid "Video URL"
+msgstr "Ссылка на видео"
+
+msgid "Invalid video mode."
+msgstr "Некорректный режим видео."
+
+msgid "Enter a valid HTTP(S) video URL."
+msgstr "Укажите корректную HTTP(S)-ссылку на видео."
+
+msgid "Not enough rights to edit the selected product."
+msgstr "Недостаточно прав для изменения выбранного товара."
+
+msgid "Video: mode %s for %d products"
+msgstr "Видео: режим %s для %d товаров"
