@@ -761,11 +761,20 @@ msgstr "Video mode"
 msgid "Video URL"
 msgstr "Video URL"
 
+msgid "Rutube, VK, YouTube, or Vimeo video URL"
+msgstr "Rutube, VK, YouTube, or Vimeo video URL"
+
 msgid "Invalid video mode."
 msgstr "Invalid video mode."
 
 msgid "Enter a valid HTTP(S) video URL."
 msgstr "Enter a valid HTTP(S) video URL."
+
+msgid "Copy and paste a video URL from Rutube, VK, YouTube, or Vimeo."
+msgstr "Copy and paste a video URL from Rutube, VK, YouTube, or Vimeo."
+
+msgid "The video URL could not be saved."
+msgstr "The video URL could not be saved."
 
 msgid "Not enough rights to edit the selected product."
 msgstr "Not enough rights to edit the selected product."

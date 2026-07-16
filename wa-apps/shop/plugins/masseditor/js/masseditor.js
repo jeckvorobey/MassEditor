@@ -128,6 +128,8 @@
     var featureValueField = document.querySelector('[data-feature-value-field]');
     var videoMode = document.getElementById('masseditor-video-mode');
     var videoUrlField = document.querySelector('[data-video-url-field]');
+    var videoUrl = document.getElementById('masseditor-video-url');
+    var videoUrlError = document.querySelector('[data-video-url-error]');
     var selectAll = document.querySelector('[data-role="select-all"]');
     var selectAllPageMobile = document.querySelector('[data-role="select-all-page-mobile"]');
     var selectFilter = document.querySelector('[data-role="select-filter"]');
@@ -625,6 +627,7 @@
         });
 
         setWarehouseSelectionInvalid(false);
+        setVideoUrlInvalid(false);
     }
 
     function updateComparePriceVisibility() {
@@ -684,6 +687,29 @@
         stockId.setAttribute('aria-invalid', isInvalid ? 'true' : 'false');
     }
 
+    function setVideoUrlInvalid(isInvalid, message) {
+        if (!videoUrl) {
+            return;
+        }
+
+        if (videoUrlField) {
+            videoUrlField.classList.toggle('masseditor-field_invalid', isInvalid);
+        }
+        videoUrl.setAttribute('aria-invalid', isInvalid ? 'true' : 'false');
+
+        if (videoUrlError) {
+            videoUrlError.textContent = isInvalid ? (message || '') : '';
+            videoUrlError.hidden = !isInvalid;
+        }
+    }
+
+    function isSupportedVideoUrl(value) {
+        var vkPattern = /^https?:\/\/(?:www\.)?(?:vk\.com\/|vkvideo\.ru\/).*(?:video|clips?)([a-z0-9\-]+_[a-z0-9]+)/i;
+        var otherPattern = /^https?:\/\/(?:www\.)?(?:youtube\.com|youtu\.be|vimeo\.com|rutube\.ru\/(?:video|shorts))\/(?:watch\?v=|shorts\/)?[a-z0-9\-_]+/i;
+
+        return vkPattern.test(value) || otherPattern.test(value);
+    }
+
     function updateFeatureValueVisibility() {
         if (!featureMode || !featureValueField) {
             return;
@@ -712,6 +738,9 @@
         Array.prototype.slice.call(videoUrlField.querySelectorAll('input')).forEach(function (input) {
             input.disabled = !active;
         });
+        if (!active) {
+            setVideoUrlInvalid(false);
+        }
     }
 
     function selectedFeatureIsMultiple() {
@@ -918,12 +947,20 @@
         }
 
         if (operation === 'video' && videoMode && videoMode.value === 'set') {
-            var videoUrl = document.getElementById('masseditor-video-url');
             var value = videoUrl ? videoUrl.value.trim() : '';
             if (value.length > 255 || !/^https?:\/\/[^\s]+$/i.test(value)) {
-                showErrorToast(t('validation_video_url', 'Enter a valid HTTP(S) video URL.'));
+                var invalidUrlMessage = t('validation_video_url', 'Enter a valid HTTP(S) video URL.');
+                setVideoUrlInvalid(true, invalidUrlMessage);
+                showErrorToast(invalidUrlMessage);
                 return false;
             }
+            if (!isSupportedVideoUrl(value)) {
+                var unsupportedUrlMessage = t('validation_video_supported_url', 'Copy and paste a video URL from Rutube, VK, YouTube, or Vimeo.');
+                setVideoUrlInvalid(true, unsupportedUrlMessage);
+                showErrorToast(unsupportedUrlMessage);
+                return false;
+            }
+            setVideoUrlInvalid(false);
         }
 
         if (operation === 'categories') {
@@ -1020,6 +1057,12 @@
 
     if (videoMode) {
         videoMode.addEventListener('change', updateVideoUrlVisibility);
+    }
+
+    if (videoUrl) {
+        videoUrl.addEventListener('input', function () {
+            setVideoUrlInvalid(false);
+        });
     }
 
     var featureId = document.getElementById('masseditor-feature-id');

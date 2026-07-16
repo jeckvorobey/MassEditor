@@ -1479,8 +1479,8 @@ class MassOperationServiceTest extends TestCase
     public function testApplyVideoSetsAndClearsUrlThroughShopProduct(): void
     {
         foreach (array(
-            'set' => array('input' => 'https://www.youtube.com/watch?v=abc', 'expected' => 'https://www.youtube.com/watch?v=abc'),
-            'clear' => array('input' => '', 'expected' => ''),
+            'set' => array('input' => 'https://www.youtube.com/watch?v=abc', 'expected' => 'http://youtu.be/abc'),
+            'clear' => array('input' => '', 'expected' => null),
         ) as $mode => $scenario) {
             shopProduct::reset();
             shopProduct::seed(31, array('video_url' => 'https://example.com/old'));
@@ -1503,6 +1503,36 @@ class MassOperationServiceTest extends TestCase
             $this->assertSame('COMMIT', end($model->execs)['sql']);
             $this->assertSame('Видео · 1 товар', $result['summary']);
         }
+    }
+
+    public function testApplyVideoRejectsUnsupportedProviderBeforeTransaction(): void
+    {
+        $selection = new FakeSelectionService();
+        $selection->products = array(31 => array('id' => 31, 'name' => 'Планшет'));
+        $log = new FakeLogService();
+        $model = new waModel();
+        shopProduct::seed(31, array('video_url' => null));
+        $service = new shopMasseditorPluginMassOperationService($selection, $log, $model, 100);
+
+        try {
+            $service->apply(array(
+                'product_ids' => array(31),
+                'operation' => 'video',
+                'video_mode' => 'set',
+                'video_url' => 'https://yandex.ru/video/preview/14675653702268624155',
+                'confirm_apply' => 1,
+            ));
+            $this->fail('Unsupported video provider was accepted.');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame(
+                'Скопируйте в это поле адрес видеоролика товара с сайта Rutube, VK, YouTube или Vimeo.',
+                $e->getMessage()
+            );
+        }
+
+        $this->assertCount(0, $model->execs);
+        $this->assertCount(0, $log->logged);
+        $this->assertArrayNotHasKey(31, shopProduct::$saved);
     }
 
     public function testApplyVideoRejectsInvalidUrlBeforeTransaction(): void

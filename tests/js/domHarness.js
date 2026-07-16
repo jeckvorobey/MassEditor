@@ -433,7 +433,10 @@ function buildAppDom() {
   videoFields.appendChild(videoMode);
   const videoUrlWrap = createNode(document, 'div', { 'data-video-url-field': '1' });
   const videoUrl = createNode(document, 'input', { id: 'masseditor-video-url', value: '' });
+  const videoUrlError = createNode(document, 'p', { 'data-video-url-error': '1' });
+  videoUrlError.hidden = true;
   videoUrlWrap.appendChild(videoUrl);
+  videoUrlWrap.appendChild(videoUrlError);
   videoFields.appendChild(videoUrlWrap);
 
   const modeSelect = createSelect(document, 'masseditor-mode', null, [

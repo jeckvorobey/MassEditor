@@ -296,6 +296,12 @@ class shopMasseditorPluginMassOperationService
             if ($video_mode === 'set' && !$this->isValidHttpUrl($video_url)) {
                 throw new InvalidArgumentException($this->t('validation_video_url'));
             }
+            if ($video_mode === 'set') {
+                $video_url = shopVideo::checkVideo($video_url);
+                if (!$video_url) {
+                    throw new InvalidArgumentException($this->t('validation_video_supported_url'));
+                }
+            }
             $request['video_mode'] = $video_mode;
             $request['video_url'] = $video_mode === 'clear' ? '' : $video_url;
         }
@@ -472,7 +478,13 @@ class shopMasseditorPluginMassOperationService
                 throw new RuntimeException($this->t('product_edit_denied'));
             }
             $product['video_url'] = $request['video_url'];
-            $product->save();
+            $saved = $product->save();
+            $has_expected_video = $request['video_mode'] === 'set'
+                ? !empty($product['video_url'])
+                : empty($product['video_url']);
+            if (!$saved || !$has_expected_video) {
+                throw new RuntimeException($this->t('video_save_failed'));
+            }
             return;
         }
 

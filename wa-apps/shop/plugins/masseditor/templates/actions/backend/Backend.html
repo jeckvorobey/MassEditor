@@ -256,7 +256,8 @@
                         </div>
                         <div class="masseditor-field" data-operation-fields="video" data-video-url-field>
                             <label for="masseditor-video-url">{$texts.video_url|escape}</label>
-                            <input id="masseditor-video-url" type="url" name="video_url" value="{$operation_form.video_url|escape}" placeholder="https://" maxlength="255">
+                            <input id="masseditor-video-url" type="url" name="video_url" value="{$operation_form.video_url|escape}" placeholder="{$texts.video_url_placeholder|escape}" maxlength="255" aria-describedby="masseditor-video-url-error" aria-invalid="false">
+                            <p id="masseditor-video-url-error" class="masseditor-field__error" data-video-url-error role="alert" hidden></p>
                         </div>
                         <div class="masseditor-field" data-operation-fields="stock">
                             <label for="masseditor-stock-mode">{$texts.stock_mode|escape}</label>

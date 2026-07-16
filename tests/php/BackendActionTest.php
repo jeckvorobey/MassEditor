@@ -298,6 +298,15 @@ class BackendActionTest extends TestCase
         $this->assertSame('For products with warehouse stock accounting, select a specific warehouse.', $english['validation_stock_required_for_accounted_products']);
     }
 
+    public function testVideoUrlPlaceholderIsLocalizedForBothLanguages(): void
+    {
+        $russian = shopMasseditorPluginI18nService::getTexts('ru_RU');
+        $english = shopMasseditorPluginI18nService::getTexts('en_US');
+
+        $this->assertSame('Ссылка на видео с Rutube, VK, YouTube или Vimeo', $russian['video_url_placeholder']);
+        $this->assertSame('Rutube, VK, YouTube, or Vimeo video URL', $english['video_url_placeholder']);
+    }
+
     public function testPluginSettingsNormalizationAndThemeMode(): void
     {
         $action = new shopMasseditorPluginBackendAction();

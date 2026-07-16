@@ -430,6 +430,23 @@ class shopPlugin
     }
 }
 
+class shopVideo
+{
+    public static function checkVideo($url)
+    {
+        if (preg_match('~^(?:https?://)?(?:www.)?(vk\.com/|vkvideo\.ru/).*(?:video|clips?)([a-z0-9\-]+_[a-z0-9]+)~i', $url, $matches)) {
+            return 'http://vk.com/video' . $matches[2];
+        }
+
+        if (preg_match('!^(?:https?://)?(?:www.)?(youtube\.com|youtu\.be|vimeo\.com|rutube\.ru/(?:video|shorts))/(?:watch\?v=|shorts/)?([a-z0-9\-_]+)!i', $url, $matches)) {
+            $site = strtolower($matches[1]) === 'youtube.com' ? 'youtu.be' : strtolower($matches[1]);
+            return 'http://' . $site . '/' . $matches[2];
+        }
+
+        return null;
+    }
+}
+
 class shopProduct implements ArrayAccess
 {
     public static $products = array();
@@ -490,6 +507,7 @@ class shopProduct implements ArrayAccess
         }
         self::$saved[$this->id] = $this->data;
         self::$products[$this->id]['data'] = $this->data;
+        return true;
     }
 
     public function offsetExists($offset): bool
@@ -504,6 +522,9 @@ class shopProduct implements ArrayAccess
 
     public function offsetSet($offset, $value): void
     {
+        if ($offset === 'video_url') {
+            $value = shopVideo::checkVideo($value);
+        }
         $this->data[$offset] = $value;
     }
 

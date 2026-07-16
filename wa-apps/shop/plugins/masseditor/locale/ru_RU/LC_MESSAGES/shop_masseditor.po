@@ -765,11 +765,20 @@ msgstr "Режим видео"
 msgid "Video URL"
 msgstr "Ссылка на видео"
 
+msgid "Rutube, VK, YouTube, or Vimeo video URL"
+msgstr "Ссылка на видео с Rutube, VK, YouTube или Vimeo"
+
 msgid "Invalid video mode."
 msgstr "Некорректный режим видео."
 
 msgid "Enter a valid HTTP(S) video URL."
 msgstr "Укажите корректную HTTP(S)-ссылку на видео."
+
+msgid "Copy and paste a video URL from Rutube, VK, YouTube, or Vimeo."
+msgstr "Скопируйте в это поле адрес видеоролика товара с сайта Rutube, VK, YouTube или Vimeo."
+
+msgid "The video URL could not be saved."
+msgstr "Не удалось сохранить ссылку на видео."
 
 msgid "Not enough rights to edit the selected product."
 msgstr "Недостаточно прав для изменения выбранного товара."

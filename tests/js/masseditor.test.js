@@ -337,12 +337,14 @@ test('video operation validates URL and disables it in clear mode', () => {
     i18n: {
       operation_video: 'Video',
       validation_video_url: 'Enter a valid HTTP(S) video URL.',
+      validation_video_supported_url: 'Скопируйте в это поле адрес видеоролика товара с сайта Rutube, VK, YouTube или Vimeo.',
     },
   });
   const videoButton = app.document.querySelectorAll('[data-role="operation-trigger"]').find((button) => button.getAttribute('data-operation') === 'video');
   const videoMode = app.document.getElementById('masseditor-video-mode');
   const videoUrl = app.document.getElementById('masseditor-video-url');
   const videoUrlField = app.document.querySelector('[data-video-url-field]');
+  const videoUrlError = app.document.querySelector('[data-video-url-error]');
   const openConfirm = app.document.querySelector('[data-role="open-confirm"]');
 
   videoButton.click();
@@ -354,18 +356,47 @@ test('video operation validates URL and disables it in clear mode', () => {
   openConfirm.click();
   assert.equal(app.toastStack.children[2].querySelector('p').textContent, 'Enter a valid HTTP(S) video URL.');
 
-  videoUrl.value = 'https://www.youtube.com/watch?v=abc';
+  videoUrl.value = 'https://yandex.ru/video/preview/14675653702268624155';
   openConfirm.click();
-  assert.equal(app.modal.hidden, false);
-  assert.equal(app.document.querySelector('[data-role="modal-operation"]').textContent, 'Video');
-  assert.equal(app.document.querySelector('[data-role="modal-value"]').textContent, 'https://www.youtube.com/watch?v=abc');
+  assert.equal(app.modal.hidden, true);
+  assert.equal(videoUrlField.classList.contains('masseditor-field_invalid'), true);
+  assert.equal(videoUrl.getAttribute('aria-invalid'), 'true');
+  assert.equal(videoUrlError.hidden, false);
+  assert.equal(videoUrlError.textContent, 'Скопируйте в это поле адрес видеоролика товара с сайта Rutube, VK, YouTube или Vimeo.');
 
-  app.document.querySelector('[data-role="close-modal"]').click();
+  [
+    'https://www.youtube.com/watch?v=abc',
+    'https://vimeo.com/12345',
+    'https://rutube.ru/video/abc-def',
+    'https://vk.com/video-123_456',
+  ].forEach((supportedUrl) => {
+    videoUrl.value = supportedUrl;
+    input(videoUrl);
+    assert.equal(videoUrlField.classList.contains('masseditor-field_invalid'), false);
+    assert.equal(videoUrl.getAttribute('aria-invalid'), 'false');
+    assert.equal(videoUrlError.hidden, true);
+    openConfirm.click();
+    assert.equal(app.modal.hidden, false);
+    assert.equal(app.document.querySelector('[data-role="modal-operation"]').textContent, 'Video');
+    assert.equal(app.document.querySelector('[data-role="modal-value"]').textContent, supportedUrl);
+    app.document.querySelector('[data-role="close-modal"]').click();
+  });
+
   videoMode.value = 'clear';
   videoMode.selectedIndex = 1;
   change(videoMode);
   assert.equal(videoUrlField.hidden, true);
   assert.equal(videoUrl.disabled, true);
+  assert.equal(videoUrlField.classList.contains('masseditor-field_invalid'), false);
+  assert.equal(videoUrlError.hidden, true);
+});
+
+test('video URL field renders an accessible inline validation contract', () => {
+  assert.match(templateSource, /data-video-url-error/);
+  assert.match(templateSource, /aria-describedby="masseditor-video-url-error"/);
+  assert.match(templateSource, /placeholder="\{\$texts\.video_url_placeholder\|escape\}"/);
+  assert.match(cssSource, /\.masseditor-field_invalid input\[type="url"\]/);
+  assert.match(cssSource, /\.masseditor-field__error/);
 });
 
 test('stock operation allows regular count when warehouse is not selected', () => {

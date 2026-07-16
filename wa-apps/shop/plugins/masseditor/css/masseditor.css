@@ -243,6 +243,7 @@
 
 .masseditor input[type="text"],
 .masseditor input[type="number"],
+.masseditor input[type="url"],
 .masseditor select,
 .masseditor textarea {
     width: 100%;
@@ -262,9 +263,18 @@
     resize: vertical;
 }
 
+.masseditor-field_invalid input[type="url"],
 .masseditor-field_invalid select {
     border-color: var(--me-danger);
     box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.14);
+}
+
+.masseditor-field__error {
+    margin: 0;
+    color: var(--me-danger);
+    font-size: var(--me-font-caption);
+    font-weight: 600;
+    line-height: 1.35;
 }
 
 .masseditor input[type="checkbox"] {
