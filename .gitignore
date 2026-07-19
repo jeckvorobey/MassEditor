@@ -41,6 +41,7 @@ desktop.ini
 ChatGPT*.html
 .codex
 .codex/
+.agents*
 # Репозиторные skills хранятся и отслеживаются в .agents/skills/.
 .agents/skills/**/.security-scan-passed
 specification_masseditor_codex.md
