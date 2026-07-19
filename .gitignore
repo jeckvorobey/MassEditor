@@ -46,3 +46,4 @@ ChatGPT*.html
 .agents/skills/**/.security-scan-passed
 specification_masseditor_codex.md
 .claude
+.playwright-cli/*
