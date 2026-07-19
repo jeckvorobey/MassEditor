@@ -109,6 +109,21 @@ msgstr "Скоро"
 msgid "Operation parameters"
 msgstr "Параметры операции"
 
+msgid "Applying bulk changes"
+msgstr "Выполняется массовое изменение"
+
+msgid "Products are being processed. Keep this window open."
+msgstr "Товары обрабатываются. Не закрывайте это окно."
+
+msgid "Bulk operation progress"
+msgstr "Ход выполнения массовой операции"
+
+msgid "Changes applied"
+msgstr "Изменения применены"
+
+msgid "Could not apply changes"
+msgstr "Не удалось применить изменения"
+
 msgid "Selected products will be processed only after confirmation in the modal window."
 msgstr "Выбранные товары будут обработаны только после подтверждения в модальном окне."
 
@@ -443,7 +458,7 @@ msgid "Similar products"
 msgstr "Похожие товары"
 
 msgid "Prices and SKU"
-msgstr "Цены и SKU"
+msgstr "Цены и остатки"
 
 msgid "Content"
 msgstr "Контент"
@@ -611,7 +626,7 @@ msgid "Stock by warehouse"
 msgstr "Остатки"
 
 msgid "Basic feature editing"
-msgstr "Базовое редактирование характеристик"
+msgstr "Редактирование характеристик"
 
 msgid "Warehouse"
 msgstr "Склад"

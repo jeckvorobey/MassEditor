@@ -49,7 +49,7 @@
     </section>
 
     {if $active_tab === 'products'}
-        <form method="post" action="?plugin={$plugin_id|escape}&view=products&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&stock_id={$filters.stock_id|escape:'url'}&page={$pagination.page|escape:'url'}" class="masseditor-products-page" data-role="workspace-form" data-selection-reset="{if $result_message}1{else}0{/if}">
+        <form method="post" action="?plugin={$plugin_id|escape}&view=products&query={$filters.query|escape:'url'}&status={$filters.status|escape:'url'}&availability={$filters.availability|escape:'url'}&category_id={$filters.category_id|escape:'url'}&stock_id={$filters.stock_id|escape:'url'}&page={$pagination.page|escape:'url'}" class="masseditor-products-page" data-role="workspace-form" data-apply-url="{$apply_url|escape}" data-selection-reset="{if $result_message}1{else}0{/if}">
             {$wa->csrf()}
             <input type="hidden" name="view" value="products">
             <input type="hidden" name="operation" value="{$operation_form.operation|escape}" data-role="operation-input">
@@ -512,6 +512,26 @@
                     <div class="masseditor-modal__footer">
                         <button type="button" class="button masseditor-button masseditor-button_secondary" data-role="close-modal">{$texts.cancel|escape}</button>
                         <button type="submit" class="button masseditor-button masseditor-button_danger" name="do_apply" value="1" data-role="confirm-submit">{$texts.apply_changes|escape}</button>
+                    </div>
+                </div>
+            </div>
+            <div class="masseditor-modal" data-role="operation-progress-modal" aria-busy="false" hidden>
+                <div class="masseditor-modal__backdrop"></div>
+                <div class="masseditor-modal__card" role="dialog" aria-modal="true" aria-labelledby="masseditor-progress-title" aria-describedby="masseditor-progress-message">
+                    <div class="masseditor-modal__head">
+                        <div>
+                            <h3 id="masseditor-progress-title" data-role="operation-progress-title">{$texts.operation_progress_title|escape}</h3>
+                            <p id="masseditor-progress-message" class="hint" data-role="operation-progress-message">{$texts.operation_progress_message|escape}</p>
+                        </div>
+                    </div>
+                    <div class="masseditor-modal__body">
+                        <div class="masseditor-operation-progress" data-role="operation-progress-indicator" role="progressbar" aria-label="{$texts.operation_progress_label|escape}">
+                            <span class="masseditor-operation-progress__bar"></span>
+                        </div>
+                        <div class="masseditor-operation-result" data-role="operation-progress-result" role="status" hidden></div>
+                    </div>
+                    <div class="masseditor-modal__footer">
+                        <button type="button" class="button masseditor-button masseditor-button_primary" data-role="close-progress-modal" hidden>{$texts.operation_result_close|escape}</button>
                     </div>
                 </div>
             </div>

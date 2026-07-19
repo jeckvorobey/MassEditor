@@ -109,6 +109,21 @@ msgstr "Soon"
 msgid "Operation parameters"
 msgstr "Operation parameters"
 
+msgid "Applying bulk changes"
+msgstr "Applying bulk changes"
+
+msgid "Products are being processed. Keep this window open."
+msgstr "Products are being processed. Keep this window open."
+
+msgid "Bulk operation progress"
+msgstr "Bulk operation progress"
+
+msgid "Changes applied"
+msgstr "Changes applied"
+
+msgid "Could not apply changes"
+msgstr "Could not apply changes"
+
 msgid "Selected products will be processed only after confirmation in the modal window."
 msgstr "Selected products will be processed only after confirmation in the modal window."
 
@@ -443,7 +458,7 @@ msgid "Similar products"
 msgstr "Similar products"
 
 msgid "Prices and SKU"
-msgstr "Prices and SKU"
+msgstr "Prices and stock"
 
 msgid "Content"
 msgstr "Content"
@@ -607,7 +622,7 @@ msgid "Stock by warehouse"
 msgstr "Stock"
 
 msgid "Basic feature editing"
-msgstr "Basic feature editing"
+msgstr "Feature editing"
 
 msgid "Warehouse"
 msgstr "Warehouse"

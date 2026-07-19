@@ -274,7 +274,11 @@ function createSelect(document, id, dataRole, options, value) {
 
 function buildAppDom() {
   const document = new Document();
-  const form = createNode(document, 'form', { 'data-role': 'workspace-form', 'data-selection-reset': '0' });
+  const form = createNode(document, 'form', {
+    'data-role': 'workspace-form',
+    'data-selection-reset': '0',
+    'data-apply-url': '?plugin=masseditor&action=apply',
+  });
   document.body.appendChild(form);
   const filterForm = createNode(document, 'form', { id: 'masseditor-filter-form' });
   document.body.appendChild(filterForm);
@@ -490,7 +494,25 @@ function buildAppDom() {
   modal.appendChild(modalOperation);
   modal.appendChild(modalMode);
   modal.appendChild(modalValue);
+  const confirmSubmit = createNode(document, 'button', { 'data-role': 'confirm-submit', type: 'submit' });
+  modal.appendChild(confirmSubmit);
   document.body.appendChild(modal);
+
+  const progressModal = createNode(document, 'div', { 'data-role': 'operation-progress-modal', 'aria-busy': 'false' });
+  progressModal.hidden = true;
+  const progressTitle = createNode(document, 'h3', { 'data-role': 'operation-progress-title' });
+  const progressMessage = createNode(document, 'p', { 'data-role': 'operation-progress-message' });
+  const progressIndicator = createNode(document, 'div', { 'data-role': 'operation-progress-indicator', role: 'progressbar' });
+  const progressResult = createNode(document, 'div', { 'data-role': 'operation-progress-result' });
+  progressResult.hidden = true;
+  const progressClose = createNode(document, 'button', { 'data-role': 'close-progress-modal', type: 'button' });
+  progressClose.hidden = true;
+  progressModal.appendChild(progressTitle);
+  progressModal.appendChild(progressMessage);
+  progressModal.appendChild(progressIndicator);
+  progressModal.appendChild(progressResult);
+  progressModal.appendChild(progressClose);
+  document.body.appendChild(progressModal);
 
   const table = createNode(document, 'table');
   document.body.appendChild(table);
@@ -509,7 +531,7 @@ function buildAppDom() {
     table.appendChild(row);
   });
 
-  return { document, form, filterForm, modal, confirmApply, toastStack };
+  return { document, form, filterForm, modal, progressModal, confirmApply, confirmSubmit, toastStack };
 }
 
 function createLocalStorage(seed = {}) {

@@ -149,6 +149,13 @@
     var modalOperation = document.querySelector('[data-role="modal-operation"]');
     var modalMode = document.querySelector('[data-role="modal-mode"]');
     var modalValue = document.querySelector('[data-role="modal-value"]');
+    var progressModal = document.querySelector('[data-role="operation-progress-modal"]');
+    var progressTitle = document.querySelector('[data-role="operation-progress-title"]');
+    var progressMessage = document.querySelector('[data-role="operation-progress-message"]');
+    var progressIndicator = document.querySelector('[data-role="operation-progress-indicator"]');
+    var progressResult = document.querySelector('[data-role="operation-progress-result"]');
+    var closeProgressButton = document.querySelector('[data-role="close-progress-modal"]');
+    var confirmSubmitButton = document.querySelector('[data-role="confirm-submit"]');
     var productSearchInput = document.querySelector('[data-role="product-search-input"]');
     var productSearchClear = document.querySelector('[data-role="product-search-clear"]');
     var productSearchSuggestions = document.querySelector('[data-role="product-search-suggestions"]');
@@ -157,6 +164,9 @@
     var selectionStorageKey = buildSelectionStorageKey();
     var selectedProductsMap = loadSelectedProductsMap();
     var searchSuggestionsRequestId = 0;
+    var operationRequestPending = false;
+    var reloadAfterProgressClose = false;
+    var resetSelectionAfterProgressClose = false;
 
     var operationLabels = {
         price: t('operation_price', 'Change price'),
@@ -167,7 +177,7 @@
         tags: t('operation_tags', 'Tags'),
         url: t('operation_url', 'Product URLs'),
         stock: t('operation_stock', 'Stock'),
-        features: t('operation_features', 'Basic feature editing'),
+        features: t('operation_features', 'Feature editing'),
         categories: t('operation_categories', 'Categories')
         ,video: t('operation_video', 'Video')
     };
@@ -1017,6 +1027,144 @@
         document.body.classList.remove('masseditor-modal-open');
     }
 
+    function showOperationProgress() {
+        if (!progressModal) {
+            return;
+        }
+
+        operationRequestPending = true;
+        reloadAfterProgressClose = false;
+        resetSelectionAfterProgressClose = false;
+        progressModal.hidden = false;
+        progressModal.setAttribute('aria-busy', 'true');
+        progressModal.classList.remove('is-success', 'is-error');
+        if (progressTitle) {
+            progressTitle.textContent = t('operation_progress_title', 'Applying bulk changes');
+        }
+        if (progressMessage) {
+            progressMessage.textContent = t('operation_progress_message', 'Products are being processed. Keep this window open.');
+        }
+        if (progressIndicator) {
+            progressIndicator.hidden = false;
+        }
+        if (progressResult) {
+            progressResult.hidden = true;
+            progressResult.textContent = '';
+        }
+        if (closeProgressButton) {
+            closeProgressButton.hidden = true;
+            closeProgressButton.disabled = true;
+            closeProgressButton.textContent = t('operation_result_close', 'Close');
+        }
+        if (confirmSubmitButton) {
+            confirmSubmitButton.disabled = true;
+        }
+        document.body.classList.add('masseditor-modal-open');
+    }
+
+    function operationErrorMessage(payload) {
+        var errors = payload && Array.isArray(payload.errors) ? payload.errors : [];
+        var first = errors.length ? errors[0] : null;
+
+        if (typeof first === 'string') {
+            return first;
+        }
+        if (first && typeof first.message === 'string') {
+            return first.message;
+        }
+        if (Array.isArray(first) && typeof first[0] === 'string') {
+            return first[0];
+        }
+
+        return t('generic_operation_error', 'The operation could not be completed. Try again or check the error log.');
+    }
+
+    function finishOperationProgress(success, message, reloadAfterClose, resetSelectionAfterClose) {
+        operationRequestPending = false;
+        reloadAfterProgressClose = success && reloadAfterClose;
+        resetSelectionAfterProgressClose = success && resetSelectionAfterClose;
+        confirmApply.value = '0';
+        progressModal.setAttribute('aria-busy', 'false');
+        progressModal.classList.toggle('is-success', success);
+        progressModal.classList.toggle('is-error', !success);
+        if (progressTitle) {
+            progressTitle.textContent = success
+                ? t('operation_result_success', 'Changes applied')
+                : t('operation_result_error', 'Could not apply changes');
+        }
+        if (progressMessage) {
+            progressMessage.textContent = '';
+        }
+        if (progressIndicator) {
+            progressIndicator.hidden = true;
+        }
+        if (progressResult) {
+            progressResult.hidden = false;
+            progressResult.textContent = message;
+        }
+        if (closeProgressButton) {
+            closeProgressButton.hidden = false;
+            closeProgressButton.disabled = false;
+        }
+        if (confirmSubmitButton) {
+            confirmSubmitButton.disabled = false;
+        }
+    }
+
+    function submitOperationWithProgress() {
+        var applyUrl = workspaceForm.getAttribute('data-apply-url');
+        var body = new window.FormData(workspaceForm);
+
+        modal.hidden = true;
+        showOperationProgress();
+
+        window.fetch(applyUrl, {
+            method: 'POST',
+            body: body,
+            credentials: 'same-origin',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        }).then(function (response) {
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
+            return response.json();
+        }).then(function (payload) {
+            if (!payload || payload.status !== 'ok' || !payload.data) {
+                finishOperationProgress(false, operationErrorMessage(payload), false);
+                return;
+            }
+            finishOperationProgress(
+                true,
+                payload.data.message || t('operation_result_success', 'Changes applied'),
+                payload.data.reload !== false,
+                payload.data.reset_selection !== false
+            );
+        }).catch(function () {
+            finishOperationProgress(
+                false,
+                t('generic_operation_error', 'The operation could not be completed. Try again or check the error log.'),
+                false,
+                false
+            );
+        });
+    }
+
+    function closeOperationProgress() {
+        if (!progressModal || operationRequestPending) {
+            return;
+        }
+
+        progressModal.hidden = true;
+        document.body.classList.remove('masseditor-modal-open');
+        if (resetSelectionAfterProgressClose) {
+            selectedProductsMap = {};
+            saveSelectedProductsMap();
+        }
+        if (reloadAfterProgressClose) {
+            window.location.reload();
+        }
+    }
+
     operationButtons.forEach(function (button) {
         button.addEventListener('click', function () {
             if (button.disabled) {
@@ -1203,9 +1351,17 @@
         button.addEventListener('click', closeModal);
     });
 
+    if (closeProgressButton) {
+        closeProgressButton.addEventListener('click', closeOperationProgress);
+    }
+
     workspaceForm.addEventListener('submit', function (event) {
         var submitter = event.submitter || document.activeElement;
         if (submitter && submitter.getAttribute('data-role') === 'confirm-submit') {
+            if (operationRequestPending) {
+                event.preventDefault();
+                return;
+            }
             if (!validateBeforeModal()) {
                 event.preventDefault();
                 closeModal();
@@ -1216,6 +1372,16 @@
                 saveSelectedProductsMap();
             }
             confirmApply.value = '1';
+            if (
+                !operationRequestPending
+                && progressModal
+                && workspaceForm.getAttribute('data-apply-url')
+                && typeof window.fetch === 'function'
+                && typeof window.FormData === 'function'
+            ) {
+                event.preventDefault();
+                submitOperationWithProgress();
+            }
         }
     });
 

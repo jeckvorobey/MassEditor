@@ -13,10 +13,9 @@ class shopMasseditorPluginBackendAction extends waViewAction
         $texts = shopMasseditorPluginI18nService::getTexts($language);
         $selection_service = new shopMasseditorPluginProductSelectionService();
         $log_service = new shopMasseditorPluginLogService();
-        $operation_service = new shopMasseditorPluginMassOperationService(
+        $operation_service = $this->createOperationService(
             $selection_service,
             $log_service,
-            null,
             $settings['operation_limit'],
             $language
         );
@@ -71,6 +70,7 @@ class shopMasseditorPluginBackendAction extends waViewAction
             'video_mode' => 'set',
             'video_url' => '',
         );
+        $default_operation_form = $operation_form;
 
         if (waRequest::getMethod() === 'post') {
             try {
@@ -89,7 +89,7 @@ class shopMasseditorPluginBackendAction extends waViewAction
                     $result_message = $this->formatResultMessage($result);
                     $selection = $selection_service->getPage($filters, $settings['page_size']);
                     $selected_product_ids = array();
-                    $operation_form = $this->mergeOperationForm($operation_form, $result['request']);
+                    $operation_form = $default_operation_form;
                     $active_tab = 'products';
                 }
             } catch (InvalidArgumentException $e) {
@@ -159,6 +159,7 @@ class shopMasseditorPluginBackendAction extends waViewAction
             'can_select_filter' => ($selection['filters']['query'] !== '' || $selection['filters']['status'] !== 'all' || $selection['filters']['availability'] !== 'all' || !empty($selection['filters']['category_id']) || !empty($selection['filters']['stock_id']) || $selection['pagination']['pages'] > 1) && $selection['pagination']['total'] > 0,
             'filter_reset_url' => '?plugin=' . $plugin->getId() . '&view=products',
             'search_suggestions_url' => '?plugin=' . $plugin->getId() . '&action=searchSuggestions',
+            'apply_url' => '?plugin=' . $plugin->getId() . '&action=apply',
             'active_tab' => $active_tab,
             'settings' => $settings,
             'date_format_options' => $this->getDateFormatOptions(),
@@ -167,6 +168,21 @@ class shopMasseditorPluginBackendAction extends waViewAction
             'js_i18n_json' => json_encode(shopMasseditorPluginI18nService::getJsTexts($language), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT),
             'theme_class' => $settings['theme_mode'] === 'dark' ? 'theme-dark' : '',
         ));
+    }
+
+    protected function createOperationService(
+        shopMasseditorPluginProductSelectionService $selection_service,
+        shopMasseditorPluginLogService $log_service,
+        $operation_limit,
+        $language
+    ) {
+        return new shopMasseditorPluginMassOperationService(
+            $selection_service,
+            $log_service,
+            null,
+            $operation_limit,
+            $language
+        );
     }
 
     private function buildPaginationUi(array $pagination)
@@ -352,39 +368,7 @@ class shopMasseditorPluginBackendAction extends waViewAction
 
     private function readOperationPayload()
     {
-        return array(
-            'product_ids' => waRequest::post('product_ids', array(), waRequest::TYPE_ARRAY),
-            'operation' => waRequest::post('operation', 'price', waRequest::TYPE_STRING_TRIM),
-            'mode' => waRequest::post('mode', 'set', waRequest::TYPE_STRING_TRIM),
-            'numeric_value' => waRequest::post('numeric_value', '', waRequest::TYPE_STRING_TRIM),
-            'round_step' => waRequest::post('round_step', '', waRequest::TYPE_STRING_TRIM),
-            'round_direction' => waRequest::post('round_direction', 'nearest', waRequest::TYPE_STRING_TRIM),
-            'compare_price_mode' => waRequest::post('compare_price_mode', 'keep', waRequest::TYPE_STRING_TRIM),
-            'compare_price_value' => waRequest::post('compare_price_value', '', waRequest::TYPE_STRING_TRIM),
-            'visibility_status' => waRequest::post('visibility_status', 1, waRequest::TYPE_INT),
-            'availability_value' => waRequest::post('availability_value', 1, waRequest::TYPE_INT),
-            'description_mode' => waRequest::post('description_mode', 'replace', waRequest::TYPE_STRING_TRIM),
-            'text_value' => waRequest::post('text_value', '', waRequest::TYPE_STRING_TRIM),
-            'tags_mode' => waRequest::post('tags_mode', 'add', waRequest::TYPE_STRING_TRIM),
-            'tags_value' => waRequest::post('tags_value', '', waRequest::TYPE_STRING_TRIM),
-            'url_mode' => waRequest::post('url_mode', 'regenerate', waRequest::TYPE_STRING_TRIM),
-            'url_value' => waRequest::post('url_value', '', waRequest::TYPE_STRING_TRIM),
-            'selection_mode' => waRequest::post('selection_mode', 'ids', waRequest::TYPE_STRING_TRIM),
-            'filters' => waRequest::post('filters', array(), waRequest::TYPE_ARRAY),
-            'stock_id' => waRequest::post('stock_id', 0, waRequest::TYPE_INT),
-            'stock_mode' => waRequest::post('stock_mode', 'set', waRequest::TYPE_STRING_TRIM),
-            'stock_value' => waRequest::post('stock_value', '', waRequest::TYPE_STRING_TRIM),
-            'stock_type_filter' => waRequest::post('stock_type_filter', 'all', waRequest::TYPE_STRING_TRIM),
-            'feature_id' => waRequest::post('feature_id', 0, waRequest::TYPE_INT),
-            'feature_mode' => waRequest::post('feature_mode', 'set', waRequest::TYPE_STRING_TRIM),
-            'feature_value' => waRequest::post('feature_value', '', waRequest::TYPE_STRING_TRIM),
-            'feature_value_ids' => waRequest::post('feature_value_ids', array(), waRequest::TYPE_ARRAY),
-            'category_id' => waRequest::post('category_id', 0, waRequest::TYPE_INT),
-            'categories_mode' => waRequest::post('categories_mode', 'add', waRequest::TYPE_STRING_TRIM),
-            'video_mode' => waRequest::post('video_mode', 'set', waRequest::TYPE_STRING_TRIM),
-            'video_url' => waRequest::post('video_url', '', waRequest::TYPE_STRING_TRIM),
-            'confirm_apply' => waRequest::post('confirm_apply', 0, waRequest::TYPE_INT),
-        );
+        return (new shopMasseditorPluginOperationRequestService())->readPost();
     }
 
     private function mergeOperationForm(array $current_form, array $payload)

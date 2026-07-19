@@ -18,6 +18,10 @@ function boot(options = {}) {
   const localStorage = createLocalStorage(options.localStorage || {});
   const fetchCalls = [];
   const hasFetchOption = Object.prototype.hasOwnProperty.call(options, 'fetch');
+  const reloads = [];
+  function FakeFormData(form) {
+    this.form = form;
+  }
   const window = {
     document: app.document,
     localStorage,
@@ -35,6 +39,12 @@ function boot(options = {}) {
         json: () => Promise.resolve({ data: { suggestions: [] }, suggestions: [] }),
       });
     }),
+    FormData: Object.prototype.hasOwnProperty.call(options, 'FormData') ? options.FormData : FakeFormData,
+    location: {
+      reload() {
+        reloads.push(true);
+      },
+    },
     setTimeout(callback, timeout) {
       timeouts.push({ callback, timeout });
       return timeouts.length;
@@ -54,7 +64,7 @@ function boot(options = {}) {
 
   vm.runInContext(scriptSource, context);
 
-  return { ...app, window, localStorage, timeouts, fetchCalls };
+  return { ...app, window, localStorage, timeouts, fetchCalls, reloads };
 }
 
 function change(element) {
@@ -218,6 +228,7 @@ test('validation shows error toast when required inputs are missing', () => {
 
 test('opening modal fills summary and submit appends hidden product ids with confirmation', () => {
   const app = boot({
+    fetch: undefined,
     localStorage: {
       'masseditor:selected-products:masseditor': '[1]',
     },
@@ -249,6 +260,128 @@ test('opening modal fills summary and submit appends hidden product ids with con
   const persisted = app.form.querySelectorAll('[data-role="persisted-product-id"]');
   assert.equal(persisted.length, 1);
   assert.equal(persisted[0].value, '1');
+});
+
+test('confirmed operation switches to progress and waits for manual close after success', async () => {
+  let resolveRequest;
+  const calls = [];
+  const app = boot({
+    i18n: {
+      operation_progress_title: 'Выполняется массовое изменение',
+      operation_progress_message: 'Товары обрабатываются. Не закрывайте это окно.',
+      operation_result_success: 'Изменения применены',
+      operation_result_error: 'Не удалось применить изменения',
+      operation_result_close: 'Закрыть',
+      generic_operation_error: 'Операцию не удалось выполнить.',
+    },
+    localStorage: {
+      'masseditor:selected-products:masseditor': '[1]',
+    },
+    fetch(url, options) {
+      calls.push({ url, options });
+      return new Promise((resolve) => { resolveRequest = resolve; });
+    },
+  });
+  const numeric = app.document.getElementById('masseditor-numeric-value');
+  numeric.value = '25';
+  app.document.querySelector('[data-role="open-confirm"]').click();
+
+  const event = submit(app.form, app.confirmSubmit);
+
+  assert.equal(event.defaultPrevented, true);
+  assert.equal(app.modal.hidden, true);
+  assert.equal(app.progressModal.hidden, false);
+  assert.equal(app.progressModal.getAttribute('aria-busy'), 'true');
+  assert.equal(app.document.querySelector('[data-role="operation-progress-title"]').textContent, 'Выполняется массовое изменение');
+  assert.equal(app.document.querySelector('[data-role="close-progress-modal"]').hidden, true);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].url, '?plugin=masseditor&action=apply');
+  assert.equal(calls[0].options.method, 'POST');
+  assert.equal(calls[0].options.credentials, 'same-origin');
+  assert.equal(calls[0].options.headers['X-Requested-With'], 'XMLHttpRequest');
+  assert.equal(calls[0].options.body.form, app.form);
+
+  const duplicateEvent = submit(app.form, app.confirmSubmit);
+  assert.equal(duplicateEvent.defaultPrevented, true);
+  assert.equal(calls.length, 1);
+
+  resolveRequest({
+    ok: true,
+    json: () => Promise.resolve({
+      status: 'ok',
+      data: {
+        message: 'Изменение цены · 1 товар · Операция выполнена.',
+        reload: true,
+        reset_selection: true,
+      },
+    }),
+  });
+  await flushPromises();
+
+  assert.equal(app.progressModal.hidden, false);
+  assert.equal(app.progressModal.getAttribute('aria-busy'), 'false');
+  assert.equal(app.document.querySelector('[data-role="operation-progress-title"]').textContent, 'Изменения применены');
+  assert.equal(app.document.querySelector('[data-role="operation-progress-result"]').textContent, 'Изменение цены · 1 товар · Операция выполнена.');
+  assert.equal(app.document.querySelector('[data-role="operation-progress-indicator"]').hidden, true);
+  assert.equal(app.document.querySelector('[data-role="close-progress-modal"]').hidden, false);
+  assert.equal(app.reloads.length, 0);
+
+  app.document.querySelector('[data-role="close-progress-modal"]').click();
+  assert.equal(app.localStorage.getItem('masseditor:selected-products:masseditor'), null);
+  assert.equal(app.reloads.length, 1);
+});
+
+test('failed operation keeps form values after manual result close', async () => {
+  const app = boot({
+    i18n: {
+      operation_progress_title: 'Applying bulk changes',
+      operation_progress_message: 'Products are being processed. Keep this window open.',
+      operation_result_success: 'Changes applied',
+      operation_result_error: 'Could not apply changes',
+      operation_result_close: 'Close',
+      generic_operation_error: 'The operation could not be completed.',
+    },
+    localStorage: {
+      'masseditor:selected-products:masseditor': '[1]',
+    },
+    fetch() {
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ status: 'fail', errors: ['Check the operation value.'] }),
+      });
+    },
+  });
+  const numeric = app.document.getElementById('masseditor-numeric-value');
+  numeric.value = '25';
+  app.document.querySelector('[data-role="open-confirm"]').click();
+  submit(app.form, app.confirmSubmit);
+  await flushPromises();
+
+  assert.equal(app.document.querySelector('[data-role="operation-progress-title"]').textContent, 'Could not apply changes');
+  assert.equal(app.document.querySelector('[data-role="operation-progress-result"]').textContent, 'Check the operation value.');
+
+  app.document.querySelector('[data-role="close-progress-modal"]').click();
+
+  assert.equal(app.progressModal.hidden, true);
+  assert.equal(numeric.value, '25');
+  assert.equal(app.reloads.length, 0);
+});
+
+test('submit keeps normal POST fallback when fetch is unavailable', () => {
+  const app = boot({
+    fetch: undefined,
+    localStorage: {
+      'masseditor:selected-products:masseditor': '[1]',
+    },
+  });
+  app.document.getElementById('masseditor-numeric-value').value = '25';
+  app.document.querySelector('[data-role="open-confirm"]').click();
+
+  const event = submit(app.form, app.confirmSubmit);
+
+  assert.equal(event.defaultPrevented, false);
+  assert.equal(app.confirmApply.value, '1');
+  assert.equal(app.progressModal.hidden, true);
 });
 
 
@@ -287,7 +420,7 @@ test('new operation fields validate and update confirm summary', () => {
 
   featureValue.value = 'cotton';
   openConfirm.click();
-  assert.equal(app.document.querySelector('[data-role="modal-operation"]').textContent, 'Basic feature editing');
+  assert.equal(app.document.querySelector('[data-role="modal-operation"]').textContent, 'Feature editing');
   assert.equal(app.document.querySelector('[data-role="modal-value"]').textContent, 'cotton');
 });
 
@@ -569,6 +702,18 @@ test('css defines readable desktop typography contract for backend tables and co
     cssSource,
     /\.masseditor-button\s*\{[\s\S]*min-height:\s*var\(--me-control-height\);[\s\S]*font-size:\s*15px;/
   );
+});
+
+test('template and css define accessible indeterminate operation progress modal', () => {
+  assert.match(templateSource, /data-role="workspace-form"[^>]+data-apply-url="\{\$apply_url\|escape\}"/);
+  assert.match(templateSource, /\{\$wa->csrf\(\)\}/);
+  assert.match(templateSource, /data-role="operation-progress-modal"[^>]+aria-busy="false"[^>]+hidden/);
+  assert.match(templateSource, /data-role="operation-progress-indicator" role="progressbar" aria-label="\{\$texts\.operation_progress_label\|escape\}"/);
+  assert.match(templateSource, /data-role="close-progress-modal" hidden>\{\$texts\.operation_result_close\|escape\}<\/button>/);
+  assert.match(cssSource, /\.masseditor-operation-progress__bar\s*\{[\s\S]*animation:\s*masseditor-progress-indeterminate/);
+  assert.match(cssSource, /@keyframes masseditor-progress-indeterminate/);
+  assert.match(cssSource, /--me-danger-soft:\s*#[0-9a-f]{6};/i);
+  assert.match(cssSource, /\.masseditor\.theme-dark\s*\{[\s\S]*--me-danger-soft:\s*rgba\(/);
 });
 
 test('css defines larger mobile typography and touch targets', () => {

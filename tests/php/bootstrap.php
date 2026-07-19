@@ -293,6 +293,7 @@ class waViewAction
 class waJsonController
 {
     public $response = array();
+    public $errors = array();
 }
 
 class waLog
@@ -601,9 +602,11 @@ class shopHelper
 require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/models/shopMasseditorPluginProduct.model.php';
 require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/models/shopMasseditorPluginLog.model.php';
 require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginI18nService.class.php';
+require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginOperationRequestService.class.php';
 require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginProductSelectionService.class.php';
 require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginLogService.class.php';
 require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginMassOperationService.class.php';
 require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/actions/shopMasseditorPluginBackend.action.php';
+require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/actions/shopMasseditorPluginBackendApply.controller.php';
 require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/actions/shopMasseditorPluginBackendSearchSuggestions.controller.php';
 require_once __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/shopMasseditor.plugin.php';

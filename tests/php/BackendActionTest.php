@@ -189,6 +189,37 @@ class BackendActionTest extends TestCase
         ))));
     }
 
+    public function testSuccessfulMassOperationResetsFormAndFailurePreservesSubmittedValues(): void
+    {
+        waRequest::$method = 'post';
+        waRequest::$post = array(
+            'do_apply' => 1,
+            'operation' => 'price',
+            'mode' => 'add',
+            'numeric_value' => '15',
+            'product_ids' => array(11),
+            'confirm_apply' => 1,
+        );
+
+        $action = new StubbedMassOperationBackendAction(new SuccessfulMassOperationServiceStub());
+        $action->execute();
+
+        $this->assertSame('Изменение цены · 1 товар · Операция выполнена.', $action->view->assigned['result_message']);
+        $this->assertSame('products', $action->view->assigned['active_tab']);
+        $this->assertSame(array(), $action->view->assigned['selected_product_ids_map']);
+        $this->assertSame('price', $action->view->assigned['operation_form']['operation']);
+        $this->assertSame('set', $action->view->assigned['operation_form']['mode']);
+        $this->assertSame('', $action->view->assigned['operation_form']['numeric_value']);
+
+        $action = new StubbedMassOperationBackendAction(new FailingMassOperationServiceStub());
+        $action->execute();
+
+        $this->assertSame(array('Ошибка валидации.'), $action->view->assigned['errors']);
+        $this->assertSame('add', $action->view->assigned['operation_form']['mode']);
+        $this->assertSame('15', $action->view->assigned['operation_form']['numeric_value']);
+        $this->assertSame(array(11 => true), $action->view->assigned['selected_product_ids_map']);
+    }
+
     public function testMultipleFeaturesRemainEditableAndPayloadKeepsValueIds(): void
     {
         $action = new shopMasseditorPluginBackendAction();
@@ -293,9 +324,17 @@ class BackendActionTest extends TestCase
         $this->assertSame('Ошибка', $russian['toast_error']);
         $this->assertSame('Закрыть уведомление', $russian['toast_close']);
         $this->assertSame('Для товаров со складским учетом выберите конкретный склад.', $russian['validation_stock_required_for_accounted_products']);
+        $this->assertSame('Выполняется массовое изменение', $russian['operation_progress_title']);
+        $this->assertSame('Изменения применены', $russian['operation_result_success']);
+        $this->assertSame('Не удалось применить изменения', $russian['operation_result_error']);
+        $this->assertSame('Закрыть', $russian['operation_result_close']);
         $this->assertSame('Error', $english['toast_error']);
         $this->assertSame('Close notification', $english['toast_close']);
         $this->assertSame('For products with warehouse stock accounting, select a specific warehouse.', $english['validation_stock_required_for_accounted_products']);
+        $this->assertSame('Applying bulk changes', $english['operation_progress_title']);
+        $this->assertSame('Changes applied', $english['operation_result_success']);
+        $this->assertSame('Could not apply changes', $english['operation_result_error']);
+        $this->assertSame('Close', $english['operation_result_close']);
     }
 
     public function testVideoUrlPlaceholderIsLocalizedForBothLanguages(): void
@@ -344,7 +383,7 @@ class BackendActionTest extends TestCase
         $this->assertSame(50, $settings['page_size']);
 
         $library = $this->invokePrivate($action, 'getOperationsLibrary');
-        $this->assertSame('Prices and SKU', $library[0]['title']);
+        $this->assertSame('Prices and stock', $library[0]['title']);
         $this->assertSame('Change price', $library[0]['items'][0]['label']);
         $this->assertSame('Stock', $library[0]['items'][2]['label']);
         $this->assertCount(3, $library[0]['items']);
@@ -374,7 +413,14 @@ class BackendActionTest extends TestCase
         $this->assertSame(array('ru_RU' => 'Russian', 'en_US' => 'English'), shopMasseditorPluginI18nService::getLanguageOptions($settings['interface_language']));
 
         $library = $this->invokePrivate($action, 'getOperationsLibrary', array($settings['interface_language']));
-        $this->assertSame('Prices and SKU', $library[0]['title']);
+        $this->assertSame('Prices and stock', $library[0]['title']);
+
+        $russian = shopMasseditorPluginI18nService::getTexts('ru_RU');
+        $english = shopMasseditorPluginI18nService::getTexts('en_US');
+        $this->assertSame('Цены и остатки', $russian['group_prices']);
+        $this->assertSame('Редактирование характеристик', $russian['operation_features']);
+        $this->assertSame('Prices and stock', $english['group_prices']);
+        $this->assertSame('Feature editing', $english['operation_features']);
 
         $GLOBALS['fake_wa_system']->locale = 'en_US';
         $plugin = new shopMasseditorPlugin(array('interface_language' => 'auto'));
@@ -443,5 +489,56 @@ class ThrowingSettingsShopMasseditorPlugin extends shopMasseditorPlugin
     public function saveSettings(array $settings)
     {
         throw new RuntimeException('SQLSTATE[42000]: leaked internal SQL error');
+    }
+}
+
+class StubbedMassOperationBackendAction extends shopMasseditorPluginBackendAction
+{
+    private $operation_service;
+
+    public function __construct(shopMasseditorPluginMassOperationService $operation_service)
+    {
+        parent::__construct();
+        $this->operation_service = $operation_service;
+    }
+
+    protected function createOperationService(
+        shopMasseditorPluginProductSelectionService $selection_service,
+        shopMasseditorPluginLogService $log_service,
+        $operation_limit,
+        $language
+    ) {
+        return $this->operation_service;
+    }
+}
+
+class SuccessfulMassOperationServiceStub extends shopMasseditorPluginMassOperationService
+{
+    public function apply(array $raw_request)
+    {
+        return array(
+            'request' => $raw_request,
+            'summary' => 'Изменение цены · 1 товар',
+            'message' => 'Операция выполнена.',
+            'skipped' => 0,
+        );
+    }
+
+    public function getFeatureValuesMap(array $features)
+    {
+        return array();
+    }
+
+    public function getFeatureUiConfig($type)
+    {
+        return array('ui' => 'text');
+    }
+}
+
+class FailingMassOperationServiceStub extends SuccessfulMassOperationServiceStub
+{
+    public function apply(array $raw_request)
+    {
+        throw new InvalidArgumentException('Ошибка валидации.');
     }
 }
