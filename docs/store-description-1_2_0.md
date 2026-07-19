@@ -1,172 +1,163 @@
 # Описание плагина «Массовый редактор» 1.2.0 для Webasyst Store
 
-Документ хранит готовое описание версии `1.2.0` для карточки Webasyst Store. HTML-блоки используют только разрешённые базовые теги, без CSS и JavaScript.
-
 ## RU title
 
 `Mass Editor для Shop-Script`
+
+## RU summary
+
+Безопасное массовое редактирование каталога в backend Shop-Script: операции с товарами, фильтры, подтверждение, журнал и ограниченный откат последнего изменения.
+
+## RU HTML description
+
+```html
+<p><strong>«Массовый редактор» помогает обновлять выбранные товары Shop-Script без ручного открытия каждой карточки.</strong></p>
+
+<p>Отфильтруйте каталог, выберите товары, настройте нужную операцию и подтвердите изменение. Плагин проверит запрос на сервере, обработает товары ограниченными пакетами и добавит запись в журнал.</p>
+
+<p><strong>Цены и остатки</strong></p>
+<ul>
+  <li>Установка или процентное изменение цены и compare price с настраиваемым округлением.</li>
+  <li>Управление compare price при изменении основной цены.</li>
+  <li>Установка, увеличение, уменьшение или бесконечный остаток с выбором склада.</li>
+  <li>Фильтр товаров со складским учётом и без него, когда конкретный склад не выбран.</li>
+</ul>
+
+<p><strong>Состояние и содержимое товара</strong></p>
+<ul>
+  <li>Массовое изменение видимости товара и доступности артикулов.</li>
+  <li>Замена, добавление в начало или конец описания.</li>
+  <li>Добавление, удаление и замена тегов.</li>
+  <li>Генерация URL из названия или шаблона с переменными <code>{name}</code>, <code>{id}</code> и <code>{current_url}</code>.</li>
+</ul>
+
+<p><strong>Характеристики, категории и видео</strong></p>
+<ul>
+  <li>Редактирование общих характеристик: текст, числа, логические значения, размерности, цвета, списки, переключатели и диапазоны.</li>
+  <li>Замена набора, добавление, удаление выбранных значений и очистка множественных общих характеристик.</li>
+  <li>Добавление товаров в категорию, удаление из категории и замена основной категории.</li>
+  <li>Установка одной поддерживаемой Shop-Script видеоссылки всем выбранным товарам или очистка ссылки.</li>
+</ul>
+
+<p><strong>Выбор и фильтры</strong></p>
+<ul>
+  <li>Поиск по названию или артикулу, фильтры категории, статуса, доступности и склада.</li>
+  <li>Выбор текущей страницы или всех товаров текущего фильтра.</li>
+  <li>Сервер заново строит полную выборку и проверяет настроенный лимит операции.</li>
+</ul>
+
+<p><strong>Контроль массовых изменений</strong></p>
+<ul>
+  <li>Операции доступны только администраторам Shop-Script и требуют явного подтверждения.</li>
+  <li>Сервер проверяет типы, значения, права на каждый товар и допустимый размер выборки.</li>
+  <li>Окно выполнения блокирует повторную отправку и показывает безопасный результат.</li>
+  <li>Журнал хранит тип операции и число обработанных товаров.</li>
+  <li>Последнюю собственную успешную операцию можно отменить в течение трёх часов, если после неё не было другой операции и данные не менялись извне.</li>
+</ul>
+
+<p><strong>Как это работает</strong></p>
+<ol>
+  <li>Откройте «Массовый редактор» в backend Shop-Script.</li>
+  <li>Настройте фильтры и выберите товары.</li>
+  <li>Выберите нужную операцию и заполните параметры.</li>
+  <li>Проверьте действие в окне подтверждения и запустите обработку.</li>
+  <li>Закройте окно результата; при необходимости откройте журнал и отмените допустимую последнюю операцию.</li>
+</ol>
+
+<p><strong>Ограничения</strong></p>
+<ul>
+  <li>Поддерживаются общие характеристики товара; SKU- и дочерние характеристики не изменяются.</li>
+  <li>Для списков используются существующие значения; создание новых справочных значений не поддерживается.</li>
+  <li>Видео поддерживает Rutube, VK, YouTube и Vimeo; загрузка файлов и разные URL для каждого товара не поддерживаются.</li>
+  <li>Индикатор выполнения не показывает точный процент.</li>
+  <li>Откат относится только к последней собственной операции, действует три часа и блокируется при конфликте данных.</li>
+</ul>
+
+<blockquote>Плагин работает только в backend Shop-Script и не изменяет витрину, корзину, заказы или тему магазина. Интерфейс доступен на русском и английском языках.</blockquote>
+```
 
 ## EN title
 
 `Mass Editor for Shop-Script`
 
-## RU summary
-
-Безопасное массовое редактирование товаров в бекенде Shop-Script с русским и английским интерфейсом. Также поддерживаются складские остатки, категории и общие характеристики товаров. Дополнительно доступны множественные значения общих характеристик и массовое управление видео.
-
 ## EN summary
 
-Safe bulk product editing in the Shop-Script backend with Russian and English interface support. Warehouse stock, categories, and common product features are also supported. Multiple-value common features and bulk video management are additionally available.
-
-## RU HTML description
-
-```html
-<p><strong>Массовый редактор - помогает быстро обновлять выбранные товары в Shop-Script без ручного редактирования каждой карточки.</strong></p>
-
-<p>Плагин добавляет в бекенд удобный экран для массовой работы с каталогом: найдите нужные товары, выберите их в таблице, настройте операцию и подтвердите применение изменений. Это полезно при обновлении цен, подготовке сезонных правок, управлении видимостью товаров и наведении порядка в описаниях, тегах и URL.</p>
-
-<p><strong>Возможности</strong></p>
-<ul>
-  <li>Массовое изменение цены и compare price: установка значения или изменение на процент.</li>
-  <li>Округление цен до 1, 10 или 100 с выбором направления округления.</li>
-  <li>Управление compare price при изменении основной цены: оставить без изменений, записать старую цену, очистить или рассчитать по коэффициенту.</li>
-  <li>Массовое изменение остатков: установить, увеличить, уменьшить или сделать остаток бесконечным; при складском учете можно выбрать конкретный склад.</li>
-  <li>Фильтрация товаров по складу с отображением остатка именно выбранного склада; в режиме «Все склады» сохраняется общая детализация.</li>
-  <li>Массовое изменение видимости товаров: опубликован, скрыт или неопубликован.</li>
-  <li>Массовое изменение доступности артикулов: доступен или недоступен.</li>
-  <li>Редактирование общих характеристик: строки, текст, числа, логические значения, размерности, цвета, списки, переключатели и диапазоны.</li>
-  <li>Массовое редактирование общих характеристик с множественными значениями: заменить набор, добавить выбранные значения, удалить только выбранные значения или очистить характеристику.</li>
-  <li>Массовое редактирование видео: установить одну HTTP(S)-ссылку для выбранных товаров или очистить текущую ссылку.</li>
-  <li>Массовое управление категориями: добавить в категорию, удалить из категории или заменить основную категорию.</li>
-  <li>Работа с описаниями: полная замена, добавление текста в начало или в конец.</li>
-  <li>Работа с тегами: добавление, удаление или замена списка тегов.</li>
-  <li>Генерация URL товаров из названия или по шаблону с переменными <code>{name}</code>, <code>{id}</code>, <code>{current_url}</code>.</li>
-  <li>Фильтрация товаров по названию или артикулу, категории, статусу и доступности.</li>
-  <li>Выбор всех найденных товаров по текущему фильтру с серверной проверкой лимита операции.</li>
-  <li>Журнал выполненных операций с количеством обработанных товаров и описанием действия.</li>
-  <li>Настройки лимита товаров за одну операцию, размера страницы, срока хранения журнала, формата даты, режима темы и языка интерфейса.</li>
-  <li>Русский и английский интерфейс с режимом Auto: язык выбирается по текущей локали Webasyst, также доступно ручное переключение.</li>
-</ul>
-
-<p><strong>Ограничения редактирования характеристик</strong></p>
-<ul>
-  <li>Поддерживаются только общие характеристики товара, включая характеристики с множественными значениями.</li>
-  <li>SKU-характеристики и дочерние характеристики не поддерживаются.</li>
-  <li>Для списков, переключателей и множественных характеристик используются существующие значения; создание новых значений не входит в эту версию.</li>
-</ul>
-
-<p><strong>Ограничения видео</strong></p>
-<ul>
-  <li>Одна ссылка на видео применяется ко всем выбранным товарам; загрузка видеофайлов и разные ссылки для каждого товара не поддерживаются.</li>
-</ul>
-
-<p><strong>Безопасность массовых изменений</strong></p>
-<ul>
-  <li>Операции доступны только администраторам Shop-Script.</li>
-  <li>Перед применением требуется явное подтверждение.</li>
-  <li>Количество товаров за один запуск ограничивается настройкой плагина.</li>
-  <li>При выборе всех товаров по фильтру сервер заново строит выборку и не доверяет клиентскому счетчику.</li>
-  <li>Изменения выполняются пакетами и записываются в журнал.</li>
-  <li>Количество переданных значений характеристики ограничивается и проверяется на сервере.</li>
-  <li>Для множественной характеристики используются только существующие значения, принадлежащие выбранной характеристике.</li>
-  <li>Изменяется только выбранная общая характеристика товара; характеристики артикулов и другие характеристики не затрагиваются.</li>
-  <li>Видео принимается только как корректная HTTP(S)-ссылка допустимой длины.</li>
-</ul>
-
-<p><strong>Как это работает</strong></p>
-<ol>
-  <li>Откройте "Mass Editor" в бекенде Shop-Script.</li>
-  <li>Отфильтруйте каталог и отметьте товары, которые нужно изменить.</li>
-  <li>Выберите операцию: цена, compare price, видимость, доступность, описание, теги или URL.</li>
-  <li>Заполните параметры операции и проверьте выбранное действие в окне подтверждения.</li>
-  <li>Подтвердите применение. Плагин выполнит изменения и добавит запись в журнал.</li>
-</ol>
-
-<blockquote>Плагин работает в бекенде Shop-Script и не изменяет витрину, корзину, логику заказов, единицы измерения и оформление storefront. Фотографии, cross-selling, similar products и страницы товаров не входят в текущую версию. В режиме Auto язык интерфейса определяется по локали Webasyst.</blockquote>
-```
+Safe bulk catalog editing in the Shop-Script backend with operations, filters, confirmation, an audit log, and constrained rollback of the latest change.
 
 ## EN HTML description
 
 ```html
-<p><strong>Mass Editor - helps update selected Shop-Script products without opening each product card manually.</strong></p>
+<p><strong>Mass Editor updates selected Shop-Script products without opening every product card manually.</strong></p>
 
-<p>The plugin adds a dedicated backend screen for bulk catalog management: find the required products, select them in the table, configure an operation, and confirm the change. It is useful for price updates, seasonal catalog maintenance, visibility management, and cleanup of descriptions, tags, and product URLs.</p>
+<p>Filter the catalog, select products, configure the required operation, and confirm the change. The plugin validates the request on the server, processes products in bounded batches, and writes an audit log entry.</p>
 
-<p><strong>Features</strong></p>
+<p><strong>Prices and stock</strong></p>
 <ul>
-  <li>Bulk price and compare price editing: set a fixed value or change by percentage.</li>
-  <li>Price rounding to 1, 10, or 100 with selectable rounding direction.</li>
-  <li>Compare price control when changing the main price: keep unchanged, save the old price, clear it, or calculate by coefficient.</li>
-  <li>Bulk stock editing: set, increase, decrease, or make stock infinite; choose a specific warehouse when warehouse stock accounting is used.</li>
-  <li>Product filtering by warehouse with the selected warehouse stock shown in the product list; the all-warehouses mode keeps the full breakdown.</li>
-  <li>Bulk product visibility changes: published, hidden, or unpublished.</li>
-  <li>Bulk SKU availability changes: available or unavailable.</li>
-  <li>Common product feature editing for strings, text, numbers, boolean values, dimensions, colors, selectable values, radio options, and ranges.</li>
-  <li>Bulk editing of multiple-value common product features: replace the set, add selected values, remove only selected values, or clear the feature.</li>
-  <li>Bulk video editing: set one HTTP(S) video URL for selected products or clear their current video URL.</li>
-  <li>Bulk category management: add to category, remove from category, or replace the main category.</li>
-  <li>Description editing: replace, prepend, or append text.</li>
-  <li>Tag editing: add, remove, or replace tags.</li>
-  <li>Product URL generation from product names or by template with <code>{name}</code>, <code>{id}</code>, and <code>{current_url}</code> variables.</li>
-  <li>Product filtering by name or SKU, category, status, and availability.</li>
-  <li>Select all products matching the current filter with server-side operation limit validation.</li>
-  <li>Operation log with processed product count and action description.</li>
-  <li>Settings for operation limit, page size, log retention, date format, theme mode, and interface language.</li>
-  <li>Russian and English interface support with locale-based default language and manual language selection.</li>
+  <li>Set or adjust price and compare price by percentage with configurable rounding.</li>
+  <li>Control compare price while changing the main price.</li>
+  <li>Set, increase, decrease, or make stock infinite with optional warehouse selection.</li>
+  <li>Filter products with or without warehouse stock accounting when no specific warehouse is selected.</li>
 </ul>
 
-<p><strong>Feature editing limitations</strong></p>
+<p><strong>Product state and content</strong></p>
 <ul>
-  <li>Only common product features are supported, including multiple-value features.</li>
-  <li>SKU features and child features are not supported.</li>
-  <li>Select, radio, and multiple-value operations use existing values; creating new feature values is not included in this version.</li>
+  <li>Bulk product visibility and SKU availability changes.</li>
+  <li>Replace, prepend, or append descriptions.</li>
+  <li>Add, remove, or replace tags.</li>
+  <li>Generate URLs from product names or templates with <code>{name}</code>, <code>{id}</code>, and <code>{current_url}</code>.</li>
 </ul>
 
-<p><strong>Video limitations</strong></p>
+<p><strong>Features, categories, and video</strong></p>
 <ul>
-  <li>One video URL is applied to all selected products; video uploads and per-product URL lists are not supported.</li>
+  <li>Edit common features including text, numbers, booleans, dimensions, colors, selectable values, radio options, and ranges.</li>
+  <li>Replace, add, remove selected values, or clear multiple-value common features.</li>
+  <li>Add products to a category, remove them from a category, or replace the main category.</li>
+  <li>Set one Shop-Script-supported video URL for all selected products or clear it.</li>
 </ul>
 
-<p><strong>Bulk editing safeguards</strong></p>
+<p><strong>Selection and filters</strong></p>
 <ul>
-  <li>Operations are available only to Shop-Script administrators.</li>
-  <li>Explicit confirmation is required before applying changes.</li>
-  <li>The number of products per run is limited by plugin settings.</li>
-  <li>When all filtered products are selected, the server rebuilds the selection and does not trust the client-side total.</li>
-  <li>Changes are processed in batches and recorded in the operation log.</li>
-  <li>The submitted feature value count is limited and validated on the server.</li>
-  <li>Multiple-value operations accept only existing values that belong to the selected feature.</li>
-  <li>Only the selected common product feature is changed; SKU-level and unrelated features remain untouched.</li>
-  <li>Video input must be a valid HTTP(S) URL within the supported length.</li>
+  <li>Search by name or SKU and filter by category, status, availability, and warehouse.</li>
+  <li>Select the current page or every product matching the current filter.</li>
+  <li>The server rebuilds full-filter selections and enforces the configured operation limit.</li>
+</ul>
+
+<p><strong>Bulk operation controls</strong></p>
+<ul>
+  <li>Operations are restricted to Shop-Script administrators and require explicit confirmation.</li>
+  <li>The server validates types, values, per-product rights, and selection size.</li>
+  <li>The progress dialog prevents duplicate submission and shows a safe result.</li>
+  <li>The log records the operation type and processed product count.</li>
+  <li>The user's latest successful operation can be rolled back within three hours if no newer operation exists and its result was not changed externally.</li>
 </ul>
 
 <p><strong>How it works</strong></p>
 <ol>
-  <li>Open "Mass Editor" in the Shop-Script backend.</li>
-  <li>Filter the catalog and select the products you want to update.</li>
-  <li>Choose an operation: price, compare price, visibility, availability, description, tags, or URL.</li>
-  <li>Fill in the operation settings and review the action in the confirmation dialog.</li>
-  <li>Confirm the change. The plugin applies the update and writes an entry to the log.</li>
+  <li>Open Mass Editor in the Shop-Script backend.</li>
+  <li>Configure filters and select products.</li>
+  <li>Choose the required operation and fill in its settings.</li>
+  <li>Review the confirmation and start processing.</li>
+  <li>Close the result dialog; when needed, open the log and roll back an eligible latest operation.</li>
 </ol>
 
-<blockquote>The plugin works in the Shop-Script backend and does not modify the storefront, cart, order logic, units of measurement, or storefront design. Product images, cross-selling, similar products, and product pages are not included in the current version. Before a manual language is saved, the interface language is selected from the Webasyst locale.</blockquote>
+<p><strong>Limitations</strong></p>
+<ul>
+  <li>Common product features are supported; SKU-level and child features are not changed.</li>
+  <li>Select operations use existing values; creating new reference values is not supported.</li>
+  <li>Video supports Rutube, VK, YouTube, and Vimeo; uploads and per-product URLs are not supported.</li>
+  <li>The progress indicator does not report an exact percentage.</li>
+  <li>Rollback applies only to the user's latest operation, expires after three hours, and is blocked by data conflicts.</li>
+</ul>
+
+<blockquote>The plugin works only in the Shop-Script backend and does not modify the storefront, cart, orders, or store theme. The interface is available in Russian and English.</blockquote>
 ```
 
-## Metadata notes
+## Проверенные metadata
 
-- Версия по `plugin.php`: `1.2.0`.
+- Версия: `1.2.0`.
 - Vendor: `1329551`.
-- Premium support: `yes`.
-- Интерфейс: `ru_RU` и `en_US`, режим Auto использует текущую локаль Webasyst.
-- Обновление установленного плагина использует официальный механизм meta-updates Webasyst; отдельная пользовательская настройка не требуется.
-- Точные минимальные версии PHP, Webasyst и Shop-Script в коде не заданы, поэтому в карточке Store их нельзя указывать без отдельной подтверждённой проверки.
-- Перед публикацией требуется финально проверить совместимость с целевым Webasyst 2 / UI 2.0 стендом и обновить скриншоты новых операций.
-
-## Рекомендуемые скриншоты
-
-1. Общий экран раздела «Товары» с фильтрами, операциями и таблицей товаров.
-2. Множественная характеристика с multi-select и режимами замены, добавления, удаления и очистки.
-3. Операция видео с режимом установки HTTP(S)-ссылки.
-4. Модальное подтверждение массовой операции.
-5. Журнал с операциями `features` и `video`.
-6. Настройки лимита операции, языка и темы.
+- Тип: backend-only plugin для Shop-Script.
+- Premium support: `yes` по `lib/config/shop_support.json`.
+- Локали: `ru_RU`, `en_US`.
+- Установленное обновление: два timestamp meta-update `1.2.0` для журнала и закрытых rollback-таблиц.
+- Минимальные версии PHP/Webasyst/Shop-Script не заявляются: точные ограничения не заданы конфигурацией продукта.

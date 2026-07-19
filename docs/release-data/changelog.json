@@ -1,0 +1,15 @@
+{
+  "published_versions": ["1.2.0", "1.1.0", "1.0.0"],
+  "locales": {
+    "ru_RU": [
+      {"version": "1.2.0", "date": "2026-07-19", "fact_ids": ["stock-accounting-filter", "multiple-common-features", "bulk-video-validation", "operation-progress-and-reset", "precise-operation-labels", "last-operation-rollback", "installed-upgrade"]},
+      {"version": "1.1.0", "date": "2026-07-10", "fact_ids": ["stock-editing", "extended-feature-types", "category-operations", "filtered-selection", "mobile-page-selection"]},
+      {"version": "1.0.0", "date": "2026-05-01", "fact_ids": ["initial-bulk-operations", "filtering-pagination", "confirmation-log-locales"]}
+    ],
+    "en_US": [
+      {"version": "1.2.0", "date": "2026-07-19", "fact_ids": ["stock-accounting-filter", "multiple-common-features", "bulk-video-validation", "operation-progress-and-reset", "precise-operation-labels", "last-operation-rollback", "installed-upgrade"]},
+      {"version": "1.1.0", "date": "2026-07-10", "fact_ids": ["stock-editing", "extended-feature-types", "category-operations", "filtered-selection", "mobile-page-selection"]},
+      {"version": "1.0.0", "date": "2026-05-01", "fact_ids": ["initial-bulk-operations", "filtering-pagination", "confirmation-log-locales"]}
+    ]
+  }
+}

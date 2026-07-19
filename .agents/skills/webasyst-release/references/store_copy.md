@@ -1,21 +1,32 @@
-# Webasyst Store copy and changelog
+# Store copy, release notes, and changelog
 
-Load this reference before drafting Store descriptions, screenshot captions, changelog entries, or update notes.
+Load this reference before generating public release documents. Read facts only from the validated product catalogue and release manifest; do not maintain a second handwritten fact list.
 
-## Description
+## Store description
 
-Write Russian and English from the same confirmed features and limitations. Provide short summaries and, when requested, Store-ready HTML. Use only:
+Keep the current Store description cumulative. Order confirmed capabilities by the product's actual user-facing navigation or workflow, then place selection/filtering, operation controls, how-to steps, limitations, and scope statement in stable separate sections.
 
-`b`, `i`, `u`, `em`, `strong`, `br`, `a`, `img`, `p`, `ul`, `ol`, `li`, `table`, `tr`, `td`, `th`, `tbody`, `thead`, `tfoot`, `blockquote`, `pre`, `code`.
+For every capability include a short user result, key modes, and only the limitation needed to prevent misunderstanding. Do not place a manually maintained operation list in the how-to section; use a generic instruction such as “choose the required operation”.
 
-Do not use CSS, inline styles, scripts, iframes, forms, headings, divs, spans, or unsupported attributes. Describe merchant outcomes and the real backend workflow; disclose meaningful limitations, compatibility requirements, and scope boundaries. Do not invent support, screenshots, trials, pricing, or integrations.
+Render Store HTML using the target project's allowed-tag contract. When none is defined, prefer `p`, `strong`, `ul`, `ol`, `li`, `code`, and `blockquote`; do not add CSS, scripts, forms, iframes, layout containers, or unsupported attributes.
 
-Keep Webasyst, Shop-Script, Webasyst Store, Customer Center and their accepted Russian equivalents consistent. Use lowercase `вы` in Russian and avoid excessive title case in English. When relevant and confirmed, recommend a transparent PNG cover at 200×110 px and clean screenshots readable after scaling to at most 970 px width.
+## Release note
 
-## Changelog and update note
+Include only the selected version's delta. Render non-empty sections in this order: Added, Changed, Fixed, Security, Deprecated, Removed, release limitations, installed-product update, and verification. Keep engineering details in the release report unless they produce a user-visible effect.
 
-Read the current product version and release evidence before writing. Keep `docs/CHANGELOG.md` and `docs/CHANGELOG.en.md` factually synchronized: identical versions, order, and section scope, with natural language rather than literal translation.
+Exclude Docker ports, internal method names, refactors without user effect, local test setup, and facts first published in an earlier version.
 
-Use only non-empty `Added`, `Improved`, `Fixed`, `Compatibility`, and `Notes` sections. Update an existing version section rather than duplicating it. Keep patch notes concise and derive any Store update note only from the canonical changelog facts.
+## Changelog
 
-Treat the product config (`plugin.php`, `app.php`, `widget.php`, or `theme.xml`) as the version source. Before finalising release notes, inspect the diff/log and release documents, check whether meta-updates or localisation refresh are user-visible, and keep unshipped internal refactors out of canonical history. Use the same version order and section set in both language files.
+- Put newest versions first and use `MAJOR.MINOR.PATCH`.
+- Include every discovered published version exactly once, including patch releases.
+- Keep dates, category order, fact IDs, and semantic scope equal across locales.
+- Use categories `Added`, `Changed`, `Fixed`, `Security`, `Deprecated`, `Removed`; omit empty categories.
+- Update an existing version idempotently instead of appending a duplicate.
+- Generate a Store HTML update block from the same release facts when needed; do not edit it independently.
+
+## Localization
+
+Generate natural localized text for every detected locale while preserving version, date, section order, feature set, limitations, and fact IDs. Block readiness for missing documents, placeholders, untranslated required text, or semantic drift.
+
+Use `assets/templates/store-description.md`, `release-note.md`, `changelog-entry.md`, and `publication-checklist.md` as neutral structures. Add or remove only optional empty release-note sections; do not hardcode a target product's features in templates.

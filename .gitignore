@@ -43,6 +43,9 @@ ChatGPT*.html
 .codex/
 .agents*
 # Репозиторные skills хранятся и отслеживаются в .agents/skills/.
+!.agents/
+!.agents/skills/
+!.agents/skills/**
 .agents/skills/**/.security-scan-passed
 specification_masseditor_codex.md
 .claude

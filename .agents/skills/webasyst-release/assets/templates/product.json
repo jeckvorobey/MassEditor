@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "product": {
+    "id": "__PRODUCT_ID__",
+    "slug": "__WEBASYST_SLUG__",
+    "type": "plugin",
+    "path": "__PRODUCT_PATH__",
+    "config_path": "__CONFIG_PATH__",
+    "vendor": 0,
+    "current_version": "0.0.0",
+    "locales": [],
+    "backend_only": false
+  },
+  "documentation": {
+    "store_description_pattern": "__STORE_DESCRIPTION_PATTERN__",
+    "release_note_pattern": "__RELEASE_NOTE_PATTERN__",
+    "changelog_pattern": "__CHANGELOG_PATTERN__"
+  },
+  "published_versions": [],
+  "features": [],
+  "distribution": {
+    "root": "__PRODUCT_ID__",
+    "required_paths": []
+  }
+}

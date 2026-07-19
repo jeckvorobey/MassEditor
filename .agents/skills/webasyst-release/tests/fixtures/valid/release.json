@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "version": "1.2.0",
+  "previous_version": "1.1.1",
+  "date": "2026-07-19",
+  "status": "draft",
+  "change_type": "minor",
+  "diff_range": "v1.1.1..HEAD",
+  "changes": [
+    {
+      "id": "safer-preview",
+      "category": "Added",
+      "visibility": "public",
+      "public": {
+        "ru_RU": "Добавлен предварительный просмотр массового изменения.",
+        "en_US": "Added a preview for bulk changes."
+      },
+      "evidence": [
+        {
+          "type": "test",
+          "path": "tests/PreviewTest.php",
+          "detail": "Preview is shown before confirmation"
+        }
+      ]
+    }
+  ],
+  "unconfirmed_features": [],
+  "data_changes": {
+    "required": false,
+    "meta_updates": []
+  },
+  "localization": {
+    "locales": ["ru_RU", "en_US"],
+    "gettext_required": true
+  },
+  "documents": {
+    "versions": {
+      "store_description": "1.2.0",
+      "release_note": "1.2.0",
+      "changelog": "1.2.0"
+    },
+    "locales": {
+      "ru_RU": {
+        "store_description": "docs/store-description-ru_RU.md",
+        "release_note": "docs/releases/1.2.0-ru_RU.md",
+        "changelog": "docs/CHANGELOG.ru_RU.md"
+      },
+      "en_US": {
+        "store_description": "docs/store-description-en_US.md",
+        "release_note": "docs/releases/1.2.0-en_US.md",
+        "changelog": "docs/CHANGELOG.en_US.md"
+      }
+    }
+  },
+  "archive": {
+    "version": "1.2.0",
+    "path": "dist/catalogtools-1.2.0.tar.gz",
+    "root": "catalogtools",
+    "exists": false,
+    "published": false
+  },
+  "checks": {
+    "project_tests": "passed",
+    "localization": "passed",
+    "meta_update": "not-applicable",
+    "archive": "planned"
+  }
+}

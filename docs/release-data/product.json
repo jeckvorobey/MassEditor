@@ -1,0 +1,171 @@
+{
+  "schema_version": 1,
+  "product": {
+    "id": "masseditor",
+    "slug": "shop/plugins/masseditor",
+    "type": "plugin",
+    "path": "wa-apps/shop/plugins/masseditor",
+    "config_path": "wa-apps/shop/plugins/masseditor/lib/config/plugin.php",
+    "vendor": 1329551,
+    "current_version": "1.2.0",
+    "locales": ["ru_RU", "en_US"],
+    "backend_only": true
+  },
+  "documentation": {
+    "store_description_pattern": "docs/store-description-{version}.md",
+    "release_note_pattern": "docs/release-{version}.md",
+    "changelog_pattern": "docs/CHANGELOG.{locale}.md"
+  },
+  "published_versions": ["1.2.0", "1.1.0", "1.0.0"],
+  "features": [
+    {
+      "id": "bulk-catalog-operations",
+      "group": "operations",
+      "since_version": "1.0.0",
+      "public": {
+        "ru_RU": "Массовое изменение цен, compare price, видимости, доступности, описаний, тегов и URL товаров.",
+        "en_US": "Bulk editing of prices, compare prices, visibility, availability, descriptions, tags, and product URLs."
+      },
+      "limitations": {
+        "ru_RU": "Плагин изменяет только выбранные товары после явного подтверждения.",
+        "en_US": "The plugin changes only selected products after explicit confirmation."
+      },
+      "evidence": [
+        {"type": "code", "path": "wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginMassOperationService.class.php", "detail": "Whitelist и реализация массовых операций"},
+        {"type": "test", "path": "tests/php/MassOperationServiceTest.php", "detail": "Проверки валидации, прав и применения операций"}
+      ]
+    },
+    {
+      "id": "selection-and-filters",
+      "group": "selection",
+      "since_version": "1.0.0",
+      "public": {
+        "ru_RU": "Фильтрация каталога и выбор текущей страницы или всех товаров текущего фильтра.",
+        "en_US": "Catalog filtering and selection of the current page or all products matching the current filter."
+      },
+      "limitations": {
+        "ru_RU": "Сервер повторно строит выборку и применяет настроенный лимит операции.",
+        "en_US": "The server rebuilds the selection and enforces the configured operation limit."
+      },
+      "evidence": [
+        {"type": "code", "path": "wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginProductSelectionService.class.php", "detail": "Серверный выбор товаров и лимиты"},
+        {"type": "test", "path": "tests/php/ProductSelectionServiceTest.php", "detail": "Фильтры и границы выборки"}
+      ]
+    },
+    {
+      "id": "stock-editing",
+      "group": "operations",
+      "since_version": "1.1.0",
+      "public": {
+        "ru_RU": "Массовое изменение остатков с выбором склада и фильтром типа складского учёта.",
+        "en_US": "Bulk stock editing with warehouse selection and a stock-accounting type filter."
+      },
+      "limitations": {
+        "ru_RU": "Режим без конкретного склада разделяет товары со складским учётом и без него.",
+        "en_US": "The no-specific-warehouse mode separates products with and without per-warehouse stock accounting."
+      },
+      "evidence": [
+        {"type": "code", "path": "wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginMassOperationService.class.php", "detail": "Батчевое изменение остатков и фильтр stock type"},
+        {"type": "test", "path": "tests/php/MassOperationServiceTest.php", "detail": "Сценарии остатков и фильтра типа учёта"}
+      ]
+    },
+    {
+      "id": "feature-editing",
+      "group": "operations",
+      "since_version": "1.1.0",
+      "public": {
+        "ru_RU": "Редактирование общих характеристик, включая множественные значения с заменой, добавлением, удалением и очисткой.",
+        "en_US": "Editing common product features, including multiple values with replace, add, remove, and clear modes."
+      },
+      "limitations": {
+        "ru_RU": "SKU- и дочерние характеристики не изменяются; используются только существующие значения выбранной характеристики.",
+        "en_US": "SKU-level and child features are not changed; only existing values of the selected feature are used."
+      },
+      "evidence": [
+        {"type": "code", "path": "wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginMassOperationService.class.php", "detail": "Whitelist типов и режимы product-level characteristics"},
+        {"type": "test", "path": "tests/php/MassOperationServiceTest.php", "detail": "Одиночные и множественные характеристики и ограничения"}
+      ]
+    },
+    {
+      "id": "categories-and-video",
+      "group": "operations",
+      "since_version": "1.1.0",
+      "public": {
+        "ru_RU": "Массовое управление категориями и установка или очистка ссылки на видео поддерживаемого Shop-Script сервиса.",
+        "en_US": "Bulk category management and setting or clearing a video URL supported by Shop-Script."
+      },
+      "limitations": {
+        "ru_RU": "Для видео поддерживаются Rutube, VK, YouTube и Vimeo; загрузка файлов и индивидуальные URL не входят в релиз.",
+        "en_US": "Video supports Rutube, VK, YouTube, and Vimeo; uploads and per-product URLs are outside this release."
+      },
+      "evidence": [
+        {"type": "code", "path": "wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginMassOperationService.class.php", "detail": "Операции categories/video и серверная проверка shopVideo"},
+        {"type": "test", "path": "tests/php/MassOperationServiceTest.php", "detail": "Категории, поддерживаемые видео URL и отрицательные сценарии"}
+      ]
+    },
+    {
+      "id": "operation-feedback",
+      "group": "workflow",
+      "since_version": "1.2.0",
+      "public": {
+        "ru_RU": "После подтверждения отдельное окно показывает выполнение и безопасный результат, а успешное закрытие возвращает форму к исходному состоянию.",
+        "en_US": "After confirmation, a separate dialog shows execution and a safe result; closing a successful result resets the form."
+      },
+      "limitations": {
+        "ru_RU": "Индикатор неопределённый и не показывает точный процент выполнения.",
+        "en_US": "The indicator is indeterminate and does not show an exact completion percentage."
+      },
+      "evidence": [
+        {"type": "code", "path": "wa-apps/shop/plugins/masseditor/js/masseditor.js", "detail": "Переходы confirmation, progress, result и reset"},
+        {"type": "test", "path": "tests/js/masseditor.test.js", "detail": "Успех, ошибка, повторная отправка и ручное закрытие"}
+      ]
+    },
+    {
+      "id": "last-operation-rollback",
+      "group": "safety",
+      "since_version": "1.2.0",
+      "public": {
+        "ru_RU": "Безопасный откат последней успешной массовой операции текущего пользователя в течение трёх часов.",
+        "en_US": "Safe rollback of the current user's latest successful bulk operation within three hours."
+      },
+      "limitations": {
+        "ru_RU": "Откат недоступен после следующей операции, истечения срока, изменения результата извне или повторного отката.",
+        "en_US": "Rollback is unavailable after another operation, expiry, an external result change, or an earlier rollback."
+      },
+      "evidence": [
+        {"type": "code", "path": "wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginRollbackService.class.php", "detail": "Eligibility, snapshots, conflict checks and compensation"},
+        {"type": "test", "path": "tests/php/RollbackServiceTest.php", "detail": "Права, срок, последовательность, конфликты и восстановление"}
+      ]
+    },
+    {
+      "id": "audit-and-localization",
+      "group": "controls",
+      "since_version": "1.0.0",
+      "public": {
+        "ru_RU": "Журнал операций и локализованный backend-интерфейс на русском и английском языках.",
+        "en_US": "Operation log and a localized Shop-Script backend interface in Russian and English."
+      },
+      "limitations": {
+        "ru_RU": "Плагин работает только в backend Shop-Script и не изменяет витрину.",
+        "en_US": "The plugin works only in the Shop-Script backend and does not change the storefront."
+      },
+      "evidence": [
+        {"type": "code", "path": "wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginI18nService.class.php", "detail": "RU/EN словарь backend UI"},
+        {"type": "test", "path": "tests/php/BackendActionTest.php", "detail": "Локализованные подписи, журнал и backend-only UI"}
+      ]
+    }
+  ],
+  "distribution": {
+    "root": "masseditor",
+    "required_paths": [
+      "masseditor/lib/.htaccess",
+      "masseditor/templates/.htaccess",
+      "masseditor/locale/.htaccess",
+      "masseditor/lib/config/plugin.php",
+      "masseditor/lib/config/db.php",
+      "masseditor/lib/config/shop_support.json",
+      "masseditor/locale/ru_RU/LC_MESSAGES/shop_masseditor.mo",
+      "masseditor/locale/en_US/LC_MESSAGES/shop_masseditor.mo"
+    ]
+  }
+}

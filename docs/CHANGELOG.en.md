@@ -26,14 +26,17 @@ Published release history for this Webasyst product.
 </ul>
 ```
 
-## 1.2.0 — 2026-07-14
+## 1.2.0 — 2026-07-19
 
 ```html
-<p><strong>Version 1.2.0 — July 14, 2026</strong></p>
+<p><strong>Version 1.2.0 — July 19, 2026</strong></p>
 <ul>
+  <li>Added a stock-accounting type filter for bulk stock editing without a specific warehouse.</li>
   <li>Added bulk editing of multiple-value common product features with replace, add, remove selected values, and clear modes.</li>
-  <li>Added bulk video editing to set one HTTP(S) URL for selected products or clear the current URL.</li>
-  <li>Feature values are validated before saving; SKU-level, child, and unrelated product features remain unchanged.</li>
-  <li>Added safe installed-plugin schema updates through the standard Webasyst update mechanism.</li>
+  <li>Added bulk video setting and clearing with validation for Rutube, VK, YouTube, and Vimeo URLs.</li>
+  <li>Added a separate operation progress/result dialog; the form resets after success and remains populated after an error.</li>
+  <li>Clarified Russian and English operation group and action labels.</li>
+  <li>Added protected rollback of the current user's latest successful operation within three hours with rights and data-conflict checks.</li>
+  <li>Installed copies create the log and private rollback tables through repeat-safe Webasyst meta-updates.</li>
 </ul>
 ```

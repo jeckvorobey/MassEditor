@@ -1,30 +1,15 @@
 # Webasyst Store compliance
 
-Load this reference before Store moderation review or release candidate delivery.
+Load this reference for Store moderation, readiness review, or a package candidate. Use current official sources from `official_sources.md` and separate evidence-backed blockers from optional improvements.
 
-Use the current official Store requirements, testing guidance, and self-check list. Confirm product structure, numeric vendor, three-part version, UTF-8 text, Webasyst 2 compatibility where required, and any declared PREMIUM support contract.
+## Required checks
 
-Primary sources:
+- Confirm supported product type, documented file/config structure, numeric vendor, three-part version, UTF-8 text, Webasyst 2 interface support, and declared Shop-Script PREMIUM compatibility where applicable.
+- Require one tar.gz root named by the product ID, protected `lib/`, `templates/`, and `locale/` directories where present, and no unnecessary files.
+- Confirm product-owned table prefixes, safe SQL, input validation, escaping, authorization, CSRF, bounded bulk writes, logs, and safe install/update/uninstall ownership.
+- Check declared PHP/framework requirements, optional extensions, remote-resource behavior, third-party licenses, external services, and sensitive-data handling.
+- Exercise invalid types, whitespace, zeros, large values, quotes, case variants, selection boundaries, and representative HTML/JavaScript/Smarty/PHP/SQL payloads.
+- Verify product descriptions and screenshots against actual behavior; a visible control is not proof that the complete operation is supported.
+- Verify the previous-version upgrade path, nearly-unused and configured installations, cache clearing, repeated meta-updates, and removed-file cleanup.
 
-- https://developers.webasyst.ru/docs/store/webasyst-store-requirements/
-- https://developers.webasyst.ru/docs/store/testing-before-publication/
-- https://developers.webasyst.ru/docs/store/check-list/
-- https://developers.webasyst.ru/docs/cookbook/plugins/
-
-Check that the candidate:
-
-- does not modify Webasyst, Shop-Script, or another product's core files;
-- writes user data only to allowed storage or the database;
-- protects applicable `lib/`, `templates/`, and `locale/` directories with the expected `.htaccess` content;
-- contains no development/debug artefacts, hardcoded backend URL assumptions, unsafe external HTTP resources, or unnecessary dependencies;
-- uses own-table prefixes, safe SQL, validation, escaping, idempotent install/update/uninstall, and plugin-prefixed globals;
-- handles bulk operations through selected targets or an explicit filter, preview, confirmation, batches, limits, and logging;
-- has no known PHP/JS errors, warnings, notices, secret leakage, or unsafe file operations.
-
-Also verify additional PHP extensions in `lib/config/requirements.php`, behaviour when an extension or `allow_url_fopen` is unavailable, and licences/source attribution for bundled third-party code or assets. The product should not require another plugin unless an allowed dependency is explicitly justified.
-
-Exercise numeric and text inputs with wrong types, whitespace, zeros, large values, quotes, case variants, selection/deselection of all items, and representative HTML/JavaScript/Smarty/PHP/SQL payloads. Confirm that payloads render as text and do not execute.
-
-For updates, check meta-updates for added/removed schema and files, idempotent repeated installation, safe uninstall ownership, previous-version upgrade behaviour, cache clearing, and both configured and nearly-unused installations.
-
-Classify evidence-backed findings as Blocker, High, Medium, or Low. Keep Store compliance separate from implementation; provide the minimal remediation plan when the request is review-only.
+Classify findings as Blocker, High, Medium, or Low. A release is `READY` only when all required automated gates pass and every remaining manual action is explicit.

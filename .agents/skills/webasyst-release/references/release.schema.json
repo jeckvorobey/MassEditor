@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/webasyst-release/release.schema.json",
+  "title": "Webasyst release manifest",
+  "type": "object",
+  "required": ["schema_version", "version", "previous_version", "date", "status", "change_type", "changes", "data_changes", "localization", "documents", "archive"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "previous_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "date": {"type": "string", "format": "date"},
+    "status": {"enum": ["draft", "published"]},
+    "change_type": {"enum": ["patch", "minor", "major"]},
+    "changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "category", "visibility", "public", "evidence"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "category": {"enum": ["Added", "Changed", "Fixed", "Security", "Deprecated", "Removed"]},
+          "visibility": {"enum": ["public", "engineering"]},
+          "public": {"type": "object"},
+          "evidence": {"type": "array"}
+        },
+        "additionalProperties": true
+      }
+    },
+    "data_changes": {"type": "object"},
+    "localization": {"type": "object"},
+    "documents": {"type": "object"},
+    "archive": {"type": "object"}
+  },
+  "additionalProperties": true
+}

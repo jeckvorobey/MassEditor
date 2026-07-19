@@ -4,6 +4,53 @@
 
 ## Requirements
 
+### Requirement: Доказательный release workflow
+`webasyst-release` MUST анализировать целевой Webasyst-продукт, Git history/diff, конфигурацию версии, runtime-код, тесты, локали, meta-updates и существующие release-документы и MUST формировать публичные материалы только из подтверждённых фактов конкретного продукта. Skill MUST NOT содержать встроенный каталог функций MassEditor или другого целевого продукта.
+
+#### Scenario: Подготовка нового релиза
+- **WHEN** пользователь просит подготовить новую версию Webasyst-продукта
+- **THEN** агент ДОЛЖЕН определить предыдущую опубликованную версию и собрать evidence для текущих возможностей и delta новой версии
+- **AND** неподтверждённые возможности ДОЛЖНЫ остаться вне публичных документов и попасть в blockers/unconfirmed list
+
+#### Scenario: Повторный запуск
+- **WHEN** workflow повторно запускается для той же draft-версии и того же набора фактов
+- **THEN** проектный release dataset и документы ДОЛЖНЫ обновиться идемпотентно без дублирования версии или смысловых пунктов
+
+### Requirement: Универсальные release templates и validator
+`webasyst-release` MUST поставлять нейтральные templates для product catalog, release manifest, Store description, release note, changelog, publication checklist и release report, а также JSON Schema, dependency-free semantic validator и tests release-инвариантов.
+
+#### Scenario: Единообразное заполнение документов
+- **WHEN** evidence конкретного продукта собрано
+- **THEN** агент ДОЛЖЕН заполнить проектные данные и документы по bundled templates, сохраняя distinction между cumulative description, version-only release note и полным changelog
+
+#### Scenario: Проверка готовности
+- **WHEN** версия, локали, evidence, changelog, meta-update или archive manifest расходятся
+- **THEN** validator ДОЛЖЕН завершиться ошибкой, перечислить точные blockers и MUST NOT выдать статус `READY`
+
+### Requirement: Источник истины project skills
+Проект MUST хранить активные MassEditor/Webasyst skills в `.agents/skills/` и MUST NOT сохранять активные копии в `.codex/skills/`. `AGENTS.md` MUST быть доступен Git для воспроизводимого применения репозиторных правил.
+
+#### Scenario: Новый процесс обнаруживает project skills
+- **WHEN** новый процесс Codex запускается из корня MassEditor
+- **THEN** он обнаруживает `webasyst-development` и `webasyst-release` из `.agents/skills/`
+- **AND** не обнаруживает удалённые или временные project-level дубликаты
+
+### Requirement: Воспроизводимая проверка skills
+Skill для review MUST поставлять конкретные локальные команды проверки frontmatter, структуры и безопасности. Отсутствующая зависимость валидатора MUST приводить к явной ошибке или к документированному установочному запуску и MUST NOT считаться полной успешной проверкой через упрощённый fallback.
+
+#### Scenario: Проверка нового skill
+- **WHEN** разработчик запускает команды из глобального `skill-reviewer`
+- **THEN** bundled structural validator проверяет `SKILL.md` с доступной YAML-зависимостью
+- **AND** bundled security scanner выполняет заявленную проверку
+
+### Requirement: Универсальные OpenSpec workflows принадлежат plugin
+Глобальный OpenSpec plugin MUST содержать progressive-disclosure инструкции для propose, apply, explore, sync и archive. Эти инструкции MUST быть независимы от конкретных недоступных имён tools, а проект MassEditor MUST NOT хранить их активные универсальные копии после миграции.
+
+#### Scenario: Выбор OpenSpec workflow
+- **WHEN** пользователь просит предложить, применить, исследовать, синхронизировать или архивировать change
+- **THEN** глобальный skill `openspec` направляет агента к соответствующему reference
+- **AND** workflow использует доступные в текущей среде механизмы вопросов, планирования и исполнения
+
 ### Requirement: OpenSpec на русском
 Все OpenSpec proposals, specs, designs, tasks и отчеты по изменениям MUST вестись на русском языке.
 
@@ -41,11 +88,21 @@ Mutating paths MUST проверять права, CSRF, входные данн
 - **THEN** SQL MUST использовать параметры/плейсхолдеры, приведение типов и whitelist, а связанные данные MUST загружаться батчами без N+1
 
 ### Requirement: Проверки перед завершением
-Перед завершением задачи MUST быть выполнены проверки, соответствующие затронутым файлам, и `openspec validate --strict --all`.
+Перед завершением изменения агент MUST выполнить `bash tests/run-js-tests.sh`, `bash tests/run-php-tests.sh`, `openspec validate --strict --all`, `git diff --check` и релевантные проверки структуры skills, если change затрагивает skills. Если какая-либо проверка не может быть выполнена, причина MUST быть явно указана в итоговом отчёте.
 
 #### Scenario: Только документация/OpenSpec
 - **WHEN** изменение затрагивает только документацию или OpenSpec
 - **THEN** MUST быть выполнена OpenSpec-валидация, а тесты кода можно не запускать, если runtime-код не менялся
+
+#### Scenario: Все проверки успешны
+- **WHEN** реализация завершена
+- **THEN** JS-тесты, PHP-тесты, строгая OpenSpec-валидация и `git diff --check` завершаются успешно
+- **AND** затронутые skills проходят concrete structural/security validation
+
+#### Scenario: Проверка недоступна
+- **WHEN** требуемая проверка не может быть выполнена из-за отсутствующей зависимости или среды
+- **THEN** агент не помечает её как успешно пройденную
+- **AND** указывает точную причину и оставшийся шаг
 
 ### Requirement: Проверка релиза 1.2.0
 Релиз MUST пройти TDD-проверки новых операций, повторного meta-update и реальный Webasyst bootstrap до сборки Store-архива.
@@ -66,34 +123,30 @@ Mutating paths MUST проверять права, CSRF, входные данн
 - **WHEN** код релиза готов к упаковке
 - **THEN** MUST успешно завершиться `php -l`, PHP/JS тесты, `openspec validate --strict --all`, поиск отменённого ID и сравнение Store-архива с production-деревом плагина
 
-### Requirement: Оркестрация полного цикла через webasyst-loop
-Каждое OpenSpec-изменение для приложения, плагина, виджета или темы Webasyst/Shop-Script MUST загружать repo-local навык `webasyst-loop` до создания плана или начала реализации и MUST выполнять через него этапы исследования, планирования, TDD-разработки, завершения и финальной проверки.
+### Requirement: Оркестрация полного цикла через webasyst-development
+Для изменений Webasyst/Shop-Script агент MUST использовать проектный `webasyst-development` как основной skill разработки и MUST загружать только релевантные references по progressive disclosure. Для release-задач агент MUST дополнительно использовать `webasyst-release`.
 
-#### Scenario: Создание нового OpenSpec change
-- **WHEN** пользователь просит продумать, запланировать или реализовать функциональное изменение Webasyst/Shop-Script
-- **THEN** агент MUST загрузить `webasyst-loop`, выбрать OpenSpec skill текущего действия и зафиксировать применимые профильные навыки, документационные источники, TDD-сценарии и финальные проверки
+#### Scenario: Задача изменяет код плагина
+- **WHEN** пользователь просит реализовать или исправить поведение MassEditor
+- **THEN** агент применяет `webasyst-development`
+- **AND** использует OpenSpec, documentation evidence, TDD, security и complexity правила в соответствии со scope
 
-#### Scenario: Продолжение существующего change
-- **WHEN** агент применяет или продолжает существующий OpenSpec change
-- **THEN** агент MUST повторно сверить scope и выбранные навыки через `webasyst-loop`, прочитать все context files из OpenSpec CLI и продолжить задачи до `all_done` либо явного blocker
+#### Scenario: Задача готовит публикацию
+- **WHEN** scope включает Store materials, changelog или release archive
+- **THEN** агент дополнительно применяет `webasyst-release`
+- **AND** загружает только необходимые release references
 
 ### Requirement: Выбор профильных навыков по этапу и scope
-`webasyst-loop` MUST выбирать минимальный достаточный набор доступных навыков по типу Webasyst-продукта, затронутому стеку и этапу работы, при этом архитектурные решения и Webasyst API MUST быть подтверждены локальным кодом или официальной документацией.
+Агент MUST выбирать skills по фактическому этапу: глобальный `openspec` для change workflows, `webasyst-development` для архитектуры и реализации MassEditor, `webasyst-release` для публикации, а универсальные PHP/TDD/security/review skills — только когда они релевантны scope. Агент MUST использовать только реально доступные skills и MUST NOT зависеть от отсутствующих project-level workflows.
 
-#### Scenario: Архитектурное или runtime-изменение Shop-Script-плагина
-- **WHEN** change затрагивает hooks, actions, settings, config, модели, БД, templates, JavaScript или install/uninstall
-- **THEN** агент MUST применить `webasyst-shop-script-plugin-architect` до кода, `webasyst-plugin-docs-auditor` для evidence и TDD/security skills затронутого стека
-
-#### Scenario: Новый коммерческий Webasyst-продукт
-- **WHEN** пользователь просит создать новый коммерческий плагин, приложение, виджет или тему либо сформировать MVP
-- **THEN** агент MUST дополнительно применить `legacy-gap-product-builder`, явно определить одну пользовательскую боль, included scope, non-goals и критерий публикационной готовности
-
-#### Scenario: Релиз или публикация
-- **WHEN** change готовит релиз, архив или материалы Webasyst Store
-- **THEN** агент MUST дополнительно выбрать `webasyst-store-compliance-reviewer`, а навыки changelog, description и packaging MUST применяться только для фактически затронутых выпускных материалов
+#### Scenario: Выполняется docs-only изменение skills
+- **WHEN** change не затрагивает runtime PHP/JS
+- **THEN** агент применяет OpenSpec и проверки skills
+- **AND** не создаёт искусственные runtime-тесты
+- **AND** всё равно запускает существующие проектные gates, требуемые перед завершением
 
 ### Requirement: TDD-реализация и сохранение границ
-Кодовые задачи MUST выполняться тестами сначала, минимальной реализацией после воспроизводимого failing test и повторной проверкой после refactor; `webasyst-loop` MUST сохранять заданный scope и MUST NOT разрешать недокументированные Webasyst API, N+1, небезопасные mutation paths или автоматическое расширение продукта.
+Кодовые задачи MUST выполняться тестами сначала, минимальной реализацией после воспроизводимого failing test и повторной проверкой после refactor; `webasyst-development` MUST сохранять заданный scope и MUST NOT разрешать недокументированные Webasyst API, N+1, небезопасные mutation paths или автоматическое расширение продукта.
 
 #### Scenario: Реализация PHP или JavaScript поведения
 - **WHEN** OpenSpec-задача изменяет runtime-поведение
@@ -119,8 +172,9 @@ Mutating paths MUST проверять права, CSRF, входные данн
 - **THEN** агент MUST перечислить непроверенные области и residual risk и MUST NOT заявлять полное покрытие или завершение финальной проверки
 
 ### Requirement: Явное завершение и доставка
-`webasyst-loop` MUST сформировать финальный отчёт с выбранными навыками, изменёнными файлами, выполненными командами, findings, исправлениями и residual risk; sync, archive, commit, push, PR, merge или публикация MUST выполняться только если это входит в запрос пользователя.
+После реализации `webasyst-development` MUST завершить все обязательные проверки и сообщить их результаты. Коммит, push, PR, merge, archive или иное внешнее действие MUST выполняться только по явному запросу пользователя.
 
-#### Scenario: Разработка завершена без запроса на доставку
-- **WHEN** все задачи и проверки выполнены, но пользователь не просил архивировать или доставлять изменение
-- **THEN** агент MUST оставить change готовым к следующему явно запрошенному действию и MUST NOT автоматически выполнять archive, commit, push, PR, merge или публикацию
+#### Scenario: Реализация завершена без запроса на доставку
+- **WHEN** код или документы готовы и проверки пройдены
+- **THEN** агент возвращает отчёт и текущий Git status
+- **AND** не создаёт коммит, не отправляет изменения и не архивирует OpenSpec change

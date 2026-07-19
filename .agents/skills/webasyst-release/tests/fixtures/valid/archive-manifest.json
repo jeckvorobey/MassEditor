@@ -1,0 +1,10 @@
+{
+  "root": "catalogtools",
+  "paths": [
+    "catalogtools/lib/config/plugin.php",
+    "catalogtools/lib/config/db.php",
+    "catalogtools/lib/classes/catalogtoolsBulkService.class.php",
+    "catalogtools/locale/ru_RU/LC_MESSAGES/catalogtools.po",
+    "catalogtools/locale/en_US/LC_MESSAGES/catalogtools.po"
+  ]
+}

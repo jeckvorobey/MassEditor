@@ -13,12 +13,13 @@ class UpdateScriptTest extends TestCase
             __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/updates/1.2.0/*.php'
         );
 
-        $this->assertCount(1, $update_files);
-        $this->assertMatchesRegularExpression('/\/\d+\.php$/', $update_files[0]);
+        $this->assertCount(2, $update_files);
+        $update_file = $this->findUpdateContaining($update_files, 'shop_masseditor_log');
+        $this->assertMatchesRegularExpression('/\/\d+\.php$/', $update_file);
 
         waModel::$global_execs = array();
-        include $update_files[0];
-        include $update_files[0];
+        include $update_file;
+        include $update_file;
 
         $this->assertCount(2, waModel::$global_execs);
         foreach (waModel::$global_execs as $exec) {
@@ -35,27 +36,28 @@ class UpdateScriptTest extends TestCase
         $plugin_config = require __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/config/plugin.php';
         $entrypoint = file_get_contents(__DIR__ . '/../../docker/php/entrypoint.sh');
 
-        $this->assertSame('1.2.1', $plugin_config['version']);
+        $this->assertSame('1.2.0', $plugin_config['version']);
         $this->assertStringNotContainsString($cancelled_plugin_id, $entrypoint);
     }
 
     /**
-     * Given an existing 1.2.0 installation without rollback snapshot tables.
-     * When the 1.2.1 meta-update is executed more than once.
+     * Given an existing 1.1.0 installation without rollback snapshot tables.
+     * When the 1.2.0 rollback meta-update is executed more than once.
      * Then both private rollback tables are created idempotently without destructive SQL.
      */
-    public function testVersion121MetaUpdateCreatesRollbackTablesIdempotently(): void
+    public function testVersion120MetaUpdateCreatesRollbackTablesIdempotently(): void
     {
         $update_files = glob(
-            __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/updates/1.2.1/*.php'
+            __DIR__ . '/../../wa-apps/shop/plugins/masseditor/lib/updates/1.2.0/*.php'
         );
 
-        $this->assertCount(1, $update_files);
-        $this->assertMatchesRegularExpression('/\/\d+\.php$/', $update_files[0]);
+        $this->assertCount(2, $update_files);
+        $update_file = $this->findUpdateContaining($update_files, 'shop_masseditor_rollback');
+        $this->assertMatchesRegularExpression('/\/\d+\.php$/', $update_file);
 
         waModel::$global_execs = array();
-        include $update_files[0];
-        include $update_files[0];
+        include $update_file;
+        include $update_file;
 
         $this->assertCount(4, waModel::$global_execs);
         $sql = implode("\n", array_column(waModel::$global_execs, 'sql'));
@@ -85,5 +87,19 @@ class UpdateScriptTest extends TestCase
         );
         $this->assertSame('mediumtext', $schema['shop_masseditor_rollback_item']['before_state'][0]);
         $this->assertSame('mediumtext', $schema['shop_masseditor_rollback_item']['after_state'][0]);
+    }
+
+    /**
+     * @param string[] $update_files
+     */
+    private function findUpdateContaining(array $update_files, string $needle): string
+    {
+        foreach ($update_files as $update_file) {
+            if (strpos((string) file_get_contents($update_file), $needle) !== false) {
+                return $update_file;
+            }
+        }
+
+        $this->fail(sprintf('No meta-update contains %s.', $needle));
     }
 }

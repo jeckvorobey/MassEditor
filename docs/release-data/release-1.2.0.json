@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "version": "1.2.0",
+  "previous_version": "1.1.0",
+  "date": "2026-07-19",
+  "status": "draft",
+  "change_type": "minor",
+  "diff_range": "9a93643..HEAD",
+  "changes": [
+    {
+      "id": "stock-accounting-filter",
+      "category": "Added",
+      "visibility": "public",
+      "public": {"ru_RU": "Добавлен фильтр товаров по типу складского учёта для операции остатков без выбора конкретного склада.", "en_US": "Added a product stock-accounting type filter for stock operations without a specific warehouse."},
+      "evidence": [{"type": "test", "path": "tests/php/MassOperationServiceTest.php", "detail": "Фильтр all/without/with stock accounting и безопасное применение"}]
+    },
+    {
+      "id": "multiple-common-features",
+      "category": "Added",
+      "visibility": "public",
+      "public": {"ru_RU": "Добавлены режимы замены, добавления, удаления и очистки множественных общих характеристик.", "en_US": "Added replace, add, remove, and clear modes for multiple-value common product features."},
+      "evidence": [{"type": "test", "path": "tests/php/MassOperationServiceTest.php", "detail": "Product-level multiple feature modes, validation and isolation"}]
+    },
+    {
+      "id": "bulk-video-validation",
+      "category": "Added",
+      "visibility": "public",
+      "public": {"ru_RU": "Добавлена массовая установка или очистка видео со встроенной проверкой ссылок Rutube, VK, YouTube и Vimeo.", "en_US": "Added bulk video URL setting or clearing with validation for Rutube, VK, YouTube, and Vimeo."},
+      "evidence": [{"type": "test", "path": "tests/php/MassOperationServiceTest.php", "detail": "Установка, очистка, поддерживаемые и неподдерживаемые источники"}]
+    },
+    {
+      "id": "operation-progress-and-reset",
+      "category": "Changed",
+      "visibility": "public",
+      "public": {"ru_RU": "После подтверждения операция показывает отдельное окно выполнения и результата; после успеха форма сбрасывается.", "en_US": "After confirmation, the operation shows a separate progress/result dialog and resets the form after success."},
+      "evidence": [{"type": "test", "path": "tests/js/masseditor.test.js", "detail": "Progress/result states, duplicate-submit protection and successful reset"}]
+    },
+    {
+      "id": "precise-operation-labels",
+      "category": "Changed",
+      "visibility": "public",
+      "public": {"ru_RU": "Названия групп и операций уточнены в русском и английском интерфейсе.", "en_US": "Operation groups and labels were clarified in both Russian and English interfaces."},
+      "evidence": [{"type": "test", "path": "tests/php/BackendActionTest.php", "detail": "Точные RU/EN подписи backend-навигации"}]
+    },
+    {
+      "id": "last-operation-rollback",
+      "category": "Added",
+      "visibility": "public",
+      "public": {"ru_RU": "Добавлен защищённый откат последней успешной операции текущего пользователя в течение трёх часов.", "en_US": "Added protected rollback of the current user's latest successful operation within three hours."},
+      "evidence": [
+        {"type": "code", "path": "wa-apps/shop/plugins/masseditor/lib/classes/shopMasseditorPluginRollbackService.class.php", "detail": "Ограниченный снимок, eligibility, conflict check и компенсация"},
+        {"type": "test", "path": "tests/php/RollbackServiceTest.php", "detail": "Права, срок, latest-only, конфликт и точное восстановление"}
+      ]
+    },
+    {
+      "id": "installed-upgrade",
+      "category": "Changed",
+      "visibility": "public",
+      "public": {"ru_RU": "Установленный плагин создаёт журнал и закрытые таблицы отката штатными повторно безопасными meta-update Webasyst.", "en_US": "Installed copies create the log and private rollback tables through repeat-safe Webasyst meta-updates."},
+      "evidence": [{"type": "test", "path": "tests/php/UpdateScriptTest.php", "detail": "Оба timestamp meta-update версии 1.2.0 повторно выполняются без destructive SQL"}]
+    }
+  ],
+  "unconfirmed_features": [],
+  "data_changes": {
+    "required": true,
+    "meta_updates": [
+      {"path": "wa-apps/shop/plugins/masseditor/lib/updates/1.2.0/1784058044.php", "idempotent": true, "test": "tests/php/UpdateScriptTest.php::testVersion120MetaUpdateIsTimestampedAndIdempotent"},
+      {"path": "wa-apps/shop/plugins/masseditor/lib/updates/1.2.0/1784458773.php", "idempotent": true, "test": "tests/php/UpdateScriptTest.php::testVersion120MetaUpdateCreatesRollbackTablesIdempotently"}
+    ]
+  },
+  "localization": {"locales": ["ru_RU", "en_US"], "gettext_required": true},
+  "documents": {
+    "versions": {"store_description": "1.2.0", "release_note": "1.2.0", "changelog": "1.2.0"},
+    "locales": {
+      "ru_RU": {"store_description": "docs/store-description-1_2_0.md", "release_note": "docs/release-1.2.0.md", "changelog": "docs/CHANGELOG.md"},
+      "en_US": {"store_description": "docs/store-description-1_2_0.md", "release_note": "docs/release-1.2.0.md", "changelog": "docs/CHANGELOG.en.md"}
+    }
+  },
+  "archive": {"version": "1.2.0", "path": "dist/masseditor-1.2.0.tar.gz", "root": "masseditor", "exists": true, "published": false},
+  "checks": {
+    "project_tests": "passed: 146 PHP tests / 782 assertions; 40 JS tests",
+    "syntax": "passed: all PHP files and masseditor.js",
+    "localization": "passed: wa.php locale, msgfmt and msgunfmt for ru_RU/en_US",
+    "meta_update": "passed: two repeat-safe 1.2.0 timestamp scripts in UpdateScriptTest",
+    "archive": "passed: official wa.php compress, 44 paths, gzip/tar/md5/manifest/safety gates",
+    "screenshots": "passed-file-review: 5 ru_RU and 5 en_US PNG; final Store ordering remains manual",
+    "complexity": "passed-review: no confirmed release-diff hotspot or N+1 regression",
+    "security": "passed-review: framework CSRF, rights, validation, SQL, escaping, errors and gitleaks"
+  }
+}

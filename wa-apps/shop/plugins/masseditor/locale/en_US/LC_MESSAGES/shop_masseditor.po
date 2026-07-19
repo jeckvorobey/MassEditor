@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: shop_masseditor 1.2.0\n"
-"PO-Revision-Date: 2026-07-14 00:00+0300\n"
+"PO-Revision-Date: 2026-07-19 00:00+0300\n"
 "Last-Translator: MassEditor Team\n"
 "Language-Team: English\n"
 "MIME-Version: 1.0\n"
@@ -10,852 +10,1134 @@ msgstr ""
 "Language: en_US\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+#: /wa-apps/shop/plugins/masseditor/lib/shopMasseditor.plugin.php:7
 msgid "Mass Editor"
 msgstr "Mass Editor"
 
+#: Not found
 msgid "Backend-only plugin for safe bulk product editing."
 msgstr "Backend-only plugin for safe bulk product editing."
 
+#: Not found
 msgid "Bulk product editing."
 msgstr "Bulk product editing."
 
+#: Not found
 msgid "Products"
 msgstr "Products"
 
+#: Not found
 msgid "Log"
 msgstr "Log"
 
+#: Not found
 msgid "Settings"
 msgstr "Settings"
 
+#: Not found
 msgid "Mass Editor sections"
 msgstr "Mass Editor sections"
 
+#: Not found
 msgid "Products found"
 msgstr "Products found"
 
+#: Not found
 msgid "Selected"
 msgstr "Selected"
 
+#: Not found
 msgid "Last operation"
 msgstr "Last operation"
 
+#: Not found
 msgid "No data"
 msgstr "No data"
 
+#: Not found
 msgid "Log is empty"
 msgstr "Log is empty"
 
+#: Not found
 msgid "products"
 msgstr "products"
 
+#: Not found
 msgid "records"
 msgstr "records"
 
+#: Not found
 msgid "Filters"
 msgstr "Filters"
 
+#: Not found
 msgid "Search"
 msgstr "Search"
 
+#: Not found
 msgid "Name, SKU, URL, description, tag, or category"
 msgstr "Name, SKU, URL, description, tag, or category"
 
+#: Not found
 msgid "Loading suggestions..."
 msgstr "Loading suggestions..."
 
+#: Not found
 msgid "Status"
 msgstr "Status"
 
+#: Not found
 msgid "All"
 msgstr "All"
 
+#: Not found
 msgid "Published"
 msgstr "Published"
 
+#: Not found
 msgid "Hidden"
 msgstr "Hidden"
 
+#: Not found
 msgid "Unpublished"
 msgstr "Unpublished"
 
+#: Not found
 msgid "Category"
 msgstr "Category"
 
+#: Not found
 msgid "All categories"
 msgstr "All categories"
 
+#: Not found
 msgid "Availability"
 msgstr "Availability"
 
+#: Not found
 msgid "Available"
 msgstr "Available"
 
+#: Not found
 msgid "Unavailable"
 msgstr "Unavailable"
 
+#: Not found
 msgid "Apply"
 msgstr "Apply"
 
+#: Not found
 msgid "Reset"
 msgstr "Reset"
 
+#: Not found
 msgid "Operations"
 msgstr "Operations"
 
+#: Not found
 msgid "Soon"
 msgstr "Soon"
 
+#: Not found
 msgid "Operation parameters"
 msgstr "Operation parameters"
 
+#: Not found
 msgid "Applying bulk changes"
 msgstr "Applying bulk changes"
 
+#: Not found
 msgid "Products are being processed. Keep this window open."
 msgstr "Products are being processed. Keep this window open."
 
+#: Not found
 msgid "Bulk operation progress"
 msgstr "Bulk operation progress"
 
+#: Not found
 msgid "Changes applied"
 msgstr "Changes applied"
 
+#: Not found
 msgid "Could not apply changes"
 msgstr "Could not apply changes"
 
+#: Not found
 msgid "Selected products will be processed only after confirmation in the modal window."
 msgstr "Selected products will be processed only after confirmation in the modal window."
 
+#: Not found
 msgid "Mode"
 msgstr "Mode"
 
+#: Not found
 msgid "Set value"
 msgstr "Set value"
 
+#: Not found
 msgid "Add value"
 msgstr "Add value"
 
+#: Not found
 msgid "Subtract value"
 msgstr "Subtract value"
 
+#: Not found
 msgid "Increase by percent"
 msgstr "Increase by percent"
 
+#: Not found
 msgid "Decrease by percent"
 msgstr "Decrease by percent"
 
+#: Not found
 msgid "Value"
 msgstr "Value"
 
+#: Not found
 msgid "Decimal places"
 msgstr "Decimal places"
 
+#: Not found
 msgid "No rounding"
 msgstr "No rounding"
 
+#: Not found
 msgid "0 digits after decimal point"
 msgstr "0 digits after decimal point"
 
+#: Not found
 msgid "1 digit after decimal point"
 msgstr "1 digit after decimal point"
 
+#: Not found
 msgid "2 digits after decimal point"
 msgstr "2 digits after decimal point"
 
+#: Not found
 msgid "3 digits after decimal point"
 msgstr "3 digits after decimal point"
 
+#: Not found
 msgid "4 digits after decimal point"
 msgstr "4 digits after decimal point"
 
+#: Not found
 msgid "Direction"
 msgstr "Direction"
 
+#: Not found
 msgid "Nearest"
 msgstr "Nearest"
 
+#: Not found
 msgid "Up"
 msgstr "Up"
 
+#: Not found
 msgid "Down"
 msgstr "Down"
 
+#: Not found
 msgid "Keep unchanged"
 msgstr "Keep unchanged"
 
+#: Not found
 msgid "Write old price"
 msgstr "Write old price"
 
+#: Not found
 msgid "Clear"
 msgstr "Clear"
 
+#: Not found
 msgid "Multiply by coefficient"
 msgstr "Multiply by coefficient"
 
+#: Not found
 msgid "Coefficient"
 msgstr "Coefficient"
 
+#: Not found
 msgid "Visibility"
 msgstr "Visibility"
 
+#: Not found
 msgid "Description mode"
 msgstr "Description mode"
 
+#: Not found
 msgid "Replace"
 msgstr "Replace"
 
+#: Not found
 msgid "Add to beginning"
 msgstr "Add to beginning"
 
+#: Not found
 msgid "Add to end"
 msgstr "Add to end"
 
+#: Not found
 msgid "Text"
 msgstr "Text"
 
+#: Not found
 msgid "Tags mode"
 msgstr "Tags mode"
 
+#: Not found
 msgid "Add"
 msgstr "Add"
 
+#: Not found
 msgid "Remove"
 msgstr "Remove"
 
+#: Not found
 msgid "Tags"
 msgstr "Tags"
 
+#: Not found
 msgid "comma-separated or one per line"
 msgstr "comma-separated or one per line"
 
+#: Not found
 msgid "URL mode"
 msgstr "URL mode"
 
+#: Not found
 msgid "Generate from name"
 msgstr "Generate from name"
 
+#: Not found
 msgid "Template"
 msgstr "Template"
 
+#: Not found
 msgid "URL template"
 msgstr "URL template"
 
+#: Not found
 msgid "Ready to apply"
 msgstr "Ready to apply"
 
+#: Not found
 msgid "Select products to process."
 msgstr "Select products to process."
 
+#: Not found
 msgid "action will be written to the log"
 msgstr "action will be written to the log"
 
+#: Not found
 msgid "of"
 msgstr "of"
 
+#: Not found
 msgid "ID"
 msgstr "ID"
 
+#: Not found
 msgid "Date"
 msgstr "Date"
 
+#: Not found
 msgid "Name"
 msgstr "Name"
 
+#: Not found
 msgid "URL"
 msgstr "URL"
 
+#: Not found
 msgid "Description"
 msgstr "Description"
 
+#: Not found
 msgid "Categories"
 msgstr "Categories"
 
+#: Not found
 msgid "Price"
 msgstr "Price"
 
+#: Not found
 msgid "Stock"
 msgstr "Stock"
 
+#: Not found
 msgid "Warehouses"
 msgstr "Warehouses"
 
+#: Not found
 msgid "Changed"
 msgstr "Changed"
 
+#: Not found
 msgid "Select all products on this page"
 msgstr "Select all products on this page"
 
+#: Not found
 msgid "SKU is not set"
 msgstr "SKU is not set"
 
+#: Not found
 msgid "Products not found."
 msgstr "Products not found."
 
+#: Not found
 msgid "Change the filter and try again."
 msgstr "Change the filter and try again."
 
+#: Not found
 msgid "Shown"
 msgstr "Shown"
 
+#: Not found
 msgid "Product pagination"
 msgstr "Product pagination"
 
+#: Not found
 msgid "Log pagination"
 msgstr "Log pagination"
 
+#: Not found
 msgid "Previous page"
 msgstr "Previous page"
 
+#: Not found
 msgid "Next page"
 msgstr "Next page"
 
+#: Not found
 msgid "Change price"
 msgstr "Change price"
 
+#: Not found
 msgid "Confirm bulk change"
 msgstr "Confirm bulk change"
 
+#: Not found
 msgid "Check the parameters before applying."
 msgstr "Check the parameters before applying."
 
+#: Not found
 msgid "Close"
 msgstr "Close"
 
+#: Not found
 msgid "Products to be changed"
 msgstr "Products to be changed"
 
+#: Not found
 msgid "Operation"
 msgstr "Operation"
 
+#: Not found
 msgid "Undo is available for the last operation."
 msgstr "Undo is available for the last operation."
 
+#: Not found
 msgid "You can restore old values within 3 hours or until the next bulk operation."
 msgstr "You can restore old values within 3 hours or until the next bulk operation."
 
+#: Not found
 msgid "Cancel"
 msgstr "Cancel"
 
+#: Not found
 msgid "Apply changes"
 msgstr "Apply changes"
 
+#: Not found
 msgid "User"
 msgstr "User"
 
+#: Not found
 msgid "Count"
 msgstr "Count"
 
+#: Not found
 msgid "Log is empty."
 msgstr "Log is empty."
 
+#: Not found
 msgid "Records will appear here after the first confirmed operation."
 msgstr "Records will appear here after the first confirmed operation."
 
+#: Not found
 msgid "Performance"
 msgstr "Performance"
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:5
 msgid "Page size"
 msgstr "Page size"
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:6
 msgid "How many products to show in the table."
 msgstr "How many products to show in the table."
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:11
 msgid "Products per operation limit"
 msgstr "Products per operation limit"
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:12
 msgid "Maximum products per single run."
 msgstr "Maximum products per single run."
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:17
 msgid "Keep log, days"
 msgstr "Keep log, days"
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:18
 msgid "Old records will be cleaned automatically."
 msgstr "Old records will be cleaned automatically."
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:23
 msgid "Date format"
 msgstr "Date format"
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:24
 msgid "Choose how dates and times are shown in all plugin sections."
 msgstr "Choose how dates and times are shown in all plugin sections."
 
+#: Not found
 msgid "Appearance"
 msgstr "Appearance"
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:35
 msgid "Theme mode"
 msgstr "Theme mode"
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:36
 msgid "Auto uses the default backend theme."
 msgstr "Auto uses the default backend theme."
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:40
 msgid "Auto"
 msgstr "Auto"
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:41
 msgid "Light"
 msgstr "Light"
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:42
 msgid "Dark"
 msgstr "Dark"
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:46
 msgid "Interface language"
 msgstr "Interface language"
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:47
 msgid "Defaults to the current Webasyst locale until you choose a language."
 msgstr "Defaults to the current Webasyst locale until you choose a language."
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:51
 msgid "Russian"
 msgstr "Russian"
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:52
 msgid "English"
 msgstr "English"
 
+#: Not found
 msgid "Show \"Soon\" operations"
 msgstr "Show \"Soon\" operations"
 
+#: Not found
 msgid "Controls future operations visibility in the library."
 msgstr "Controls future operations visibility in the library."
 
+#: Not found
 msgid "Enabled"
 msgstr "Enabled"
 
+#: Not found
 msgid "Disabled"
 msgstr "Disabled"
 
+#: Not found
 msgid "Save settings"
 msgstr "Save settings"
 
+#: Not found
 msgid "Settings saved."
 msgstr "Settings saved."
 
+#: Not found
 msgid "The operation could not be completed. Try again or check the error log."
 msgstr "The operation could not be completed. Try again or check the error log."
 
+#: Not found
 msgid "Not enough rights to manage Mass Editor."
 msgstr "Not enough rights to manage Mass Editor."
 
+#: Not found
 msgid "Compare price"
 msgstr "Compare price"
 
+#: Not found
 msgid "Change compare price"
 msgstr "Change compare price"
 
+#: Not found
 msgid "Change visibility"
 msgstr "Change visibility"
 
+#: Not found
 msgid "Change availability"
 msgstr "Change availability"
 
+#: Not found
 msgid "Product URLs"
 msgstr "Product URLs"
 
+#: Not found
 msgid "SKU generator"
 msgstr "SKU generator"
 
+#: Not found
 msgid "Cross-selling"
 msgstr "Cross-selling"
 
+#: Not found
 msgid "Similar products"
 msgstr "Similar products"
 
+#: Not found
 msgid "Prices and SKU"
 msgstr "Prices and stock"
 
+#: Not found
 msgid "Content"
 msgstr "Content"
 
+#: Not found
 msgid "Media"
 msgstr "Media"
 
+#: Not found
 msgid "Links"
 msgstr "Links"
 
+#: Not found
 msgid "URLs and pages"
 msgstr "URLs and pages"
 
+#: Not found
 msgid "Parameters and features"
 msgstr "Parameters and features"
 
+#: Not found
 msgid "Product photos"
 msgstr "Product photos"
 
+#: Not found
 msgid "Video"
 msgstr "Video"
 
+#: Not found
 msgid "Product pages"
 msgstr "Product pages"
 
+#: Not found
 msgid "Features"
 msgstr "Features"
 
+#: Not found
 msgid "Success"
 msgstr "Success"
 
+#: Not found
 msgid "Error"
 msgstr "Error"
 
+#: Not found
 msgid "Message"
 msgstr "Message"
 
+#: Not found
 msgid "Close notification"
 msgstr "Close notification"
 
+#: Not found
 msgid "Select at least one product."
 msgstr "Select at least one product."
 
+#: Not found
 msgid "Enter a value for the bulk operation."
 msgstr "Enter a value for the bulk operation."
 
+#: Not found
 msgid "Enter description text."
 msgstr "Enter description text."
 
+#: Not found
 msgid "Enter at least one tag."
 msgstr "Enter at least one tag."
 
+#: Not found
 msgid "Enter a URL template."
 msgstr "Enter a URL template."
 
+#: Not found
 msgid "Enter a compare price coefficient."
 msgstr "Enter a compare price coefficient."
 
+#: Not found
 msgid "From product name"
 msgstr "From product name"
 
+#: Not found
 msgid "Operation applied successfully."
 msgstr "Operation applied successfully."
 
+#: Not found
 msgid "No more than "
 msgstr "No more than "
 
+#: Not found
 msgid " products can be processed in one operation."
 msgstr " products can be processed in one operation."
 
+#: Not found
 msgid "Unknown bulk operation."
 msgstr "Unknown bulk operation."
 
+#: Not found
 msgid "Unknown price change mode."
 msgstr "Unknown price change mode."
 
+#: Not found
 msgid "Enter a valid numeric value."
 msgstr "Enter a valid numeric value."
 
+#: Not found
 msgid "Invalid visibility value."
 msgstr "Invalid visibility value."
 
+#: Not found
 msgid "Invalid availability value."
 msgstr "Invalid availability value."
 
+#: Not found
 msgid "Confirm applying changes."
 msgstr "Confirm applying changes."
 
+#: Not found
 msgid "Some selected products were not found. Select them again before applying."
 msgstr "Some selected products were not found. Select them again before applying."
 
+#: Not found
 msgid "Could not find a unique URL for product ID %d."
 msgstr "Could not find a unique URL for product ID %d."
 
+#: Not found
 msgid "The final value cannot be negative."
 msgstr "The final value cannot be negative."
 
+#: Not found
 msgid " · "
 msgstr " · "
 
+#: Not found
 msgid "%s: value %s for %d products"
 msgstr "%s: value %s for %d products"
 
+#: Not found
 msgid "%s: add value %s for %d products"
 msgstr "%s: add value %s for %d products"
 
+#: Not found
 msgid "%s: subtract value %s for %d products"
 msgstr "%s: subtract value %s for %d products"
 
+#: Not found
 msgid "%s: increase by %s%% for %d products"
 msgstr "%s: increase by %s%% for %d products"
 
+#: Not found
 msgid "%s: decrease by %s%% for %d products"
 msgstr "%s: decrease by %s%% for %d products"
 
+#: Not found
 msgid "Visibility: %s for %d products"
 msgstr "Visibility: %s for %d products"
 
+#: Not found
 msgid "Availability: %s for %d products"
 msgstr "Availability: %s for %d products"
 
+#: Not found
 msgid "Description: mode %s for %d products"
 msgstr "Description: mode %s for %d products"
 
+#: Not found
 msgid "Tags: mode %s for %d products"
 msgstr "Tags: mode %s for %d products"
 
+#: Not found
 msgid "URL: mode %s for %d products"
 msgstr "URL: mode %s for %d products"
 
+#: Not found
 msgid "product"
 msgid_plural "products"
 msgstr[0] "product"
 msgstr[1] "products"
 
+#: Not found
 msgid "%d product"
 msgid_plural "%d products"
 msgstr[0] "%d product"
 msgstr[1] "%d products"
 
+#: Not found
 msgid "record"
 msgid_plural "records"
 msgstr[0] "record"
 msgstr[1] "records"
 
+#: Not found
 msgid "%d record"
 msgid_plural "%d records"
 msgstr[0] "%d record"
 msgstr[1] "%d records"
 
+#: Not found
 msgid "Published products"
 msgstr "Published products"
 
+#: Not found
 msgid "Hidden products"
 msgstr "Hidden products"
 
+#: Not found
 msgid "Unpublished products"
 msgstr "Unpublished products"
 
+#: Not found
 msgid "Stock by warehouse"
 msgstr "Stock"
 
+#: Not found
 msgid "Basic feature editing"
 msgstr "Feature editing"
 
+#: Not found
 msgid "Warehouse"
 msgstr "Warehouse"
 
+#: Not found
 msgid "All warehouses"
 msgstr "All warehouses"
 
+#: Not found
 msgid "Select warehouse"
 msgstr "No warehouse"
 
+#: Not found
 msgid "No warehouse"
 msgstr "No warehouse"
 
+#: Not found
 msgid "Stock mode"
 msgstr "Stock mode"
 
+#: Not found
 msgid "Set stock"
 msgstr "Set stock"
 
+#: Not found
 msgid "Increase stock"
 msgstr "Increase stock"
 
+#: Not found
 msgid "Decrease stock"
 msgstr "Decrease stock"
 
+#: Not found
 msgid "Make infinite"
 msgstr "Make infinite"
 
+#: Not found
 msgid "Stock value"
 msgstr "Stock value"
 
+#: Not found
 msgid "Stock accounting type"
 msgstr "Stock accounting type"
 
+#: Not found
 msgid "All products"
 msgstr "All products"
 
+#: Not found
 msgid "Without warehouse accounting"
 msgstr "Without warehouse accounting"
 
+#: Not found
 msgid "With warehouse accounting"
 msgstr "With warehouse accounting"
 
+#: Not found
 msgid "%d products skipped by stock type filter"
 msgstr "%d products skipped by stock type filter"
 
+#: Not found
 msgid "Feature"
 msgstr "Feature"
 
+#: Not found
 msgid "Select feature"
 msgstr "Select feature"
 
+#: Not found
 msgid "Select value"
 msgstr "Select value"
 
+#: Not found
 msgid "Feature mode"
 msgstr "Feature mode"
 
+#: Not found
 msgid "Feature value"
 msgstr "Feature value"
 
+#: Not found
 msgid "Yes"
 msgstr "Yes"
 
+#: Not found
 msgid "No"
 msgstr "No"
 
+#: Not found
 msgid "Enter a hex color value (e.g. #ff0000)"
 msgstr "Enter a hex color value (e.g. #ff0000)"
 
+#: Not found
 msgid "Enter a numeric value"
 msgstr "Enter a numeric value"
 
+#: Not found
 msgid "Select category"
 msgstr "Select category"
 
+#: Not found
 msgid "Category mode"
 msgstr "Category mode"
 
+#: Not found
 msgid "Add to category"
 msgstr "Add to category"
 
+#: Not found
 msgid "Remove from category"
 msgstr "Remove from category"
 
+#: Not found
 msgid "Replace main category"
 msgstr "Replace main category"
 
+#: Not found
 msgid "Select all found products"
 msgstr "Select all found products"
 
+#: Not found
 msgid "All products by current filter"
 msgstr "All products by current filter"
 
+#: Not found
 msgid "Select a warehouse."
 msgstr "Select a warehouse."
 
+#: Not found
 msgid "For products with warehouse stock accounting, select a specific warehouse."
 msgstr "For products with warehouse stock accounting, select a specific warehouse."
 
+#: Not found
 msgid "Invalid stock mode."
 msgstr "Invalid stock mode."
 
+#: Not found
 msgid "Enter a valid stock value."
 msgstr "Enter a valid stock value."
 
+#: Not found
 msgid "Stock cannot become negative."
 msgstr "Stock cannot become negative."
 
+#: Not found
 msgid "Select a feature."
 msgstr "Select a feature."
 
+#: Not found
 msgid "Invalid feature mode."
 msgstr "Invalid feature mode."
 
+#: Not found
 msgid "Enter a feature value."
 msgstr "Enter a feature value."
 
+#: Not found
 msgid "Enter a valid feature value."
 msgstr "Enter a valid feature value."
 
+#: Not found
 msgid "Enter 1 for yes or 0 for no."
 msgstr "Enter 1 for yes or 0 for no."
 
+#: Not found
 msgid "Feature type is not supported in this version."
 msgstr "Feature type is not supported in this version."
 
+#: Not found
 msgid "Select an existing feature value."
 msgstr "Select an existing feature value."
 
+#: Not found
 msgid "Too many feature values selected."
 msgstr "Too many feature values selected."
 
+#: Not found
 msgid "Select a category."
 msgstr "Select a category."
 
+#: Not found
 msgid "Invalid category mode."
 msgstr "Invalid category mode."
 
+#: Not found
 msgid "Stock: %s, mode %s for %d products"
 msgstr "Stock: %s, mode %s for %d products"
 
+#: Not found
 msgid "Feature: %s, mode %s for %d products"
 msgstr "Feature: %s, mode %s for %d products"
 
+#: Not found
 msgid "Category: %s, mode %s for %d products"
 msgstr "Category: %s, mode %s for %d products"
+
+#: Not found
 msgid "Video mode"
 msgstr "Video mode"
 
+#: Not found
 msgid "Video URL"
 msgstr "Video URL"
 
+#: Not found
 msgid "Rutube, VK, YouTube, or Vimeo video URL"
 msgstr "Rutube, VK, YouTube, or Vimeo video URL"
 
+#: Not found
 msgid "Invalid video mode."
 msgstr "Invalid video mode."
 
+#: Not found
 msgid "Enter a valid HTTP(S) video URL."
 msgstr "Enter a valid HTTP(S) video URL."
 
+#: Not found
 msgid "Copy and paste a video URL from Rutube, VK, YouTube, or Vimeo."
 msgstr "Copy and paste a video URL from Rutube, VK, YouTube, or Vimeo."
 
+#: Not found
 msgid "The video URL could not be saved."
 msgstr "The video URL could not be saved."
 
+#: Not found
 msgid "Not enough rights to edit the selected product."
 msgstr "Not enough rights to edit the selected product."
 
+#: Not found
 msgid "Video: mode %s for %d products"
 msgstr "Video: mode %s for %d products"
 
+#: Not found
 msgid "Another Mass Editor operation is already running. Try again."
 msgstr "Another Mass Editor operation is already running. Try again."
 
+#: Not found
 msgid "The rollback snapshot is invalid."
 msgstr "The rollback snapshot is invalid."
 
+#: Not found
 msgid "The rollback snapshot could not be saved."
 msgstr "The rollback snapshot could not be saved."
 
+#: Not found
 msgid "Invalid rollback request."
 msgstr "Invalid rollback request."
 
+#: Not found
 msgid "Confirm restoring the old values."
 msgstr "Confirm restoring the old values."
 
+#: Not found
 msgid "This operation is no longer available for rollback."
 msgstr "This operation is no longer available for rollback."
 
+#: Not found
 msgid "The affected product values were changed after the bulk operation. Rollback was cancelled."
 msgstr "The affected product values were changed after the bulk operation. Rollback was cancelled."
 
+#: Not found
 msgid "The old values could not be restored."
 msgstr "The old values could not be restored."
 
+#: Not found
 msgid "Rollback of operation #%d"
 msgstr "Rollback of operation #%d"
 
+#: Not found
 msgid "The old values were restored."
 msgstr "The old values were restored."
 
+#: Not found
 msgid "Rollback"
 msgstr "Rollback"
 
+#: Not found
 msgid "Undo"
 msgstr "Undo"
 
+#: Not found
 msgid "Undo last operation"
 msgstr "Undo last operation"
 
+#: Not found
 msgid "Are you sure you want to restore the old values?"
 msgstr "Are you sure you want to restore the old values?"
 
+#: Not found
 msgid "Only the products and values changed by this operation will be restored."
 msgstr "Only the products and values changed by this operation will be restored."
 
+#: Not found
 msgid "Restore old values"
 msgstr "Restore old values"
 
+#: Not found
 msgid "Restoring old values"
 msgstr "Restoring old values"
 
+#: Not found
 msgid "Products are being restored. Keep this window open."
 msgstr "Products are being restored. Keep this window open."
 
+#: Not found
 msgid "Rollback progress"
 msgstr "Rollback progress"
 
+#: Not found
 msgid "Old values restored"
 msgstr "Old values restored"
 
+#: Not found
 msgid "Could not restore old values"
 msgstr "Could not restore old values"

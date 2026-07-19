@@ -1,17 +1,35 @@
-# Release packaging checks
+# Release packaging
 
-Load this reference when creating or verifying a Webasyst release archive.
+Load this reference only when archive creation or inspection is authorized.
 
-Build from the intended production tree only. Verify the candidate before replacing any existing archive:
+## Build
 
-1. Validate version, vendor, metadata, and required localisation files.
-2. Compile and check gettext catalogues when the product uses `.po` and `.mo`.
-3. Require a single archive root named after the product or plugin ID.
-4. Reject absolute paths, `..` traversal, unsafe links, special files, development materials, temporary files, and debug artefacts.
-5. Check gzip/tar integrity, manifest, protected directories, and required metadata.
-6. Unpack the candidate and compare it recursively with the production tree.
-7. Record path, size, file count, checksum, commands, and results.
+1. Confirm the version, vendor, slug, release status, localization state, meta-update decision, project checks, and expected distribution manifest.
+2. Run the official command from a working Webasyst installation:
 
-Exclude repository-only tests, Docker files, local plans, caches, dependency trees, temporary files, secrets, and generated development artefacts unless the product contract explicitly requires them. Confirm that protected directories and compiled localisation needed by production are present.
+   ```bash
+   php wa.php compress <slug>
+   ```
 
-If any required check fails, keep the prior release archive intact and report the failed gate.
+3. Do not use `-skip test` in the normal release path.
+4. Locate the produced archive from command output and actual filesystem state; do not guess its path.
+5. Keep the current final archive intact until the candidate passes every gate.
+
+If the CLI is unavailable, stop with a clear blocker. Use an ad-hoc fallback only after explicit authorization and apply the same structure, manifest, localization, secret, and integrity checks.
+
+## Candidate gates
+
+- Run `gzip -t` and `tar -tzf`.
+- Require exactly one root directory matching the product ID.
+- Reject absolute paths, `..`, unsafe links, special files, `.git`, `.env`, keys, dumps, logs, caches, temporary files, and unnecessary development artifacts.
+- Require configured runtime files, protected directories, compiled localization when shipped, and third-party license files where applicable.
+- Extract into a temporary directory and compare with the expected distribution manifest, not automatically with the complete source tree; the official packager may intentionally exclude development files.
+- Run a secret scan and calculate path, size, file count, and SHA-256.
+- Remove only the validated temporary directory after the report is captured.
+
+## Replacement rules
+
+- Atomically replace a draft archive only after all gates pass.
+- Never overwrite an archive marked `published` without a separate explicit force authorization.
+- Never leave a partial candidate under the final filename.
+- On failure, preserve the previous archive and report the exact failed gate.

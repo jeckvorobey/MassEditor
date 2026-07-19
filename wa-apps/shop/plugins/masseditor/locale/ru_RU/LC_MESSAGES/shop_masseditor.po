@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: shop_masseditor 1.2.0\n"
-"PO-Revision-Date: 2026-07-14 00:00+0300\n"
+"PO-Revision-Date: 2026-07-19 00:00+0300\n"
 "Last-Translator: MassEditor Team\n"
 "Language-Team: Russian\n"
 "MIME-Version: 1.0\n"
@@ -10,856 +10,1138 @@ msgstr ""
 "Language: ru_RU\n"
 "Plural-Forms: nplurals=3; plural=((((n%10)==1)&&((n%100)!=11))?(0):(((((n%10)>=2)&&((n%10)<=4))&&(((n%100)<10)||((n%100)>=20)))?(1):2));\n"
 
+#: /wa-apps/shop/plugins/masseditor/lib/shopMasseditor.plugin.php:7
 msgid "Mass Editor"
 msgstr "Массовый редактор"
 
+#: Not found
 msgid "Backend-only plugin for safe bulk product editing."
 msgstr "Backend-плагин для безопасного массового редактирования товаров."
 
+#: Not found
 msgid "Bulk product editing."
 msgstr "Массовое редактирование товаров."
 
+#: Not found
 msgid "Products"
 msgstr "Товары"
 
+#: Not found
 msgid "Log"
 msgstr "Журнал"
 
+#: Not found
 msgid "Settings"
 msgstr "Настройки"
 
+#: Not found
 msgid "Mass Editor sections"
 msgstr "Разделы массового редактора"
 
+#: Not found
 msgid "Products found"
 msgstr "Товаров найдено"
 
+#: Not found
 msgid "Selected"
 msgstr "Выбрано"
 
+#: Not found
 msgid "Last operation"
 msgstr "Последняя операция"
 
+#: Not found
 msgid "No data"
 msgstr "Нет данных"
 
+#: Not found
 msgid "Log is empty"
 msgstr "Журнал пока пуст"
 
+#: Not found
 msgid "products"
 msgstr "товаров"
 
+#: Not found
 msgid "records"
 msgstr "записей"
 
+#: Not found
 msgid "Filters"
 msgstr "Фильтры"
 
+#: Not found
 msgid "Search"
 msgstr "Поиск"
 
+#: Not found
 msgid "Name, SKU, URL, description, tag, or category"
 msgstr "Название, артикул, URL, описание, тег или категория"
 
+#: Not found
 msgid "Loading suggestions..."
 msgstr "Загрузка подсказок..."
 
+#: Not found
 msgid "Status"
 msgstr "Статус"
 
+#: Not found
 msgid "All"
 msgstr "Все"
 
+#: Not found
 msgid "Published"
 msgstr "Опубликован"
 
+#: Not found
 msgid "Hidden"
 msgstr "Скрыт"
 
+#: Not found
 msgid "Unpublished"
 msgstr "Неопубликован"
 
+#: Not found
 msgid "Category"
 msgstr "Категория"
 
+#: Not found
 msgid "All categories"
 msgstr "Все категории"
 
+#: Not found
 msgid "Availability"
 msgstr "Доступность"
 
+#: Not found
 msgid "Available"
 msgstr "Доступен"
 
+#: Not found
 msgid "Unavailable"
 msgstr "Недоступен"
 
+#: Not found
 msgid "Apply"
 msgstr "Применить"
 
+#: Not found
 msgid "Reset"
 msgstr "Сбросить"
 
+#: Not found
 msgid "Operations"
 msgstr "Операции"
 
+#: Not found
 msgid "Soon"
 msgstr "Скоро"
 
+#: Not found
 msgid "Operation parameters"
 msgstr "Параметры операции"
 
+#: Not found
 msgid "Applying bulk changes"
 msgstr "Выполняется массовое изменение"
 
+#: Not found
 msgid "Products are being processed. Keep this window open."
 msgstr "Товары обрабатываются. Не закрывайте это окно."
 
+#: Not found
 msgid "Bulk operation progress"
 msgstr "Ход выполнения массовой операции"
 
+#: Not found
 msgid "Changes applied"
 msgstr "Изменения применены"
 
+#: Not found
 msgid "Could not apply changes"
 msgstr "Не удалось применить изменения"
 
+#: Not found
 msgid "Selected products will be processed only after confirmation in the modal window."
 msgstr "Выбранные товары будут обработаны только после подтверждения в модальном окне."
 
+#: Not found
 msgid "Mode"
 msgstr "Режим"
 
+#: Not found
 msgid "Set value"
 msgstr "Установить значение"
 
+#: Not found
 msgid "Add value"
 msgstr "Добавить значение"
 
+#: Not found
 msgid "Subtract value"
 msgstr "Отнять значение"
 
+#: Not found
 msgid "Increase by percent"
 msgstr "Увеличить на процент"
 
+#: Not found
 msgid "Decrease by percent"
 msgstr "Убавить на процент"
 
+#: Not found
 msgid "Value"
 msgstr "Значение"
 
+#: Not found
 msgid "Decimal places"
 msgstr "Цифр после запятой"
 
+#: Not found
 msgid "No rounding"
 msgstr "Без округления"
 
+#: Not found
 msgid "0 digits after decimal point"
 msgstr "0 цифр после запятой"
 
+#: Not found
 msgid "1 digit after decimal point"
 msgstr "1 цифра после запятой"
 
+#: Not found
 msgid "2 digits after decimal point"
 msgstr "2 цифры после запятой"
 
+#: Not found
 msgid "3 digits after decimal point"
 msgstr "3 цифры после запятой"
 
+#: Not found
 msgid "4 digits after decimal point"
 msgstr "4 цифры после запятой"
 
+#: Not found
 msgid "Direction"
 msgstr "Направление"
 
+#: Not found
 msgid "Nearest"
 msgstr "По правилам округления"
 
+#: Not found
 msgid "Up"
 msgstr "Вверх"
 
+#: Not found
 msgid "Down"
 msgstr "Вниз"
 
+#: Not found
 msgid "Keep unchanged"
 msgstr "Оставить без изменений"
 
+#: Not found
 msgid "Write old price"
 msgstr "Записать старую цену"
 
+#: Not found
 msgid "Clear"
 msgstr "Очистить"
 
+#: Not found
 msgid "Multiply by coefficient"
 msgstr "Умножить по коэффициенту"
 
+#: Not found
 msgid "Coefficient"
 msgstr "Коэффициент"
 
+#: Not found
 msgid "Visibility"
 msgstr "Видимость"
 
+#: Not found
 msgid "Description mode"
 msgstr "Режим описания"
 
+#: Not found
 msgid "Replace"
 msgstr "Полная замена"
 
+#: Not found
 msgid "Add to beginning"
 msgstr "Добавить в начало"
 
+#: Not found
 msgid "Add to end"
 msgstr "Добавить в конец"
 
+#: Not found
 msgid "Text"
 msgstr "Текст"
 
+#: Not found
 msgid "Tags mode"
 msgstr "Режим тегов"
 
+#: Not found
 msgid "Add"
 msgstr "Добавить"
 
+#: Not found
 msgid "Remove"
 msgstr "Удалить"
 
+#: Not found
 msgid "Tags"
 msgstr "Теги"
 
+#: Not found
 msgid "comma-separated or one per line"
 msgstr "через запятую или с новой строки"
 
+#: Not found
 msgid "URL mode"
 msgstr "Режим URL"
 
+#: Not found
 msgid "Generate from name"
 msgstr "Сгенерировать из названия"
 
+#: Not found
 msgid "Template"
 msgstr "Шаблон"
 
+#: Not found
 msgid "URL template"
 msgstr "Шаблон URL"
 
+#: Not found
 msgid "Ready to apply"
 msgstr "Готово к применению"
 
+#: Not found
 msgid "Select products to process."
 msgstr "Выберите товары для обработки."
 
+#: Not found
 msgid "action will be written to the log"
 msgstr "действие будет записано в журнал"
 
+#: Not found
 msgid "of"
 msgstr "из"
 
+#: Not found
 msgid "ID"
 msgstr "ID"
 
+#: Not found
 msgid "Date"
 msgstr "Дата"
 
+#: Not found
 msgid "Name"
 msgstr "Название"
 
+#: Not found
 msgid "URL"
 msgstr "URL"
 
+#: Not found
 msgid "Description"
 msgstr "Описание"
 
+#: Not found
 msgid "Categories"
 msgstr "Категории"
 
+#: Not found
 msgid "Price"
 msgstr "Цена"
 
+#: Not found
 msgid "Stock"
 msgstr "Остаток"
 
+#: Not found
 msgid "Warehouses"
 msgstr "Склады"
 
+#: Not found
 msgid "Changed"
 msgstr "Изменён"
 
+#: Not found
 msgid "Select all products on this page"
 msgstr "Выбрать все товары на странице"
 
+#: Not found
 msgid "SKU is not set"
 msgstr "SKU не задан"
 
+#: Not found
 msgid "Products not found."
 msgstr "Товары не найдены."
 
+#: Not found
 msgid "Change the filter and try again."
 msgstr "Измените фильтр и попробуйте снова."
 
+#: Not found
 msgid "Shown"
 msgstr "Показано"
 
+#: Not found
 msgid "Product pagination"
 msgstr "Пагинация товаров"
 
+#: Not found
 msgid "Log pagination"
 msgstr "Пагинация журнала"
 
+#: Not found
 msgid "Previous page"
 msgstr "Предыдущая страница"
 
+#: Not found
 msgid "Next page"
 msgstr "Следующая страница"
 
+#: Not found
 msgid "Change price"
 msgstr "Изменить цену"
 
+#: Not found
 msgid "Confirm bulk change"
 msgstr "Подтвердите массовое изменение"
 
+#: Not found
 msgid "Check the parameters before applying."
 msgstr "Проверьте параметры перед применением."
 
+#: Not found
 msgid "Close"
 msgstr "Закрыть"
 
+#: Not found
 msgid "Products to be changed"
 msgstr "Будет изменено товаров"
 
+#: Not found
 msgid "Operation"
 msgstr "Операция"
 
+#: Not found
 msgid "Undo is available for the last operation."
 msgstr "Последнюю операцию можно отменить."
 
+#: Not found
 msgid "You can restore old values within 3 hours or until the next bulk operation."
 msgstr "Старые значения можно вернуть в течение 3 часов или до следующей массовой операции."
 
+#: Not found
 msgid "Cancel"
 msgstr "Отмена"
 
+#: Not found
 msgid "Apply changes"
 msgstr "Применить изменения"
 
+#: Not found
 msgid "User"
 msgstr "Пользователь"
 
+#: Not found
 msgid "Count"
 msgstr "Количество"
 
+#: Not found
 msgid "Log is empty."
 msgstr "Журнал пока пуст."
 
+#: Not found
 msgid "Records will appear here after the first confirmed operation."
 msgstr "После первой подтверждённой операции здесь появятся записи."
 
+#: Not found
 msgid "Performance"
 msgstr "Производительность"
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:5
 msgid "Page size"
 msgstr "Размер страницы"
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:6
 msgid "How many products to show in the table."
 msgstr "Сколько товаров отображать в таблице."
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:11
 msgid "Products per operation limit"
 msgstr "Лимит товаров за операцию"
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:12
 msgid "Maximum products per single run."
 msgstr "Максимум товаров за один запуск."
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:17
 msgid "Keep log, days"
 msgstr "Хранить журнал, дней"
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:18
 msgid "Old records will be cleaned automatically."
 msgstr "Старые записи будут автоматически очищаться."
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:23
 msgid "Date format"
 msgstr "Формат даты"
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:24
 msgid "Choose how dates and times are shown in all plugin sections."
 msgstr "Выберите, как показывать дату и время во всех разделах плагина."
 
+#: Not found
 msgid "Appearance"
 msgstr "Внешний вид"
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:35
 msgid "Theme mode"
 msgstr "Режим темы"
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:36
 msgid "Auto uses the default backend theme."
 msgstr "Автоматический режим использует тему backend по умолчанию."
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:40
 msgid "Auto"
 msgstr "Авто"
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:41
 msgid "Light"
 msgstr "Светлая"
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:42
 msgid "Dark"
 msgstr "Тёмная"
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:46
 msgid "Interface language"
 msgstr "Язык интерфейса"
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:47
 msgid "Defaults to the current Webasyst locale until you choose a language."
 msgstr "По умолчанию используется текущая локаль Webasyst, пока вы не выберете язык."
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:51
 msgid "Russian"
 msgstr "Русский"
 
+#: /wa-apps/shop/plugins/masseditor/lib/config/settings.php:52
 msgid "English"
 msgstr "Английский"
 
+#: Not found
 msgid "Show \"Soon\" operations"
 msgstr "Показывать операции «Скоро»"
 
+#: Not found
 msgid "Controls future operations visibility in the library."
 msgstr "Управляет отображением будущих операций в библиотеке."
 
+#: Not found
 msgid "Enabled"
 msgstr "Включено"
 
+#: Not found
 msgid "Disabled"
 msgstr "Выключено"
 
+#: Not found
 msgid "Save settings"
 msgstr "Сохранить настройки"
 
+#: Not found
 msgid "Settings saved."
 msgstr "Настройки сохранены."
 
+#: Not found
 msgid "The operation could not be completed. Try again or check the error log."
 msgstr "Операцию не удалось выполнить. Повторите действие или проверьте журнал ошибок."
 
+#: Not found
 msgid "Not enough rights to manage Mass Editor."
 msgstr "Недостаточно прав для управления массовым редактором."
 
+#: Not found
 msgid "Compare price"
 msgstr "Цена сравнения"
 
+#: Not found
 msgid "Change compare price"
 msgstr "Изменить цену сравнения"
 
+#: Not found
 msgid "Change visibility"
 msgstr "Изменить видимость"
 
+#: Not found
 msgid "Change availability"
 msgstr "Изменить доступность"
 
+#: Not found
 msgid "Product URLs"
 msgstr "URL товаров"
 
+#: Not found
 msgid "SKU generator"
 msgstr "Генератор SKU"
 
+#: Not found
 msgid "Cross-selling"
 msgstr "Перекрёстные продажи"
 
+#: Not found
 msgid "Similar products"
 msgstr "Похожие товары"
 
+#: Not found
 msgid "Prices and SKU"
 msgstr "Цены и остатки"
 
+#: Not found
 msgid "Content"
 msgstr "Контент"
 
+#: Not found
 msgid "Media"
 msgstr "Медиа"
 
+#: Not found
 msgid "Links"
 msgstr "Связи"
 
+#: Not found
 msgid "URLs and pages"
 msgstr "URL и страницы"
 
+#: Not found
 msgid "Parameters and features"
 msgstr "Параметры и характеристики"
 
+#: Not found
 msgid "Product photos"
 msgstr "Фото товаров"
 
+#: Not found
 msgid "Video"
 msgstr "Видео"
 
+#: Not found
 msgid "Product pages"
 msgstr "Страницы товара"
 
+#: Not found
 msgid "Features"
 msgstr "Характеристики"
 
+#: Not found
 msgid "Success"
 msgstr "Успешно"
 
+#: Not found
 msgid "Error"
 msgstr "Ошибка"
 
+#: Not found
 msgid "Message"
 msgstr "Сообщение"
 
+#: Not found
 msgid "Close notification"
 msgstr "Закрыть уведомление"
 
+#: Not found
 msgid "Select at least one product."
 msgstr "Выберите хотя бы один товар."
 
+#: Not found
 msgid "Enter a value for the bulk operation."
 msgstr "Укажите значение для массовой операции."
 
+#: Not found
 msgid "Enter description text."
 msgstr "Введите текст для описания."
 
+#: Not found
 msgid "Enter at least one tag."
 msgstr "Укажите хотя бы один тег."
 
+#: Not found
 msgid "Enter a URL template."
 msgstr "Укажите шаблон URL."
 
+#: Not found
 msgid "Enter a compare price coefficient."
 msgstr "Укажите коэффициент для цены сравнения."
 
+#: Not found
 msgid "From product name"
 msgstr "Из названия товара"
 
+#: Not found
 msgid "Operation applied successfully."
 msgstr "Операция успешно применена."
 
+#: Not found
 msgid "No more than "
 msgstr "За одну операцию можно обработать не более "
 
+#: Not found
 msgid " products can be processed in one operation."
 msgstr " товаров."
 
+#: Not found
 msgid "Unknown bulk operation."
 msgstr "Неизвестная массовая операция."
 
+#: Not found
 msgid "Unknown price change mode."
 msgstr "Неизвестный режим изменения цены."
 
+#: Not found
 msgid "Enter a valid numeric value."
 msgstr "Укажите корректное числовое значение."
 
+#: Not found
 msgid "Invalid visibility value."
 msgstr "Некорректное значение видимости."
 
+#: Not found
 msgid "Invalid availability value."
 msgstr "Некорректное значение доступности."
 
+#: Not found
 msgid "Confirm applying changes."
 msgstr "Подтвердите применение изменений."
 
+#: Not found
 msgid "Some selected products were not found. Select them again before applying."
 msgstr "Часть выбранных товаров не найдена. Повторите выбор перед применением."
 
+#: Not found
 msgid "Could not find a unique URL for product ID %d."
 msgstr "Не удалось подобрать уникальный URL для товара ID %d."
 
+#: Not found
 msgid "The final value cannot be negative."
 msgstr "Итоговое значение не может быть отрицательным."
 
+#: Not found
 msgid " · "
 msgstr " · "
 
+#: Not found
 msgid "%s: value %s for %d products"
 msgstr "%s: значение %s для %d товаров"
 
+#: Not found
 msgid "%s: add value %s for %d products"
 msgstr "%s: прибавить значение %s для %d товаров"
 
+#: Not found
 msgid "%s: subtract value %s for %d products"
 msgstr "%s: отнять значение %s для %d товаров"
 
+#: Not found
 msgid "%s: increase by %s%% for %d products"
 msgstr "%s: увеличить на %s%% для %d товаров"
 
+#: Not found
 msgid "%s: decrease by %s%% for %d products"
 msgstr "%s: убавить на %s%% для %d товаров"
 
+#: Not found
 msgid "Visibility: %s for %d products"
 msgstr "Видимость: %s для %d товаров"
 
+#: Not found
 msgid "Availability: %s for %d products"
 msgstr "Доступность: %s для %d товаров"
 
+#: Not found
 msgid "Description: mode %s for %d products"
 msgstr "Описание: режим %s для %d товаров"
 
+#: Not found
 msgid "Tags: mode %s for %d products"
 msgstr "Теги: режим %s для %d товаров"
 
+#: Not found
 msgid "URL: mode %s for %d products"
 msgstr "URL: режим %s для %d товаров"
 
+#: Not found
 msgid "product"
 msgid_plural "products"
 msgstr[0] "товар"
 msgstr[1] "товара"
 msgstr[2] "товаров"
 
+#: Not found
 msgid "%d product"
 msgid_plural "%d products"
 msgstr[0] "%d товар"
 msgstr[1] "%d товара"
 msgstr[2] "%d товаров"
 
+#: Not found
 msgid "record"
 msgid_plural "records"
 msgstr[0] "запись"
 msgstr[1] "записи"
 msgstr[2] "записей"
 
+#: Not found
 msgid "%d record"
 msgid_plural "%d records"
 msgstr[0] "%d запись"
 msgstr[1] "%d записи"
 msgstr[2] "%d записей"
 
+#: Not found
 msgid "Published products"
 msgstr "Опубликованные"
 
+#: Not found
 msgid "Hidden products"
 msgstr "Скрытые"
 
+#: Not found
 msgid "Unpublished products"
 msgstr "Неопубликованные"
 
+#: Not found
 msgid "Stock by warehouse"
 msgstr "Остатки"
 
+#: Not found
 msgid "Basic feature editing"
 msgstr "Редактирование характеристик"
 
+#: Not found
 msgid "Warehouse"
 msgstr "Склад"
 
+#: Not found
 msgid "All warehouses"
 msgstr "Все склады"
 
+#: Not found
 msgid "Select warehouse"
 msgstr "Без склада"
 
+#: Not found
 msgid "No warehouse"
 msgstr "Без склада"
 
+#: Not found
 msgid "Stock mode"
 msgstr "Режим остатка"
 
+#: Not found
 msgid "Set stock"
 msgstr "Установить остаток"
 
+#: Not found
 msgid "Increase stock"
 msgstr "Увеличить остаток"
 
+#: Not found
 msgid "Decrease stock"
 msgstr "Уменьшить остаток"
 
+#: Not found
 msgid "Make infinite"
 msgstr "Сделать бесконечным"
 
+#: Not found
 msgid "Stock value"
 msgstr "Значение остатка"
 
+#: Not found
 msgid "Stock accounting type"
 msgstr "Тип складского учёта"
 
+#: Not found
 msgid "All products"
 msgstr "Все товары"
 
+#: Not found
 msgid "Without warehouse accounting"
 msgstr "Без складского учёта"
 
+#: Not found
 msgid "With warehouse accounting"
 msgstr "Со складским учётом"
 
+#: Not found
 msgid "%d products skipped by stock type filter"
 msgstr "%d товаров пропущено по фильтру типа учёта"
 
+#: Not found
 msgid "Feature"
 msgstr "Характеристика"
 
+#: Not found
 msgid "Select feature"
 msgstr "Выберите характеристику"
 
+#: Not found
 msgid "Select value"
 msgstr "Выбрать значение"
 
+#: Not found
 msgid "Feature mode"
 msgstr "Режим характеристики"
 
+#: Not found
 msgid "Feature value"
 msgstr "Значение характеристики"
 
+#: Not found
 msgid "Yes"
 msgstr "Да"
 
+#: Not found
 msgid "No"
 msgstr "Нет"
 
+#: Not found
 msgid "Enter a hex color value (e.g. #ff0000)"
 msgstr "Введите hex-значение цвета (например #ff0000)"
 
+#: Not found
 msgid "Enter a numeric value"
 msgstr "Введите числовое значение"
 
+#: Not found
 msgid "Select category"
 msgstr "Выберите категорию"
 
+#: Not found
 msgid "Category mode"
 msgstr "Режим категории"
 
+#: Not found
 msgid "Add to category"
 msgstr "Добавить в категорию"
 
+#: Not found
 msgid "Remove from category"
 msgstr "Удалить из категории"
 
+#: Not found
 msgid "Replace main category"
 msgstr "Заменить основную категорию"
 
+#: Not found
 msgid "Select all found products"
 msgstr "Выбрать все найденные товары"
 
+#: Not found
 msgid "All products by current filter"
 msgstr "Все товары по текущему фильтру"
 
+#: Not found
 msgid "Select a warehouse."
 msgstr "Выберите склад."
 
+#: Not found
 msgid "For products with warehouse stock accounting, select a specific warehouse."
 msgstr "Для товаров со складским учетом выберите конкретный склад."
 
+#: Not found
 msgid "Invalid stock mode."
 msgstr "Некорректный режим остатка."
 
+#: Not found
 msgid "Enter a valid stock value."
 msgstr "Укажите корректное значение остатка."
 
+#: Not found
 msgid "Stock cannot become negative."
 msgstr "Остаток не может стать отрицательным."
 
+#: Not found
 msgid "Select a feature."
 msgstr "Выберите характеристику."
 
+#: Not found
 msgid "Invalid feature mode."
 msgstr "Некорректный режим характеристики."
 
+#: Not found
 msgid "Enter a feature value."
 msgstr "Укажите значение характеристики."
 
+#: Not found
 msgid "Enter a valid feature value."
 msgstr "Укажите корректное значение характеристики."
 
+#: Not found
 msgid "Enter 1 for yes or 0 for no."
 msgstr "Укажите 1 для «да» или 0 для «нет»."
 
+#: Not found
 msgid "Feature type is not supported in this version."
 msgstr "Тип характеристики не поддерживается в этой версии."
 
+#: Not found
 msgid "Select an existing feature value."
 msgstr "Выберите существующее значение характеристики."
 
+#: Not found
 msgid "Too many feature values selected."
 msgstr "Выбрано слишком много значений характеристики."
 
+#: Not found
 msgid "Select a category."
 msgstr "Выберите категорию."
 
+#: Not found
 msgid "Invalid category mode."
 msgstr "Некорректный режим категории."
 
+#: Not found
 msgid "Stock: %s, mode %s for %d products"
 msgstr "Остатки: %s, режим %s для %d товаров"
 
+#: Not found
 msgid "Feature: %s, mode %s for %d products"
 msgstr "Характеристика: %s, режим %s для %d товаров"
 
+#: Not found
 msgid "Category: %s, mode %s for %d products"
 msgstr "Категория: %s, режим %s для %d товаров"
+
+#: Not found
 msgid "Video mode"
 msgstr "Режим видео"
 
+#: Not found
 msgid "Video URL"
 msgstr "Ссылка на видео"
 
+#: Not found
 msgid "Rutube, VK, YouTube, or Vimeo video URL"
 msgstr "Ссылка на видео с Rutube, VK, YouTube или Vimeo"
 
+#: Not found
 msgid "Invalid video mode."
 msgstr "Некорректный режим видео."
 
+#: Not found
 msgid "Enter a valid HTTP(S) video URL."
 msgstr "Укажите корректную HTTP(S)-ссылку на видео."
 
+#: Not found
 msgid "Copy and paste a video URL from Rutube, VK, YouTube, or Vimeo."
 msgstr "Скопируйте в это поле адрес видеоролика товара с сайта Rutube, VK, YouTube или Vimeo."
 
+#: Not found
 msgid "The video URL could not be saved."
 msgstr "Не удалось сохранить ссылку на видео."
 
+#: Not found
 msgid "Not enough rights to edit the selected product."
 msgstr "Недостаточно прав для изменения выбранного товара."
 
+#: Not found
 msgid "Video: mode %s for %d products"
 msgstr "Видео: режим %s для %d товаров"
 
+#: Not found
 msgid "Another Mass Editor operation is already running. Try again."
 msgstr "Операция уже выполняется. Повторите попытку."
 
+#: Not found
 msgid "The rollback snapshot is invalid."
 msgstr "Снимок для отката повреждён или недействителен."
 
+#: Not found
 msgid "The rollback snapshot could not be saved."
 msgstr "Не удалось сохранить снимок для отката."
 
+#: Not found
 msgid "Invalid rollback request."
 msgstr "Некорректный запрос отката."
 
+#: Not found
 msgid "Confirm restoring the old values."
 msgstr "Подтвердите возврат старых значений."
 
+#: Not found
 msgid "This operation is no longer available for rollback."
 msgstr "Эта операция больше недоступна для отката."
 
+#: Not found
 msgid "The affected product values were changed after the bulk operation. Rollback was cancelled."
 msgstr "Затронутые значения товаров изменены после массовой операции. Откат отменён."
 
+#: Not found
 msgid "The old values could not be restored."
 msgstr "Не удалось восстановить старые значения."
 
+#: Not found
 msgid "Rollback of operation #%d"
 msgstr "Откат операции #%d"
 
+#: Not found
 msgid "The old values were restored."
 msgstr "Старые значения восстановлены."
 
+#: Not found
 msgid "Rollback"
 msgstr "Откат"
 
+#: Not found
 msgid "Undo"
 msgstr "Отменить"
 
+#: Not found
 msgid "Undo last operation"
 msgstr "Отмена последней операции"
 
+#: Not found
 msgid "Are you sure you want to restore the old values?"
 msgstr "Вы действительно хотите вернуть старые значения?"
 
+#: Not found
 msgid "Only the products and values changed by this operation will be restored."
 msgstr "Будут восстановлены только товары и значения, изменённые этой операцией."
 
+#: Not found
 msgid "Restore old values"
 msgstr "Вернуть старые значения"
 
+#: Not found
 msgid "Restoring old values"
 msgstr "Восстанавливаем старые значения"
 
+#: Not found
 msgid "Products are being restored. Keep this window open."
 msgstr "Товары восстанавливаются. Не закрывайте это окно."
 
+#: Not found
 msgid "Rollback progress"
 msgstr "Ход отката"
 
+#: Not found
 msgid "Old values restored"
 msgstr "Старые значения восстановлены"
 
+#: Not found
 msgid "Could not restore old values"
 msgstr "Не удалось восстановить старые значения"

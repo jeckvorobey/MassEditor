@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "product": {
+    "id": "catalogtools",
+    "slug": "shop/plugins/catalogtools",
+    "type": "plugin",
+    "path": "wa-apps/shop/plugins/catalogtools",
+    "config_path": "wa-apps/shop/plugins/catalogtools/lib/config/plugin.php",
+    "vendor": 123456,
+    "current_version": "1.2.0",
+    "locales": ["ru_RU", "en_US"],
+    "backend_only": true
+  },
+  "documentation": {
+    "store_description_pattern": "docs/store-description-{locale}.md",
+    "release_note_pattern": "docs/releases/{version}-{locale}.md",
+    "changelog_pattern": "docs/CHANGELOG.{locale}.md"
+  },
+  "published_versions": ["1.2.0", "1.1.1", "1.1.0"],
+  "features": [
+    {
+      "id": "bulk-update",
+      "group": "catalog",
+      "since_version": "1.1.0",
+      "public": {
+        "ru_RU": "Пакетное изменение подтверждённых данных каталога.",
+        "en_US": "Bulk editing of confirmed catalog data."
+      },
+      "limitations": {
+        "ru_RU": "Изменяются только выбранные товары.",
+        "en_US": "Only selected products are changed."
+      },
+      "evidence": [
+        {
+          "type": "code",
+          "path": "lib/classes/catalogtoolsBulkService.class.php",
+          "detail": "Bounded bulk service"
+        },
+        {
+          "type": "test",
+          "path": "tests/BulkServiceTest.php",
+          "detail": "Selection and limit coverage"
+        }
+      ]
+    }
+  ],
+  "distribution": {
+    "root": "catalogtools",
+    "required_paths": [
+      "catalogtools/lib/config/plugin.php",
+      "catalogtools/lib/config/db.php"
+    ]
+  }
+}
