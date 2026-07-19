@@ -4,7 +4,7 @@ return array(
     'name' => 'Mass Editor',
     'description' => 'Backend-only plugin for safe bulk product editing.',
     'vendor' => 1329551,
-    'version' => '1.2.0',
+    'version' => '1.2.1',
     'img' => 'img/plugin.png',
     'handlers' => [
         'backend_menu' => 'backendMenu',

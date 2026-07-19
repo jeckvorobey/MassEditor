@@ -514,6 +514,38 @@ function buildAppDom() {
   progressModal.appendChild(progressClose);
   document.body.appendChild(progressModal);
 
+  const rollbackButton = createNode(document, 'button', { 'data-role': 'rollback-trigger', 'data-log-id': '55' });
+  document.body.appendChild(rollbackButton);
+  const rollbackForm = createNode(document, 'form', { 'data-role': 'rollback-form', action: '?plugin=masseditor&action=rollback' });
+  const rollbackLogId = createNode(document, 'input', { 'data-role': 'rollback-log-id', name: 'log_id', value: '' });
+  const rollbackModal = createNode(document, 'div', { 'data-role': 'rollback-modal', 'aria-busy': 'false' });
+  rollbackModal.hidden = true;
+  const rollbackTitle = createNode(document, 'h3', { 'data-role': 'rollback-title' });
+  const rollbackConfirmContent = createNode(document, 'div', { 'data-role': 'rollback-confirm-content' });
+  const rollbackConfirmActions = createNode(document, 'div', { 'data-role': 'rollback-confirm-actions' });
+  const rollbackCancel = createNode(document, 'button', { 'data-role': 'close-rollback-modal', type: 'button' });
+  const rollbackSubmit = createNode(document, 'button', { 'data-role': 'rollback-submit', type: 'submit' });
+  const rollbackProgress = createNode(document, 'div', { 'data-role': 'rollback-progress', role: 'progressbar' });
+  rollbackProgress.hidden = true;
+  const rollbackResult = createNode(document, 'div', { 'data-role': 'rollback-result', role: 'status' });
+  rollbackResult.hidden = true;
+  const rollbackResultClose = createNode(document, 'button', { 'data-role': 'close-rollback-result', type: 'button' });
+  rollbackResultClose.hidden = true;
+  const rollbackResultActions = createNode(document, 'div', { 'data-role': 'rollback-result-actions' });
+  rollbackResultActions.hidden = true;
+  rollbackConfirmActions.appendChild(rollbackCancel);
+  rollbackConfirmActions.appendChild(rollbackSubmit);
+  rollbackResultActions.appendChild(rollbackResultClose);
+  rollbackModal.appendChild(rollbackTitle);
+  rollbackModal.appendChild(rollbackConfirmContent);
+  rollbackModal.appendChild(rollbackConfirmActions);
+  rollbackModal.appendChild(rollbackProgress);
+  rollbackModal.appendChild(rollbackResult);
+  rollbackModal.appendChild(rollbackResultActions);
+  rollbackForm.appendChild(rollbackLogId);
+  rollbackForm.appendChild(rollbackModal);
+  document.body.appendChild(rollbackForm);
+
   const table = createNode(document, 'table');
   document.body.appendChild(table);
   [1, 2].forEach((id) => {
@@ -531,7 +563,19 @@ function buildAppDom() {
     table.appendChild(row);
   });
 
-  return { document, form, filterForm, modal, progressModal, confirmApply, confirmSubmit, toastStack };
+  return {
+    document,
+    form,
+    filterForm,
+    modal,
+    progressModal,
+    confirmApply,
+    confirmSubmit,
+    toastStack,
+    rollbackButton,
+    rollbackForm,
+    rollbackModal,
+  };
 }
 
 function createLocalStorage(seed = {}) {

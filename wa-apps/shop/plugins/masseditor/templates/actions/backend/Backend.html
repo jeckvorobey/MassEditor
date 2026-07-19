@@ -558,7 +558,20 @@
                                     <td data-label="{$texts.user|escape}">{if !empty($log.user_name)}{$log.user_name|escape}{elseif !empty($log.user_id)}ID {$log.user_id|escape}{else}-{/if}</td>
                                     <td data-label="{$texts.operation|escape}"><span class="masseditor-badge masseditor-badge_info">{$log.action_label|escape}</span></td>
                                     <td data-label="{$texts.count|escape}">{$log.entity_count|escape}</td>
-                                    <td data-label="{$texts.description|escape}">{$log.description|escape}</td>
+                                    <td data-label="{$texts.description|escape}">
+                                        <div class="masseditor-log-description">
+                                            <span class="masseditor-log-description__text">{$log.description|escape}</span>
+                                            {if !empty($log.can_rollback)}
+                                                <button type="button" class="button masseditor-button masseditor-button_compact masseditor-button_outline-danger masseditor-rollback-trigger" data-role="rollback-trigger" data-log-id="{$log.id|escape}">
+                                                    <svg class="masseditor-rollback-trigger__icon" aria-hidden="true" focusable="false" viewBox="0 0 16 16" fill="none">
+                                                        <path d="M6 3.5H3.5V1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                                                        <path d="M3.75 3.25A5.5 5.5 0 1 1 2.6 9.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                                                    </svg>
+                                                    <span>{$texts.rollback_button|escape}</span>
+                                                </button>
+                                            {/if}
+                                        </div>
+                                    </td>
                                 </tr>
                             {/foreach}
                         </tbody>
@@ -592,6 +605,43 @@
                 <div class="masseditor-empty"><strong>{$texts.log_empty_title|escape}</strong><p class="hint">{$texts.log_empty_hint|escape}</p></div>
             {/if}
         </section>
+
+        <form method="post" action="{$rollback_url|escape}" data-role="rollback-form">
+            {$wa->csrf()}
+            <input type="hidden" name="log_id" value="" data-role="rollback-log-id">
+            <input type="hidden" name="confirm_rollback" value="1">
+            <div class="masseditor-modal masseditor-modal_rollback" data-role="rollback-modal" aria-busy="false" hidden>
+                <div class="masseditor-modal__backdrop" data-role="close-rollback-modal"></div>
+                <div class="masseditor-modal__card" role="dialog" aria-modal="true" aria-labelledby="masseditor-rollback-title" aria-describedby="masseditor-rollback-description">
+                    <div class="masseditor-modal__head">
+                        <div>
+                            <h3 id="masseditor-rollback-title" data-role="rollback-title">{$texts.rollback_modal_title|escape}</h3>
+                        </div>
+                        <button type="button" class="masseditor-modal__close" data-role="close-rollback-modal" aria-label="{$texts.close|escape}">×</button>
+                    </div>
+                    <div class="masseditor-modal__body">
+                        <div data-role="rollback-confirm-content">
+                            <div class="masseditor-rollback-warning" id="masseditor-rollback-description">
+                                <p><strong>{$texts.rollback_confirm_question|escape}</strong></p>
+                                <p class="hint">{$texts.rollback_confirm_hint|escape}</p>
+                            </div>
+                        </div>
+                        <div class="masseditor-operation-progress" data-role="rollback-progress" role="progressbar" aria-label="{$texts.rollback_progress_label|escape}" hidden>
+                            <span class="masseditor-operation-progress__bar"></span>
+                            <p class="hint">{$texts.rollback_progress_message|escape}</p>
+                        </div>
+                        <div class="masseditor-operation-result" data-role="rollback-result" role="status" hidden></div>
+                    </div>
+                    <div class="masseditor-modal__footer masseditor-rollback-actions" data-role="rollback-confirm-actions">
+                        <button type="button" class="button masseditor-button masseditor-button_secondary" data-role="close-rollback-modal">{$texts.cancel|escape}</button>
+                        <button type="submit" class="button masseditor-button masseditor-button_danger" data-role="rollback-submit">{$texts.rollback_submit|escape}</button>
+                    </div>
+                    <div class="masseditor-modal__footer masseditor-rollback-actions" data-role="rollback-result-actions" hidden>
+                        <button type="button" class="button masseditor-button masseditor-button_primary" data-role="close-rollback-result" hidden>{$texts.operation_result_close|escape}</button>
+                    </div>
+                </div>
+            </div>
+        </form>
     {/if}
 
     {if $active_tab === 'settings'}

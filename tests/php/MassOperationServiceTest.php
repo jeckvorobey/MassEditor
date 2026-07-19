@@ -4,6 +4,58 @@ use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/TestHelpers.php';
 
+class RecordingRollbackService extends shopMasseditorPluginRollbackService
+{
+    public $lockAvailable = true;
+    public $lockAcquired = 0;
+    public $lockReleased = 0;
+    public $states = array();
+    public $captured = array();
+    public $stored = array();
+    public $restored = array();
+    public $throwOnStore = false;
+    public $throwOnRestore = false;
+
+    public function __construct()
+    {
+    }
+
+    public function acquireMutationLock($timeout = 5)
+    {
+        $this->lockAcquired++;
+        return $this->lockAvailable;
+    }
+
+    public function releaseMutationLock()
+    {
+        $this->lockReleased++;
+        return true;
+    }
+
+    public function captureState(array $request, array $product_ids)
+    {
+        $this->captured[] = array('request' => $request, 'product_ids' => $product_ids);
+        return array_shift($this->states);
+    }
+
+    public function storeSnapshot($log_id, $user_id, $operation, array $before, array $after, $created_at = null)
+    {
+        if ($this->throwOnStore) {
+            throw new RuntimeException('Snapshot store failed');
+        }
+        $this->stored[] = compact('log_id', 'user_id', 'operation', 'before', 'after', 'created_at');
+        return 9;
+    }
+
+    public function restoreState(array $state, array $request)
+    {
+        if ($this->throwOnRestore) {
+            throw new RuntimeException('Compensation failed with private state');
+        }
+        $this->restored[] = array('state' => $state, 'request' => $request);
+    }
+}
+
 class MassOperationServiceTest extends TestCase
 {
     use InvokesPrivateMethods;
@@ -11,6 +63,7 @@ class MassOperationServiceTest extends TestCase
     protected function setUp(): void
     {
         waRequest::reset();
+        waLog::reset();
         waContact::$names = array();
         shopProduct::reset();
         shopProductModel::reset();
@@ -124,6 +177,143 @@ class MassOperationServiceTest extends TestCase
         $this->assertStringContainsString('COMMIT', $model->execs[3]['sql']);
         $this->assertCount(1, $log->logged);
         $this->assertSame('visibility', $log->logged[0]['action_type']);
+    }
+
+    public function testApplyCapturesBeforeAndAfterAndStoresSnapshotUnderMutationLock(): void
+    {
+        $selection = new FakeSelectionService();
+        $selection->products = array(11 => array('id' => 11, 'name' => 'Product 11'));
+        $log = new FakeLogService();
+        $model = new waModel();
+        $rollback = new RecordingRollbackService();
+        $before = array(11 => array('version' => 1, 'operation' => 'visibility', 'product_id' => 11, 'data' => array('status' => 1)));
+        $after = array(11 => array('version' => 1, 'operation' => 'visibility', 'product_id' => 11, 'data' => array('status' => 0)));
+        $rollback->states = array($before, $after);
+
+        $service = new shopMasseditorPluginMassOperationService($selection, $log, $model, 100, null, $rollback);
+        $service->apply(array(
+            'product_ids' => array(11),
+            'operation' => 'visibility',
+            'visibility_status' => 0,
+            'confirm_apply' => 1,
+        ));
+
+        $this->assertSame(1, $rollback->lockAcquired);
+        $this->assertSame(1, $rollback->lockReleased);
+        $this->assertCount(2, $rollback->captured);
+        $this->assertSame(array(11), $rollback->captured[0]['product_ids']);
+        $this->assertCount(1, $rollback->stored);
+        $this->assertSame(1, $rollback->stored[0]['log_id']);
+        $this->assertSame(1, $rollback->stored[0]['user_id']);
+        $this->assertSame('visibility', $rollback->stored[0]['operation']);
+        $this->assertSame($before, $rollback->stored[0]['before']);
+        $this->assertSame($after, $rollback->stored[0]['after']);
+        $this->assertCount(0, $rollback->restored);
+    }
+
+    public function testApplyCompensatesAndDiscardsLogWhenSnapshotStoreFails(): void
+    {
+        $selection = new FakeSelectionService();
+        $selection->products = array(11 => array('id' => 11, 'name' => 'Product 11'));
+        $log = new FakeLogService();
+        $model = new waModel();
+        $rollback = new RecordingRollbackService();
+        $before = array(11 => array('version' => 1, 'operation' => 'visibility', 'product_id' => 11, 'data' => array('status' => 1)));
+        $after = array(11 => array('version' => 1, 'operation' => 'visibility', 'product_id' => 11, 'data' => array('status' => 0)));
+        $rollback->states = array($before, $after);
+        $rollback->throwOnStore = true;
+
+        $service = new shopMasseditorPluginMassOperationService($selection, $log, $model, 100, null, $rollback);
+
+        try {
+            $service->apply(array(
+                'product_ids' => array(11),
+                'operation' => 'visibility',
+                'visibility_status' => 0,
+                'confirm_apply' => 1,
+            ));
+            $this->fail('Snapshot failure was not propagated.');
+        } catch (RuntimeException $e) {
+            $this->assertSame('Snapshot store failed', $e->getMessage());
+        }
+
+        $this->assertSame(array(1), $log->discarded);
+        $this->assertCount(1, $rollback->restored);
+        $this->assertSame($before, $rollback->restored[0]['state']);
+        $this->assertSame('ROLLBACK', end($model->execs)['sql']);
+        $this->assertSame(1, $rollback->lockReleased);
+    }
+
+    public function testApplyRejectsBusyMutationLockBeforeTransaction(): void
+    {
+        $selection = new FakeSelectionService();
+        $selection->products = array(11 => array('id' => 11, 'name' => 'Product 11'));
+        $model = new waModel();
+        $rollback = new RecordingRollbackService();
+        $rollback->lockAvailable = false;
+        $service = new shopMasseditorPluginMassOperationService(
+            $selection,
+            new FakeLogService(),
+            $model,
+            100,
+            null,
+            $rollback
+        );
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Операция уже выполняется');
+
+        try {
+            $service->apply(array(
+                'product_ids' => array(11),
+                'operation' => 'visibility',
+                'visibility_status' => 0,
+                'confirm_apply' => 1,
+            ));
+        } finally {
+            $this->assertCount(0, $model->execs);
+            $this->assertSame(0, $rollback->lockReleased);
+        }
+    }
+
+    public function testApplyLogsCompensationFailureWithoutExposingPrivateState(): void
+    {
+        $selection = new FakeSelectionService();
+        $selection->products = array(11 => array('id' => 11, 'name' => 'Product 11'));
+        $model = new waModel();
+        $rollback = new RecordingRollbackService();
+        $rollback->states = array(
+            array(11 => array('before' => 'private')),
+            array(11 => array('after' => 'private')),
+        );
+        $rollback->throwOnStore = true;
+        $rollback->throwOnRestore = true;
+        $service = new shopMasseditorPluginMassOperationService(
+            $selection,
+            new FakeLogService(),
+            $model,
+            100,
+            'ru_RU',
+            $rollback
+        );
+
+        try {
+            $service->apply(array(
+                'product_ids' => array(11),
+                'operation' => 'visibility',
+                'visibility_status' => 0,
+                'confirm_apply' => 1,
+            ));
+            $this->fail('Compensation failure was not propagated.');
+        } catch (RuntimeException $e) {
+            $this->assertSame('Не удалось восстановить старые значения.', $e->getMessage());
+            $this->assertStringNotContainsString('private', $e->getMessage());
+        }
+
+        $this->assertCount(1, waLog::$logs);
+        $this->assertStringContainsString('Compensation failed with private state', waLog::$logs[0]['message']);
+        $this->assertSame('shop/plugins/masseditor.log', waLog::$logs[0]['file']);
+        $this->assertSame(1, $rollback->lockReleased);
     }
 
     public function testApplyRollsBackOnProductMismatch(): void

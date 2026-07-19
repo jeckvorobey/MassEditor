@@ -65,6 +65,7 @@ class FakeLogService extends shopMasseditorPluginLogService
     public $logged = array();
     public $latest = array();
     public $pages = array();
+    public $discarded = array();
 
     public function __construct()
     {
@@ -92,5 +93,11 @@ class FakeLogService extends shopMasseditorPluginLogService
     public function purgeOlderThanDays($days)
     {
         return 0;
+    }
+
+    public function discard($log_id)
+    {
+        $this->discarded[] = (int) $log_id;
+        return 1;
     }
 }

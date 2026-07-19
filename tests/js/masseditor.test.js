@@ -107,6 +107,107 @@ test('fallback strings stay English when i18n dictionary is missing', () => {
   assert.doesNotMatch(scriptSource, /t\('[^']+',\s*'[^']*[А-Яа-яЁё][^']*'\)/);
 });
 
+test('rollback asks for confirmation, shows loader, and reloads after success', async () => {
+  let resolveFetch;
+  const calls = [];
+  const app = boot({
+    i18n: {
+      rollback_progress_title: 'Восстанавливаем старые значения',
+      rollback_progress_message: 'Товары восстанавливаются. Не закрывайте это окно.',
+      rollback_result_success: 'Старые значения восстановлены',
+      rollback_result_error: 'Не удалось восстановить старые значения',
+    },
+    fetch(url, options) {
+      calls.push({ url, options });
+      return new Promise((resolve) => { resolveFetch = resolve; });
+    },
+  });
+
+  app.rollbackButton.click();
+  assert.equal(app.rollbackModal.hidden, false);
+  assert.equal(app.document.querySelector('[data-role="rollback-log-id"]').value, '55');
+  assert.equal(app.document.querySelector('[data-role="rollback-confirm-actions"]').hidden, false);
+  assert.equal(app.document.querySelector('[data-role="rollback-result-actions"]').hidden, true);
+  assert.equal(app.document.body.classList.contains('masseditor-modal-open'), true);
+
+  const event = submit(app.rollbackForm, app.document.querySelector('[data-role="rollback-submit"]'));
+  assert.equal(event.defaultPrevented, true);
+  assert.equal(app.rollbackModal.getAttribute('aria-busy'), 'true');
+  assert.equal(app.document.querySelector('[data-role="rollback-confirm-content"]').hidden, true);
+  assert.equal(app.document.querySelector('[data-role="rollback-confirm-actions"]').hidden, true);
+  assert.equal(app.document.querySelector('[data-role="rollback-progress"]').hidden, false);
+  assert.equal(app.document.querySelector('[data-role="rollback-title"]').textContent, 'Восстанавливаем старые значения');
+  assert.equal(calls[0].url, '?plugin=masseditor&action=rollback');
+  assert.equal(calls[0].options.method, 'POST');
+  assert.equal(calls[0].options.credentials, 'same-origin');
+  assert.equal(calls[0].options.body.form, app.rollbackForm);
+  submit(app.rollbackForm, app.document.querySelector('[data-role="rollback-submit"]'));
+  assert.equal(calls.length, 1);
+
+  resolveFetch({
+    ok: true,
+    json: () => Promise.resolve({ status: 'ok', data: { message: 'Старые значения восстановлены.', reload: true } }),
+  });
+  await flushPromises();
+
+  assert.equal(app.rollbackModal.getAttribute('aria-busy'), 'false');
+  assert.equal(app.document.querySelector('[data-role="rollback-progress"]').hidden, true);
+  assert.equal(app.document.querySelector('[data-role="rollback-result"]').textContent, 'Старые значения восстановлены.');
+  assert.equal(app.document.querySelector('[data-role="close-rollback-result"]').hidden, false);
+  assert.equal(app.document.querySelector('[data-role="rollback-result-actions"]').hidden, false);
+  app.document.querySelector('[data-role="close-rollback-result"]').click();
+  assert.equal(app.reloads.length, 1);
+});
+
+test('rollback renders server errors as text and does not reload', async () => {
+  const app = boot({
+    fetch() {
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ status: 'fail', errors: ['<img src=x onerror=alert(1)>'] }),
+      });
+    },
+  });
+
+  app.rollbackButton.click();
+  submit(app.rollbackForm, app.document.querySelector('[data-role="rollback-submit"]'));
+  await flushPromises();
+
+  assert.equal(app.document.querySelector('[data-role="rollback-result"]').textContent, '<img src=x onerror=alert(1)>');
+  assert.equal(app.rollbackModal.classList.contains('is-error'), true);
+  app.document.querySelector('[data-role="close-rollback-result"]').click();
+  assert.equal(app.reloads.length, 0);
+  assert.equal(app.rollbackModal.hidden, true);
+});
+
+test('rollback template exposes one eligible action with csrf, confirmation, and loader', () => {
+  assert.match(templateSource, /\{if !empty\(\$log\.can_rollback\)\}[\s\S]*data-role="rollback-trigger"[\s\S]*\{\/if\}/);
+  assert.doesNotMatch(templateSource, /<th>\{\$texts\.log_actions\|escape\}<\/th>/);
+  assert.doesNotMatch(templateSource, /data-label="\{\$texts\.log_actions\|escape\}"/);
+  assert.match(templateSource, /<td data-label="\{\$texts\.description\|escape\}">[\s\S]*data-role="rollback-trigger"[\s\S]*<\/td>/);
+  assert.match(templateSource, /class="masseditor-log-description"[\s\S]*class="masseditor-log-description__text"[\s\S]*class="button masseditor-button masseditor-button_compact masseditor-button_outline-danger masseditor-rollback-trigger" data-role="rollback-trigger"/);
+  assert.match(templateSource, /data-role="rollback-trigger"[\s\S]*<svg[^>]+aria-hidden="true"[^>]+focusable="false"[\s\S]*\{\$texts\.rollback_button\|escape\}/);
+  assert.match(templateSource, /data-role="rollback-form"[\s\S]*\{\$wa->csrf\(\)\}/);
+  assert.match(templateSource, /class="masseditor-modal masseditor-modal_rollback"/);
+  assert.match(templateSource, /role="dialog"[^>]+aria-describedby="masseditor-rollback-description"/);
+  assert.match(templateSource, /class="masseditor-rollback-warning"[^>]+id="masseditor-rollback-description"/);
+  assert.match(templateSource, /class="button masseditor-button masseditor-button_danger" data-role="rollback-submit"/);
+  assert.match(templateSource, /data-role="rollback-confirm-actions"/);
+  assert.match(templateSource, /data-role="rollback-result-actions"[^>]+hidden/);
+  assert.match(templateSource, /\{\$texts\.rollback_confirm_question\|escape\}/);
+  assert.match(templateSource, /data-role="rollback-progress" role="progressbar"[^>]+hidden/);
+  assert.match(cssSource, /\.masseditor-modal_rollback \.masseditor-operation-progress__bar\s*\{[^}]*background:\s*var\(--me-danger\);/);
+  assert.match(cssSource, /\.masseditor-log-description\s*\{[^}]*display:\s*flex;[^}]*width:\s*100%;/);
+  assert.match(cssSource, /\.masseditor-rollback-trigger\s*\{[^}]*margin-left:\s*auto;[^}]*min-height:\s*32px;[^}]*font-size:\s*13px;/);
+  assert.match(cssSource, /\.masseditor-button_outline-danger\s*\{[^}]*border-color:\s*var\(--me-danger\);[^}]*background:\s*transparent;[^}]*color:\s*var\(--me-danger\);/);
+  assert.match(cssSource, /@media \(max-width: 640px\)[\s\S]*\.masseditor-modal_rollback \.masseditor-modal__close\s*\{[^}]*min-width:\s*48px;[^}]*min-height:\s*48px;/);
+  assert.match(cssSource, /@media \(max-width: 1024px\)[\s\S]*\.masseditor-modal__card\s*\{[^}]*width:\s*80vw;[^}]*max-width:\s*none;[^}]*margin-right:\s*auto;[^}]*margin-left:\s*auto;/);
+  assert.doesNotMatch(cssSource, /@media \(max-width: 640px\)[\s\S]*\.masseditor-modal_rollback \.masseditor-modal__card\s*\{/);
+  assert.match(cssSource, /@media \(max-width: 640px\)[\s\S]*\.masseditor-rollback-actions \.masseditor-button\s*\{[^}]*width:\s*100%;/);
+  assert.match(cssSource, /@media \(max-width: 1024px\)[\s\S]*\.masseditor-log-description\s*\{[^}]*align-items:\s*stretch;[^}]*flex-direction:\s*column;/);
+  assert.match(cssSource, /@media \(max-width: 1024px\)[\s\S]*\.masseditor-rollback-trigger\s*\{[^}]*align-self:\s*flex-end;[^}]*min-height:\s*56px;/);
+});
+
 test('uses provided English i18n dictionary for labels and validation', () => {
   const app = boot({
     i18n: {

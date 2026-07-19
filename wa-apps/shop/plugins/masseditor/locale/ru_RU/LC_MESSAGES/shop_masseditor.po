@@ -328,11 +328,11 @@ msgstr "Будет изменено товаров"
 msgid "Operation"
 msgstr "Операция"
 
-msgid "This action cannot be automatically undone."
-msgstr "Действие нельзя автоматически отменить."
+msgid "Undo is available for the last operation."
+msgstr "Последнюю операцию можно отменить."
 
-msgid "The operation will be written to the log and available for audit."
-msgstr "Операция будет записана в журнал и доступна для аудита."
+msgid "You can restore old values within 3 hours or until the next bulk operation."
+msgstr "Старые значения можно вернуть в течение 3 часов или до следующей массовой операции."
 
 msgid "Cancel"
 msgstr "Отмена"
@@ -800,3 +800,66 @@ msgstr "Недостаточно прав для изменения выбран
 
 msgid "Video: mode %s for %d products"
 msgstr "Видео: режим %s для %d товаров"
+
+msgid "Another Mass Editor operation is already running. Try again."
+msgstr "Операция уже выполняется. Повторите попытку."
+
+msgid "The rollback snapshot is invalid."
+msgstr "Снимок для отката повреждён или недействителен."
+
+msgid "The rollback snapshot could not be saved."
+msgstr "Не удалось сохранить снимок для отката."
+
+msgid "Invalid rollback request."
+msgstr "Некорректный запрос отката."
+
+msgid "Confirm restoring the old values."
+msgstr "Подтвердите возврат старых значений."
+
+msgid "This operation is no longer available for rollback."
+msgstr "Эта операция больше недоступна для отката."
+
+msgid "The affected product values were changed after the bulk operation. Rollback was cancelled."
+msgstr "Затронутые значения товаров изменены после массовой операции. Откат отменён."
+
+msgid "The old values could not be restored."
+msgstr "Не удалось восстановить старые значения."
+
+msgid "Rollback of operation #%d"
+msgstr "Откат операции #%d"
+
+msgid "The old values were restored."
+msgstr "Старые значения восстановлены."
+
+msgid "Rollback"
+msgstr "Откат"
+
+msgid "Undo"
+msgstr "Отменить"
+
+msgid "Undo last operation"
+msgstr "Отмена последней операции"
+
+msgid "Are you sure you want to restore the old values?"
+msgstr "Вы действительно хотите вернуть старые значения?"
+
+msgid "Only the products and values changed by this operation will be restored."
+msgstr "Будут восстановлены только товары и значения, изменённые этой операцией."
+
+msgid "Restore old values"
+msgstr "Вернуть старые значения"
+
+msgid "Restoring old values"
+msgstr "Восстанавливаем старые значения"
+
+msgid "Products are being restored. Keep this window open."
+msgstr "Товары восстанавливаются. Не закрывайте это окно."
+
+msgid "Rollback progress"
+msgstr "Ход отката"
+
+msgid "Old values restored"
+msgstr "Старые значения восстановлены"
+
+msgid "Could not restore old values"
+msgstr "Не удалось восстановить старые значения"

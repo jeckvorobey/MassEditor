@@ -19,8 +19,14 @@ class shopMasseditorPluginBackendAction extends waViewAction
             $settings['operation_limit'],
             $language
         );
+        $rollback_service = $this->createRollbackService(
+            $log_service,
+            $settings['operation_limit'],
+            $language
+        );
 
         $log_service->purgeOlderThanDays($settings['log_retention_days']);
+        $rollback_service->purgeExpiredSnapshots();
 
         $filters = array(
             'query' => waRequest::get('query', '', waRequest::TYPE_STRING_TRIM),
@@ -117,8 +123,12 @@ class shopMasseditorPluginBackendAction extends waViewAction
         }
 
         $log_selection = $log_service->getPage($log_page, 20);
-        $recent_logs = $this->decorateLogs($log_selection['logs'], $language);
-        $last_log = $this->decorateLogs($log_service->getLatest(1), $language);
+        $current_user = wa()->getUser();
+        $available_rollback_log_id = $rollback_service->getAvailableLogId(
+            $current_user ? (int) $current_user->getId() : 0
+        );
+        $recent_logs = $this->decorateLogs($log_selection['logs'], $language, $available_rollback_log_id);
+        $last_log = $this->decorateLogs($log_service->getLatest(1), $language, $available_rollback_log_id);
         $last_log = $last_log ? reset($last_log) : null;
         $operations = $this->getOperationsLibrary($language);
 
@@ -160,6 +170,7 @@ class shopMasseditorPluginBackendAction extends waViewAction
             'filter_reset_url' => '?plugin=' . $plugin->getId() . '&view=products',
             'search_suggestions_url' => '?plugin=' . $plugin->getId() . '&action=searchSuggestions',
             'apply_url' => '?plugin=' . $plugin->getId() . '&action=apply',
+            'rollback_url' => '?plugin=' . $plugin->getId() . '&action=rollback',
             'active_tab' => $active_tab,
             'settings' => $settings,
             'date_format_options' => $this->getDateFormatOptions(),
@@ -180,6 +191,27 @@ class shopMasseditorPluginBackendAction extends waViewAction
             $selection_service,
             $log_service,
             null,
+            $operation_limit,
+            $language,
+            new shopMasseditorPluginRollbackService(
+                null,
+                null,
+                $log_service,
+                $operation_limit,
+                $language
+            )
+        );
+    }
+
+    protected function createRollbackService(
+        shopMasseditorPluginLogService $log_service,
+        $operation_limit,
+        $language
+    ) {
+        return new shopMasseditorPluginRollbackService(
+            null,
+            null,
+            $log_service,
             $operation_limit,
             $language
         );
@@ -437,13 +469,16 @@ class shopMasseditorPluginBackendAction extends waViewAction
         error_log($message);
     }
 
-    private function decorateLogs(array $logs, $language = null)
+    private function decorateLogs(array $logs, $language = null, $available_rollback_log_id = null)
     {
         $user_names = $this->resolveUserNames($logs);
         $date_format = $this->getCurrentDateFormat();
 
         foreach ($logs as &$log) {
             $log['action_label'] = $this->getActionLabel(isset($log['action_type']) ? $log['action_type'] : '', $language);
+            $log['can_rollback'] = $available_rollback_log_id !== null
+                && isset($log['id'])
+                && (int) $log['id'] === (int) $available_rollback_log_id;
             $user_id = isset($log['user_id']) ? (int) $log['user_id'] : 0;
             $log['user_name'] = isset($user_names[$user_id]) ? $user_names[$user_id] : null;
             $log['created_at_view'] = $this->formatDateForView(
@@ -511,6 +546,9 @@ class shopMasseditorPluginBackendAction extends waViewAction
         }
         if ($action_type === 'video') {
             return shopMasseditorPluginI18nService::t('operation_video', $language);
+        }
+        if ($action_type === 'rollback') {
+            return shopMasseditorPluginI18nService::t('action_rollback', $language);
         }
 
         return (string) $action_type;

@@ -92,6 +92,19 @@ class shopMasseditorPluginLogService
         );
     }
 
+    public function discard($log_id)
+    {
+        $log_id = (int) $log_id;
+        if ($log_id <= 0) {
+            return 0;
+        }
+
+        return $this->log_model->exec(
+            'DELETE FROM shop_masseditor_log WHERE id = i:id',
+            array('id' => $log_id)
+        );
+    }
+
     private function normalizeUserId($user_id)
     {
         if ($user_id === null) {

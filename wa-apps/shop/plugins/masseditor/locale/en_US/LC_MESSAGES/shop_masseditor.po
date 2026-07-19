@@ -328,11 +328,11 @@ msgstr "Products to be changed"
 msgid "Operation"
 msgstr "Operation"
 
-msgid "This action cannot be automatically undone."
-msgstr "This action cannot be automatically undone."
+msgid "Undo is available for the last operation."
+msgstr "Undo is available for the last operation."
 
-msgid "The operation will be written to the log and available for audit."
-msgstr "The operation will be written to the log and available for audit."
+msgid "You can restore old values within 3 hours or until the next bulk operation."
+msgstr "You can restore old values within 3 hours or until the next bulk operation."
 
 msgid "Cancel"
 msgstr "Cancel"
@@ -796,3 +796,66 @@ msgstr "Not enough rights to edit the selected product."
 
 msgid "Video: mode %s for %d products"
 msgstr "Video: mode %s for %d products"
+
+msgid "Another Mass Editor operation is already running. Try again."
+msgstr "Another Mass Editor operation is already running. Try again."
+
+msgid "The rollback snapshot is invalid."
+msgstr "The rollback snapshot is invalid."
+
+msgid "The rollback snapshot could not be saved."
+msgstr "The rollback snapshot could not be saved."
+
+msgid "Invalid rollback request."
+msgstr "Invalid rollback request."
+
+msgid "Confirm restoring the old values."
+msgstr "Confirm restoring the old values."
+
+msgid "This operation is no longer available for rollback."
+msgstr "This operation is no longer available for rollback."
+
+msgid "The affected product values were changed after the bulk operation. Rollback was cancelled."
+msgstr "The affected product values were changed after the bulk operation. Rollback was cancelled."
+
+msgid "The old values could not be restored."
+msgstr "The old values could not be restored."
+
+msgid "Rollback of operation #%d"
+msgstr "Rollback of operation #%d"
+
+msgid "The old values were restored."
+msgstr "The old values were restored."
+
+msgid "Rollback"
+msgstr "Rollback"
+
+msgid "Undo"
+msgstr "Undo"
+
+msgid "Undo last operation"
+msgstr "Undo last operation"
+
+msgid "Are you sure you want to restore the old values?"
+msgstr "Are you sure you want to restore the old values?"
+
+msgid "Only the products and values changed by this operation will be restored."
+msgstr "Only the products and values changed by this operation will be restored."
+
+msgid "Restore old values"
+msgstr "Restore old values"
+
+msgid "Restoring old values"
+msgstr "Restoring old values"
+
+msgid "Products are being restored. Keep this window open."
+msgstr "Products are being restored. Keep this window open."
+
+msgid "Rollback progress"
+msgstr "Rollback progress"
+
+msgid "Old values restored"
+msgstr "Old values restored"
+
+msgid "Could not restore old values"
+msgstr "Could not restore old values"

@@ -38,12 +38,21 @@ class shopMasseditorPluginBackendApplyController extends waJsonController
 
     protected function createOperationService($operation_limit, $language)
     {
+        $log_service = new shopMasseditorPluginLogService();
+
         return new shopMasseditorPluginMassOperationService(
             new shopMasseditorPluginProductSelectionService(),
-            new shopMasseditorPluginLogService(),
+            $log_service,
             null,
             $operation_limit,
-            $language
+            $language,
+            new shopMasseditorPluginRollbackService(
+                null,
+                null,
+                $log_service,
+                $operation_limit,
+                $language
+            )
         );
     }
 

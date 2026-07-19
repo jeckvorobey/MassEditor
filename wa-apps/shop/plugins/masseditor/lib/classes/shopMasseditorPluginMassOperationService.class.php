@@ -15,19 +15,22 @@ class shopMasseditorPluginMassOperationService
     private $model;
     private $operation_limit;
     private $language;
+    private $rollback_service;
 
     public function __construct(
         shopMasseditorPluginProductSelectionService $selection_service = null,
         shopMasseditorPluginLogService $log_service = null,
         waModel $model = null,
         $operation_limit = null,
-        $language = null
+        $language = null,
+        shopMasseditorPluginRollbackService $rollback_service = null
     ) {
         $this->selection_service = $selection_service ?: new shopMasseditorPluginProductSelectionService();
         $this->log_service = $log_service ?: new shopMasseditorPluginLogService();
         $this->model = $model ?: new waModel();
         $this->operation_limit = $this->normalizeOperationLimit($operation_limit);
         $this->language = $language;
+        $this->rollback_service = $rollback_service;
     }
 
     public function apply(array $raw_request)
@@ -55,9 +58,24 @@ class shopMasseditorPluginMassOperationService
             );
         }
 
-        $this->model->exec('START TRANSACTION');
-
+        $lock_acquired = false;
+        $before_state = null;
+        $log_id = 0;
+        $mutation_started = false;
         try {
+            if ($this->rollback_service) {
+                if (!$this->rollback_service->acquireMutationLock(5)) {
+                    throw new RuntimeException($this->t('rollback_busy'));
+                }
+                $lock_acquired = true;
+                $before_state = $this->rollback_service->captureState(
+                    $request,
+                    $this->productIdsFromData($products)
+                );
+            }
+
+            $this->model->exec('START TRANSACTION');
+            $mutation_started = true;
             $chunks = array_chunk($products, self::APPLY_BATCH_SIZE, true);
             foreach ($chunks as $chunk) {
                 foreach ($chunk as $product_data) {
@@ -66,16 +84,53 @@ class shopMasseditorPluginMassOperationService
                 }
             }
 
-            $this->log_service->log(
+            $after_state = $this->rollback_service
+                ? $this->rollback_service->captureState($request, $this->productIdsFromData($products))
+                : null;
+            $log_id = (int) $this->log_service->log(
                 $request['operation'],
                 $count,
                 $this->buildDescription($request, $count)
             );
+            if ($this->rollback_service) {
+                $user = wa()->getUser();
+                $user_id = $user ? (int) $user->getId() : 0;
+                $this->rollback_service->storeSnapshot(
+                    $log_id,
+                    $user_id,
+                    $request['operation'],
+                    $before_state,
+                    $after_state
+                );
+            }
 
             $this->model->exec('COMMIT');
         } catch (Exception $e) {
-            $this->model->exec('ROLLBACK');
+            if ($mutation_started) {
+                $this->model->exec('ROLLBACK');
+            }
+            if ($log_id > 0) {
+                $this->log_service->discard($log_id);
+            }
+            if ($mutation_started && $before_state !== null && $this->rollback_service) {
+                try {
+                    $this->rollback_service->restoreState($before_state, $request);
+                } catch (Exception $compensation_error) {
+                    waLog::log(
+                        'Original ' . get_class($e) . ': ' . $e->getMessage()
+                        . "\nCompensation " . get_class($compensation_error) . ': '
+                        . $compensation_error->getMessage() . "\n"
+                        . $compensation_error->getTraceAsString(),
+                        'shop/plugins/masseditor.log'
+                    );
+                    throw new RuntimeException($this->t('rollback_restore_failed'));
+                }
+            }
             throw $e;
+        } finally {
+            if ($lock_acquired) {
+                $this->rollback_service->releaseMutationLock();
+            }
         }
 
         return array(
@@ -84,6 +139,19 @@ class shopMasseditorPluginMassOperationService
             'message' => $this->t('operation_success'),
             'skipped' => $skipped_count,
         );
+    }
+
+    private function productIdsFromData(array $products)
+    {
+        $ids = array();
+        foreach ($products as $product) {
+            $product_id = isset($product['id']) ? (int) $product['id'] : 0;
+            if ($product_id > 0) {
+                $ids[$product_id] = $product_id;
+            }
+        }
+
+        return array_values($ids);
     }
 
     private function normalizeRequest(array $raw_request, $require_confirmation)

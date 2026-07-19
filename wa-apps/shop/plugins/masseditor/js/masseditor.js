@@ -109,6 +109,187 @@
 
     initToastSources();
 
+    function initRollback() {
+        var rollbackButtons = Array.prototype.slice.call(document.querySelectorAll('[data-role="rollback-trigger"]'));
+        var rollbackForm = document.querySelector('[data-role="rollback-form"]');
+        var rollbackModal = document.querySelector('[data-role="rollback-modal"]');
+        var rollbackLogId = document.querySelector('[data-role="rollback-log-id"]');
+        var rollbackTitle = document.querySelector('[data-role="rollback-title"]');
+        var rollbackConfirmContent = document.querySelector('[data-role="rollback-confirm-content"]');
+        var rollbackConfirmActions = document.querySelector('[data-role="rollback-confirm-actions"]');
+        var rollbackSubmit = document.querySelector('[data-role="rollback-submit"]');
+        var rollbackCloseButtons = Array.prototype.slice.call(document.querySelectorAll('[data-role="close-rollback-modal"]'));
+        var rollbackProgress = document.querySelector('[data-role="rollback-progress"]');
+        var rollbackResult = document.querySelector('[data-role="rollback-result"]');
+        var rollbackResultActions = document.querySelector('[data-role="rollback-result-actions"]');
+        var rollbackResultClose = document.querySelector('[data-role="close-rollback-result"]');
+        var pending = false;
+        var reloadAfterClose = false;
+
+        if (!rollbackButtons.length || !rollbackForm || !rollbackModal || !rollbackLogId) {
+            return;
+        }
+
+        function resetRollbackModal() {
+            pending = false;
+            reloadAfterClose = false;
+            rollbackModal.setAttribute('aria-busy', 'false');
+            rollbackModal.classList.remove('is-success', 'is-error');
+            if (rollbackTitle) {
+                rollbackTitle.textContent = t('rollback_modal_title', 'Undo last operation');
+            }
+            if (rollbackConfirmContent) {
+                rollbackConfirmContent.hidden = false;
+            }
+            if (rollbackConfirmActions) {
+                rollbackConfirmActions.hidden = false;
+            }
+            if (rollbackSubmit) {
+                rollbackSubmit.disabled = false;
+            }
+            rollbackCloseButtons.forEach(function (button) {
+                button.disabled = false;
+            });
+            if (rollbackProgress) {
+                rollbackProgress.hidden = true;
+            }
+            if (rollbackResult) {
+                rollbackResult.hidden = true;
+                rollbackResult.textContent = '';
+            }
+            if (rollbackResultActions) {
+                rollbackResultActions.hidden = true;
+            }
+            if (rollbackResultClose) {
+                rollbackResultClose.hidden = true;
+                rollbackResultClose.disabled = false;
+            }
+        }
+
+        function closeRollbackModal() {
+            if (pending) {
+                return;
+            }
+            rollbackModal.hidden = true;
+            document.body.classList.remove('masseditor-modal-open');
+            if (reloadAfterClose) {
+                window.location.reload();
+            }
+        }
+
+        function rollbackErrorMessage(payload) {
+            var errors = payload && Array.isArray(payload.errors) ? payload.errors : [];
+            var first = errors.length ? errors[0] : null;
+            if (typeof first === 'string') {
+                return first;
+            }
+            if (first && typeof first.message === 'string') {
+                return first.message;
+            }
+
+            return t('generic_operation_error', 'The operation could not be completed. Try again or check the error log.');
+        }
+
+        function finishRollback(success, message, reload) {
+            pending = false;
+            reloadAfterClose = success && reload;
+            rollbackModal.setAttribute('aria-busy', 'false');
+            rollbackModal.classList.toggle('is-success', success);
+            rollbackModal.classList.toggle('is-error', !success);
+            if (rollbackTitle) {
+                rollbackTitle.textContent = success
+                    ? t('rollback_result_success', 'Old values restored')
+                    : t('rollback_result_error', 'Could not restore old values');
+            }
+            if (rollbackProgress) {
+                rollbackProgress.hidden = true;
+            }
+            if (rollbackResult) {
+                rollbackResult.hidden = false;
+                rollbackResult.textContent = message;
+            }
+            if (rollbackResultClose) {
+                rollbackResultClose.hidden = false;
+            }
+            if (rollbackResultActions) {
+                rollbackResultActions.hidden = false;
+            }
+        }
+
+        rollbackButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                resetRollbackModal();
+                rollbackLogId.value = button.getAttribute('data-log-id') || '';
+                rollbackModal.hidden = false;
+                document.body.classList.add('masseditor-modal-open');
+            });
+        });
+
+        rollbackCloseButtons.forEach(function (button) {
+            button.addEventListener('click', closeRollbackModal);
+        });
+        if (rollbackResultClose) {
+            rollbackResultClose.addEventListener('click', closeRollbackModal);
+        }
+
+        rollbackForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+            if (pending || !rollbackLogId.value) {
+                return;
+            }
+            pending = true;
+            rollbackModal.setAttribute('aria-busy', 'true');
+            if (rollbackTitle) {
+                rollbackTitle.textContent = t('rollback_progress_title', 'Restoring old values');
+            }
+            if (rollbackConfirmContent) {
+                rollbackConfirmContent.hidden = true;
+            }
+            if (rollbackConfirmActions) {
+                rollbackConfirmActions.hidden = true;
+            }
+            if (rollbackProgress) {
+                rollbackProgress.hidden = false;
+            }
+            if (rollbackSubmit) {
+                rollbackSubmit.disabled = true;
+            }
+            rollbackCloseButtons.forEach(function (button) {
+                button.disabled = true;
+            });
+
+            window.fetch(rollbackForm.getAttribute('action'), {
+                method: 'POST',
+                body: new window.FormData(rollbackForm),
+                credentials: 'same-origin',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            }).then(function (response) {
+                if (!response.ok) {
+                    throw new Error('HTTP ' + response.status);
+                }
+                return response.json();
+            }).then(function (payload) {
+                if (!payload || payload.status !== 'ok' || !payload.data) {
+                    finishRollback(false, rollbackErrorMessage(payload), false);
+                    return;
+                }
+                finishRollback(
+                    true,
+                    payload.data.message || t('rollback_result_success', 'Old values restored'),
+                    payload.data.reload !== false
+                );
+            }).catch(function () {
+                finishRollback(
+                    false,
+                    t('generic_operation_error', 'The operation could not be completed. Try again or check the error log.'),
+                    false
+                );
+            });
+        });
+    }
+
+    initRollback();
+
     if (!workspaceForm) {
         return;
     }

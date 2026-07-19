@@ -263,13 +263,16 @@ class BackendActionTest extends TestCase
     {
         $action = new shopMasseditorPluginBackendAction();
         $logs = $this->invokePrivate($action, 'decorateLogs', array(array(
-            array('action_type' => 'price', 'user_id' => 5, 'created_at' => '2026-04-26 14:30:00'),
-            array('action_type' => 'unknown', 'user_id' => 99, 'created_at' => 'broken'),
-        )));
+            array('id' => 55, 'action_type' => 'price', 'user_id' => 5, 'created_at' => '2026-04-26 14:30:00'),
+            array('id' => 56, 'action_type' => 'rollback', 'user_id' => 99, 'created_at' => 'broken'),
+        ), 'ru_RU', 55));
 
         $this->assertSame('Цена', $logs[0]['action_label']);
+        $this->assertTrue($logs[0]['can_rollback']);
         $this->assertSame('Alice Admin', $logs[0]['user_name']);
         $this->assertSame('26.04.2026 14:30', $logs[0]['created_at_view']);
+        $this->assertSame('Откат', $logs[1]['action_label']);
+        $this->assertFalse($logs[1]['can_rollback']);
         $this->assertNull($logs[1]['user_name']);
         $this->assertSame('broken', $logs[1]['created_at_view']);
 
@@ -328,6 +331,10 @@ class BackendActionTest extends TestCase
         $this->assertSame('Изменения применены', $russian['operation_result_success']);
         $this->assertSame('Не удалось применить изменения', $russian['operation_result_error']);
         $this->assertSame('Закрыть', $russian['operation_result_close']);
+        $this->assertSame('Восстанавливаем старые значения', $russian['rollback_progress_title']);
+        $this->assertSame('Старые значения восстановлены', $russian['rollback_result_success']);
+        $this->assertSame('Restoring old values', $english['rollback_progress_title']);
+        $this->assertSame('Old values restored', $english['rollback_result_success']);
         $this->assertSame('Error', $english['toast_error']);
         $this->assertSame('Close notification', $english['toast_close']);
         $this->assertSame('For products with warehouse stock accounting, select a specific warehouse.', $english['validation_stock_required_for_accounted_products']);
@@ -440,6 +447,7 @@ class BackendActionTest extends TestCase
         $this->assertStringContainsString('<th>{$texts.compare_price|escape}</th>', $template);
         $this->assertStringContainsString('class="button masseditor-button masseditor-button_primary" type="submit" form="masseditor-filter-form"', $template);
         $this->assertStringContainsString('name="interface_language"', $template);
+        $this->assertSame('?plugin=masseditor&action=rollback', $action->view->assigned['rollback_url']);
         $this->assertStringContainsString('{if $product.count === null}∞{else}{$product.count_view|escape}{/if}', $template);
         $this->assertStringNotContainsString('value="auto"{if $settings.interface_language', $template);
         $this->assertSame('Установить значение', $action->view->assigned['texts']['set_value']);
